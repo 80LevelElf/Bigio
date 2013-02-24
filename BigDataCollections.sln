@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigDataCollections", "BigDataCollections\BigDataCollections.csproj", "{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{1000AB01-CDA2-4623-853D-331856B472EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1000AB01-CDA2-4623-853D-331856B472EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1000AB01-CDA2-4623-853D-331856B472EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1000AB01-CDA2-4623-853D-331856B472EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1000AB01-CDA2-4623-853D-331856B472EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

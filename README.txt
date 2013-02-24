@@ -1,6 +1,5 @@
-DistributedArray is array specially designed for big data.
-Because of architecture, many actions in DistributedArray work faster then in the List<T> ot LinkedList<T>
-and use less memory.
+BigDataCollections is arraycollections specially designed for big data.
+Because of architecture, many actions in this collections work faster then in similar classes.
 
 This code distributed with BSD license:
 Copyright (c) 2013, Salakhutdinov Rustam
