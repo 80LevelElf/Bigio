@@ -14,4 +14,3 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 In project use:
 Microsoft .Net documentation.
-New version
