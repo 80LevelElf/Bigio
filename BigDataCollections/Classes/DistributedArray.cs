@@ -417,7 +417,7 @@ namespace BigDataCollections
                 if (i != indexOfEndBlock)
                     blockEndIndex = currentBlock.Count - blockStartIndex - 1;
                 //Try to find it in current block
-                int blockFidLastIndex = currentBlock.LastIndexOf(blockEndIndex, blockEndIndex - blockStartIndex + 1, match);
+                int blockFidLastIndex = currentBlock.FindLastIndex(blockEndIndex, blockEndIndex - blockStartIndex + 1, match);
                 if (blockFidLastIndex != -1)
                     return currentStartIndex + blockFidLastIndex;
 
