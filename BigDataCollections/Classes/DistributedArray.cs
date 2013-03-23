@@ -73,9 +73,29 @@ namespace BigDataCollections
         /// </summary>
         /// <param name="collection">The collection whose elements should be added to the end of the DistributedArray(T).
         ///  The collection it self cannot benull, but it can contain elements that are null, if type T is a reference type. </param>
-        public void AddRange(IEnumerable<T> collection)
+        public void AddRange(ICollection<T> collection)
         {
-            InsertRange(Count, collection);
+            //Transfer data to the last block while it is possible
+            var lastBlock = _blocks[_blocks.Count - 1];
+            var emptySize = MaxBlockSize - lastBlock.Count;
+            var sizeToFill = 0;
+            if (emptySize != 0)
+            {
+                sizeToFill = (emptySize > collection.Count) ? collection.Count : emptySize;
+                var blocksToInsert = DivideIntoBlocks(collection, 0, sizeToFill);
+                //Transfer data
+                var block = blocksToInsert.GetEnumerator();
+                for (int i = 0; i < blocksToInsert.Count; i++)
+                {
+                    block.MoveNext();
+                    InsertRange(Count, block.Current);
+                }
+            }
+            //Transfer other data as new blocks
+            var newBlocks = DivideIntoBlocks(collection, sizeToFill);
+            _blocks.AddRange(newBlocks);
+
+            Count += newBlocks.Count;
         }
         /// <summary>
         /// Searches the entire sorted DistributedArray(T) for an element using the default comparer and returns the zero-based index of the element.
@@ -394,8 +414,8 @@ namespace BigDataCollections
         public int FindLastIndex(int index, int count, Predicate<T> match)
         {
             //Determine needed indexes
-            int commonStartIndex = index;
-            int commonEndIndex = index + count - 1;
+            int commonStartIndex = index - count + 1;
+            int commonEndIndex = index;
 
             int indexOfStartBlock, startBlockCommonStartIndex;
             int indexOfEndBlock, endBlockCommonStartIndex;
@@ -404,10 +424,11 @@ namespace BigDataCollections
             //Find index of item
             int blockStartIndex;
             int blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
-            int currentStartIndex = startBlockCommonStartIndex;
+            int currentStartIndex = endBlockCommonStartIndex + _blocks[indexOfEndBlock].Count;
             for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
             {
                 var currentBlock = _blocks[i];
+                currentStartIndex -= currentBlock.Count;
                 //Determine blockStartIndex
                 if (i == indexOfStartBlock)
                     blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
@@ -420,8 +441,6 @@ namespace BigDataCollections
                 int blockFidLastIndex = currentBlock.FindLastIndex(blockEndIndex, blockEndIndex - blockStartIndex + 1, match);
                 if (blockFidLastIndex != -1)
                     return currentStartIndex + blockFidLastIndex;
-
-                currentStartIndex += currentBlock.Count;
             }
             //If there is no needed value
             return -1;
@@ -483,7 +502,7 @@ namespace BigDataCollections
             return IndexOf(item, index, Count - index);
         }
         /// <summary>
-        /// Searches for the specified object and returns the zero-based index of the first occurrence
+        ///  Searches for the specified object and returns the zero-based index of the first occurrence
         ///  within the range of elements in the DistributedArray(T) that starts at the specified index
         ///  and contains the specified number of elements.
         /// </summary>
@@ -568,7 +587,7 @@ namespace BigDataCollections
         /// <param name="index">The zero-based index at which the new elements should be inserted. </param>
         /// <param name="collection">The collection whose elements should be inserted into the DistributedArray(T).
         ///  The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
-        public void InsertRange(int index, IEnumerable<T> collection)
+        public void InsertRange(int index, ICollection<T> collection)
         {
             int indexOfBlock;
             int blockStartIndex;
@@ -589,7 +608,7 @@ namespace BigDataCollections
             _blocks[indexOfBlock].InsertRange(index - blockStartIndex, collection);
             DivideBlockIfMaxSize(indexOfBlock);
 
-            Count += collection.Count();
+            Count += collection.Count;
         }
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the last occurrence within the entire DistributedArray(T).
@@ -625,8 +644,8 @@ namespace BigDataCollections
         public int LastIndexOf(T item, int index, int count)
         {
             //Determine needed indexes
-            int commonStartIndex = index;
-            int commonEndIndex = index + count - 1;
+            int commonStartIndex = index - count + 1;
+            int commonEndIndex = index;
 
             int indexOfStartBlock, startBlockCommonStartIndex;
             int indexOfEndBlock, endBlockCommonStartIndex;
@@ -635,10 +654,11 @@ namespace BigDataCollections
             //Find index of item
             int blockStartIndex;
             int blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
-            int currentStartIndex = startBlockCommonStartIndex;
+            int currentStartIndex = endBlockCommonStartIndex + _blocks[indexOfEndBlock].Count;
             for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
             {
                 var currentBlock = _blocks[i];
+                currentStartIndex -= currentBlock.Count;
                 //Determine blockStartIndex
                 if (i == indexOfStartBlock)
                     blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
@@ -648,11 +668,9 @@ namespace BigDataCollections
                 if (i != indexOfEndBlock)
                     blockEndIndex = currentBlock.Count - blockStartIndex - 1;
                 //Try to find it in current block
-                int blockLastIndexOf = currentBlock.LastIndexOf(item, blockEndIndex, blockEndIndex - blockStartIndex + 1);
-                if (blockLastIndexOf != -1)
-                    return currentStartIndex + blockLastIndexOf;
-
-                currentStartIndex += currentBlock.Count;
+                int blockFidLastIndex = currentBlock.LastIndexOf(item, blockEndIndex, blockEndIndex - blockStartIndex + 1);
+                if (blockFidLastIndex != -1)
+                    return currentStartIndex + blockFidLastIndex;
             }
             //If there is no needed value
             return -1;
@@ -801,31 +819,45 @@ namespace BigDataCollections
             return copy;
         }
         /// <summary>
-        /// Divide specified collection to blocks with DefaultBlockSize size.
+        /// Divide specified collection into blocks with DefaultBlockSize size.
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
         /// <param name="isCloneReferenceTypeObjects">If it true transfer to new blocks reference of copy of collection's reference type objects,
         ///  otherwise transfer reference to collection's objects.</param>
         /// <returns>Blocks constructed on the basis of a collection with DefaultBlockSize size.</returns>
-        private IEnumerable<List<T>> DivideIntoBlocks(ICollection<T> collection, bool isCloneReferenceTypeObjects = false)
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, bool isCloneReferenceTypeObjects = false)
         {
+            return DivideIntoBlocks(collection, 0, collection.Count, isCloneReferenceTypeObjects);
+        }
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, bool isCloneReferenceTypeObjects = false)
+        {
+            return DivideIntoBlocks(collection, index, collection.Count - index, isCloneReferenceTypeObjects);
+        }
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count,
+                                                      bool isCloneReferenceTypeObjects = false)
+        {
+            if (index + count > collection.Count)
+                throw new IndexOutOfRangeException();
+
             //Calculate blocks count
-            int collectionCount = collection.Count;
-            int blocksCount = collectionCount / DefaultBlockSize;
-            if (collectionCount%DefaultBlockSize != 0)
-                blocksCount++;
-            
-            var blocks = new List<T>[blocksCount];
+            int countOfBlocks = count / DefaultBlockSize;
+            if (count % DefaultBlockSize != 0)
+                countOfBlocks++;
+
+            var blocks = new List<T>[countOfBlocks];
             //Transfer data from list to new blocks
             var item = collection.GetEnumerator();
-            for (int i = 0; i < blocksCount; i++)
+            for (int i = 0; i < index; i++) //Move item to the index position
+                item.MoveNext();
+
+            for (int i = 0; i < countOfBlocks; i++)
             {
                 //Calculate curent block size
                 int currentBlockSize;
-                if (i != blocksCount - 1)
+                if (i != countOfBlocks - 1)
                     currentBlockSize = DefaultBlockSize;
                 else
-                    currentBlockSize = collectionCount - (i*DefaultBlockSize);
+                    currentBlockSize = count - (i * DefaultBlockSize);
                 //Declare new block
                 blocks[i] = new List<T>(currentBlockSize);
                 //Transfer data

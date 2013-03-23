@@ -8,7 +8,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
-            DistributedArrayTest.FindLastIndex();
+            DistributedArrayTest.AddRangeAndInsertRange();
         }
     }
 }
