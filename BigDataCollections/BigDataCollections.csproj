@@ -41,8 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\DistributedArray.cs" />
-    <Compile Include="Classes\DistributedArrayEnumerator.cs" />
+    <Compile Include="DistributedArray.cs" />
+    <Compile Include="DistributedArrayEnumerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
