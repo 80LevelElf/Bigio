@@ -37,11 +37,7 @@ namespace BigDataCollections
         /// otherwise transfer data.</param>
         public DistributedArray(ICollection<T> collection, bool isCloneReferenceTypeObjects = true)
         {
-            //Initial fields
-            _blocks = new List<List<T>>();
-            IsReadOnly = false;
-            DefaultBlockSize = 1024;
-            MaxBlockSize = 4 * 1024;
+            Initialize();
             //Add divided blocks by collection
             int collectionCount = collection.Count;
 
@@ -51,6 +47,22 @@ namespace BigDataCollections
                 _blocks.Add(new List<T>());
 
             Count = collectionCount;
+        }
+        /// <summary>
+        /// Initializes a new instance of the DistributedArray(T) class that is empty and has the specified initial capacity.
+        /// </summary>
+        /// <param name="capacity">The number of elements that the new list can initially store.</param>
+        public DistributedArray(int capacity)
+        {
+            Initialize();
+
+            int countOfBlocks = capacity/DefaultBlockSize + (capacity%DefaultBlockSize != 0 ? 1 : 0);
+            for (int i = 0; i < countOfBlocks; i++)
+            {
+                _blocks.Add(new List<T>(DefaultBlockSize));
+            }
+
+            Count = capacity;
         }
         /// <summary>
         /// Add an object to the end of last block of the DistributedArray(T).
@@ -939,6 +951,16 @@ namespace BigDataCollections
         private bool IsValidIndex(int index)
         {
             return !(index < 0 || index >= Count);
+        }
+        /// <summary>
+        /// Initialize fields of object in time of creating.
+        /// </summary>
+        private void Initialize()
+        {
+            _blocks = new List<List<T>>();
+            IsReadOnly = false;
+            DefaultBlockSize = 1024;
+            MaxBlockSize = 4 * 1024;
         }
 
         //Debug functions
