@@ -4,7 +4,7 @@ using System;
 using BigDataCollections;
 using NUnit.Framework;
 
-namespace UnitTest
+namespace UnitTests
 {
     [TestFixture]
     public static class DistributedArrayTest

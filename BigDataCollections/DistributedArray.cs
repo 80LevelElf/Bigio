@@ -35,7 +35,7 @@ namespace BigDataCollections
         /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
         /// <param name="isCloneReferenceTypeObjects">If param is true, transfer copy of collection data to DistributedArray(T),
         /// otherwise transfer data.</param>
-        public DistributedArray(ICollection<T> collection, bool isCloneReferenceTypeObjects = true)
+        public DistributedArray(ICollection<T> collection, bool isCloneReferenceTypeObjects = false)
         {
             Initialize();
             //Add divided blocks by collection

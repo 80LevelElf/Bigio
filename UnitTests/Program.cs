@@ -1,10 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using BigDataCollections;
-using UnitTest;
+using UnitTests;
 
-namespace UnitTest
+namespace UnitTests
 {
+    class Some
+    {
+        public Some(int v)
+        {
+            Value = v;
+        }
+        public int Value;
+    }
     class Program
     {
         static void Main(string[] args)
