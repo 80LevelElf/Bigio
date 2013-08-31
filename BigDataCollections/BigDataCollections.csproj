@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="DistributedArray.cs" />
     <Compile Include="DistributedArrayEnumerator.cs" />
+    <Compile Include="DistributedQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

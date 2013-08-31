@@ -17,6 +17,7 @@ namespace UnitTests
     {
         static void Main(string[] args)
         {
+            var list = new DistributedArray<int>(10000){1, 2, 3, 4};
             Console.ReadKey();
         }
     }

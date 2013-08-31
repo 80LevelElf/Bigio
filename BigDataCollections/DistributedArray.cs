@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 
 namespace BigDataCollections
 {
@@ -25,33 +24,33 @@ namespace BigDataCollections
         /// </summary>
         public DistributedArray() : this(new Collection<T>())
         {
-            
         }
         /// <summary>
-        /// Create a new instance of the DistributedArray(T) class that contains elements
-        /// from collection.
+        /// Create a new instance of the DistributedArray(T) class using elements from specified collection.
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
         /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
-        /// <param name="isCloneReferenceTypeObjects">If param is true, transfer copy of collection data to DistributedArray(T),
-        /// otherwise transfer data.</param>
-        public DistributedArray(ICollection<T> collection, bool isCloneReferenceTypeObjects = false)
+        public DistributedArray(ICollection<T> collection)
         {
             Initialize();
             //Add divided blocks by collection
             int collectionCount = collection.Count;
 
             if (collectionCount != 0)
-                _blocks.AddRange(DivideIntoBlocks(collection, isCloneReferenceTypeObjects));
+            {
+                _blocks.AddRange(DivideIntoBlocks(collection));
+            }
             else
+            {
                 _blocks.Add(new List<T>());
+            }
 
             Count = collectionCount;
         }
         /// <summary>
         /// Initializes a new instance of the DistributedArray(T) class that is empty and has the specified initial capacity.
         /// </summary>
-        /// <param name="capacity">The number of elements that the new list can initially store.</param>
+        /// <param name="capacity">The number of elements that the new array can initially store.</param>
         public DistributedArray(int capacity)
         {
             Initialize();
@@ -65,28 +64,33 @@ namespace BigDataCollections
             Count = capacity;
         }
         /// <summary>
-        /// Add an object to the end of last block of the DistributedArray(T).
+        /// Add an object to the end of last block of the DistributedArray(T) or if there is needed - create new block.
         /// </summary>
         public void Add(T value)
         {            
             int blockIndex = _blocks.Count - 1;
             if (_blocks[blockIndex].Count >= MaxBlockSize)
             {
-                //Add new block to the end
                 _blocks.Add(new List<T>(DefaultBlockSize));
                 blockIndex++;
             }
-            //Add to the last array
+
             _blocks[blockIndex].Add(value);
             Count++;
         }
         /// <summary>
-        /// Adds the elements of the specified collection to the end of the DistributedArray(T).
+        /// Adds the elements of the specified collection to the end of the last block of DistributedArray(T)
+        /// or if there is needed - create another block.
         /// </summary>
         /// <param name="collection">The collection whose elements should be added to the end of the DistributedArray(T).
         ///  The collection it self cannot benull, but it can contain elements that are null, if type T is a reference type. </param>
         public void AddRange(ICollection<T> collection)
         {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
+
             //Transfer data to the last block while it is possible
             var lastBlock = _blocks[_blocks.Count - 1];
             var emptySize = MaxBlockSize - lastBlock.Count;
@@ -108,6 +112,14 @@ namespace BigDataCollections
             _blocks.AddRange(newBlocks);
 
             Count += newBlocks.Count;
+        }
+        /// <summary>
+        /// Returns a read-only wrapper based on current DistributedArray(T).
+        /// </summary>
+        /// <returns>A ReadOnlyCollection(T) that acts as a read-only wrapper around the current DistributedArray(T).</returns>
+        public ReadOnlyCollection<T> AsReadOnly()
+        {
+            return new ReadOnlyCollection<T>(this);
         }
         /// <summary>
         /// Searches the entire sorted DistributedArray(T) for an element using the default comparer and returns the zero-based index of the element.
@@ -145,14 +157,15 @@ namespace BigDataCollections
         /// <returns></returns>
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
-            //Check for exceptions
-            if (index < 0 || count < 0)
+            if (!IsValidRange(index, count))
+            {
                 throw new ArgumentOutOfRangeException();
-            if (index + count > Count)
-                throw new ArgumentException();
+            }
 
             if (comparer == null)
+            {
                 comparer = Comparer<T>.Default;
+            }
 
             int start = index;
             int end = index + count;
@@ -178,7 +191,9 @@ namespace BigDataCollections
             }
             //If there is no such item specify the location where the element should be
             if (end == -1) // if we need first element
+            {
                 return -1;
+            }
 
             var enumerator = GetEnumerator();
             ((DistributedArrayEnumerator)enumerator).MoveToIndexBefore(end + 1); // Move to start position
@@ -191,20 +206,40 @@ namespace BigDataCollections
             return ~(end + counter);
         }
         /// <summary>
-        /// Remove references to all data.
+        /// Removes all elements from the DistributedArray(T). If there is too many elements
+        /// (at this moment if count of elements is more or equal than 64*MaxBlockSize) -
+        /// force call of garbadge collector to delete all generations of garbage.
         /// </summary>
+        /// <remarks>(!)If your change this documentation - please, dont fogret to change it
+        /// in DistributedQueue(T) and DistributedStack(T) classes. </remarks>
         public void Clear()
+        {
+            Clear(Count >= 64*MaxBlockSize);
+        }
+        /// <summary>
+        /// Removes all elements from the DistributedArray(T).
+        /// </summary>
+        /// <param name="isImmediately">If true - force call of garbadge collector
+        /// to delete all generations of garbage, otherwise - just remove links to the data
+        /// and wait whan garbadge collector remove it independently.</param>
+        /// <remarks>(!)If your change this documentation - please, dont fogret to change it
+        /// in DistributedQueue(T) and DistributedStack(T) classes. </remarks>
+        public void Clear(bool isImmediately)
         {
             //Create new block array with empty first block
             _blocks = new List<List<T>> { new List<T>(DefaultBlockSize) };
 
             Count = 0;
+
+            if (isImmediately)
+            {
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+            }
         }
         /// <summary>
         /// Remove true if DistributedArray(T) contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Data to be checked.</param>
-        /// <returns></returns>
         public bool Contains(T item)
         {
             return IndexOf(item) != -1;
@@ -217,6 +252,11 @@ namespace BigDataCollections
         /// <returns>A DistributedArray(T) of the target type containing the converted elements from the current DistributedArray(T).</returns>
         public DistributedArray<TOutput> ConvertAll<TOutput>(Converter<T, TOutput> converter)
         {
+            if (converter == null)
+            {
+                throw new ArgumentNullException("converter");
+            }
+
             var result = new DistributedArray<TOutput>();
             //Convert all blocks
             foreach (var block in _blocks)
@@ -255,17 +295,19 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to copy.</param>
         public void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
-            //Check for exceptions
-            if (index < 0 || arrayIndex < 0 || count < 0)
+            if (!IsValidIndex(index) || !IsValidRange(array, arrayIndex, count))
+            {
                 throw new ArgumentOutOfRangeException();
-            if (index >= Count || Count - index > count)
-                throw new ArgumentException();
+            }
 
             var enumerator = GetEnumerator();
             ((DistributedArrayEnumerator)enumerator).MoveToIndexBefore(index);
+
             //Transfer data
             for (int i = arrayIndex; i < arrayIndex + count && enumerator.MoveNext(); i++)
+            {
                 array[i] = enumerator.Current;
+            }
         }
         /// <summary>
         /// Determines whether the DistributedArray(T) contains elements that match the conditions defined by the specified predicate.
@@ -285,10 +327,17 @@ namespace BigDataCollections
         ///  otherwise, the default value for type T. </returns>
         public T Find(Predicate<T> match)
         {
+            if (match == null)
+            {
+                throw new ArgumentNullException("match");
+            }
+
             foreach (var item in this)
             {
                 if (match.Invoke(item))
+                {
                     return item;
+                }
             }
             //If there is not needed item
             return default(T);
@@ -301,11 +350,18 @@ namespace BigDataCollections
         ///  if found; otherwise, an empty DistributedArray(T).</returns>
         public DistributedArray<T> FindAll(Predicate<T> match)
         {
+            if (match == null)
+            {
+                throw new ArgumentNullException("match");
+            }
+
             var result = new DistributedArray<T>();
             foreach (var item in this)
             {
                 if (match.Invoke(item))
+                {
                     result.Add(item);
+                }
             }
             return result;
         }
@@ -343,6 +399,12 @@ namespace BigDataCollections
         ///  if found; otherwise, –1. </returns>
         public int FindIndex(int index, int count, Predicate<T> match)
         {
+            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            if (match == null)
+            {
+                throw new ArgumentNullException("match");
+            }
+
             //Determine needed indexes
             int commonStartIndex = index;
             int commonEndIndex = index + count - 1;
@@ -360,16 +422,24 @@ namespace BigDataCollections
                 var currentBlock = _blocks[i];
                 //Determine blockStartIndex
                 if (i != indexOfStartBlock)
+                {
                     blockStartIndex = 0;
+                }
                 //Determine blockEndIndex
                 if (i == indexOfEndBlock)
+                {
                     blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
+                }
                 else
+                {
                     blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                }
                 //Try to find it in current block
                 int blockFindIndex = currentBlock.FindIndex(blockStartIndex, blockEndIndex - blockStartIndex + 1, match);
                 if (blockFindIndex != -1)
+                {
                     return currentStartIndex + blockFindIndex;
+                }
 
                 currentStartIndex += currentBlock.Count;
             }
@@ -388,8 +458,12 @@ namespace BigDataCollections
             {
                 var currentBlock = _blocks[i];
                 for (int j = currentBlock.Count - 1; j != 0; j--)
+                {
                     if (match.Invoke(currentBlock[j]))
+                    {
                         return currentBlock[j];
+                    }
+                }
             }
             //If there is no such item
             return default(T);
@@ -425,6 +499,12 @@ namespace BigDataCollections
         /// <returns></returns>
         public int FindLastIndex(int index, int count, Predicate<T> match)
         {
+            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            if (match == null)
+            {
+                throw new ArgumentOutOfRangeException("match");
+            }
+
             //Determine needed indexes
             int commonStartIndex = index - count + 1;
             int commonEndIndex = index;
@@ -443,16 +523,24 @@ namespace BigDataCollections
                 currentStartIndex -= currentBlock.Count;
                 //Determine blockStartIndex
                 if (i == indexOfStartBlock)
+                {
                     blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
+                }
                 else
+                {
                     blockStartIndex = 0;
+                }
                 //Determine blockEndIndex
                 if (i != indexOfEndBlock)
+                {
                     blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                }
                 //Try to find it in current block
                 int blockFidLastIndex = currentBlock.FindLastIndex(blockEndIndex, blockEndIndex - blockStartIndex + 1, match);
                 if (blockFidLastIndex != -1)
+                {
                     return currentStartIndex + blockFidLastIndex;
+                }
             }
             //If there is no needed value
             return -1;
@@ -477,7 +565,9 @@ namespace BigDataCollections
         public DistributedArray<T> GetRange(int index, int count)
         {
             if (!IsValidRange(index, count))
+            {
                 throw new ArgumentOutOfRangeException();
+            }
 
             var enumerator = GetEnumerator();
             ((DistributedArrayEnumerator) enumerator).MoveToIndexBefore(index);
@@ -525,6 +615,7 @@ namespace BigDataCollections
         ///  in the DistributedArray(T) that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
         public int IndexOf(T item, int index, int count)
         {
+            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
             //Determine needed indexes
             int commonStartIndex = index;
             int commonEndIndex = index + count - 1;
@@ -542,16 +633,24 @@ namespace BigDataCollections
                 var currentBlock = _blocks[i];
                 //Determine blockStartIndex
                 if (i != indexOfStartBlock)
+                {
                     blockStartIndex = 0;
+                }
                 //Determine blockEndIndex
                 if (i == indexOfEndBlock)
+                {
                     blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
+                }
                 else
+                {
                     blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                }
                 //Try to find it in current block
                 int blockIndexOf = currentBlock.IndexOf(item, blockStartIndex, blockEndIndex - blockStartIndex + 1);
                 if (blockIndexOf != -1)
+                {
                     return currentStartIndex + blockIndexOf;
+                }
 
                 currentStartIndex += currentBlock.Count;
             }
@@ -565,7 +664,8 @@ namespace BigDataCollections
         /// <param name="item">The data to be placed.</param>
         public void Insert(int index, T item)
         {
-            //If there is add to the end
+            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+
             if (index == Count)
             {
                 Add(item);
@@ -580,15 +680,21 @@ namespace BigDataCollections
                 indexOfBlock = 0;
             }
             else
+            {
                 IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex);
+            }
             //Insert
             int commonIndexInBlock = index - blockStartIndex;
             //If there is start of block - try to add item to last block(it is faster)
             if (commonIndexInBlock == 0 && indexOfBlock != 0)
+            {
                 _blocks[--indexOfBlock].Add(item);
+            }
             //Otherwise insert in current block
             else
+            {
                 _blocks[indexOfBlock].Insert(commonIndexInBlock, item);
+            }
 
             DivideBlockIfMaxSize(indexOfBlock);
             Count++;
@@ -601,6 +707,8 @@ namespace BigDataCollections
         ///  The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
         public void InsertRange(int index, ICollection<T> collection)
         {
+            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+
             int indexOfBlock;
             int blockStartIndex;
             //Determine indexOfBlock and blockStartIndex
@@ -615,7 +723,9 @@ namespace BigDataCollections
                 blockStartIndex = 0;
             }
             else
+            {
                 IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex); // Default case
+            }
             //Insert
             _blocks[indexOfBlock].InsertRange(index - blockStartIndex, collection);
             DivideBlockIfMaxSize(indexOfBlock);
@@ -655,6 +765,7 @@ namespace BigDataCollections
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
+            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
             //Determine needed indexes
             int commonStartIndex = index - count + 1;
             int commonEndIndex = index;
@@ -705,7 +816,9 @@ namespace BigDataCollections
                     block.Remove(item);
                     //If there is empty block - remove it
                     if (block.Count == 0)
+                    {
                         RemoveBlock(i);
+                    }
 
                     Count--;
                     return true;
@@ -720,7 +833,7 @@ namespace BigDataCollections
         /// <param name="index">The zero-based index of the element to remove.</param>
         public void RemoveAt(int index)
         {
-            //Check for exceptions in IndexOfBlockAndBlockStartCommonIndex().
+            //Validate of index check in IndexOfBlockAndBlockStartCommonIndex
             //Calculate position of this element
             int indexOfBlock;
             int blockStartIndex;
@@ -729,7 +842,9 @@ namespace BigDataCollections
             _blocks[indexOfBlock].RemoveAt(index - blockStartIndex);
             //If there is empty block remove it
             if (_blocks[indexOfBlock].Count == 0)
+            {
                 RemoveBlock(indexOfBlock);
+            }
             Count--;
         }
         /// <summary>
@@ -739,7 +854,7 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to remove.</param>
         public void RemoveRange(int index, int count)
         {
-            //Check for exceptions in IndexOfBlockAndBlockStartCommonIndex()
+            //Validate of index check in IndexOfBlockAndBlockStartCommonIndex
             //Calculate needed indexes
             int indexOfStartBlock, startBlockStartCommonIndex;
             int indexOfEndBlock, endBlockStartCommonIndex;
@@ -753,17 +868,27 @@ namespace BigDataCollections
                 var block = _blocks[i];
                 //Determine currentStartIndex and currentCount
                 if (i == indexOfStartBlock)
+                {
                     currentStartIndex = index - startBlockStartCommonIndex;
+                }
                 else
+                {
                     currentStartIndex = 0;
+                }
                 if (i == indexOfEndBlock)
+                {
                     currentCount = index + count - currentStartIndex - endBlockStartCommonIndex;
+                }
                 else
+                {
                     currentCount = block.Count;
+                }
                 //Remove data
                 block.RemoveRange(currentStartIndex, currentCount);
                 if (block.Count == 0)
+                {
                     RemoveBlock(i);
+                }
             }
         }
         /// <summary>
@@ -793,7 +918,7 @@ namespace BigDataCollections
             return array;
         }
         /// <summary>
-        /// Sets the capacity of every block to the actual number of elements in the it, if that number is less than a threshold value.
+        /// Sets the capacity of every block to the actual number of elements in it.
         /// </summary>
         public void TrimExcess()
         {
@@ -803,58 +928,32 @@ namespace BigDataCollections
             }
         }
 
-        //Support functions
-        /// <summary>
-        /// Get full copy of object with all fields.
-        /// </summary>
-        /// <typeparam name="T1">Type of cloned object.</typeparam>
-        /// <param name="obj">The object to be cloned.</param>
-        /// <returns>Full copy of specified object.</returns>
-        public static T1 GetObjectClone<T1>(T1 obj)
-        {
-            if (obj is ValueType)
-                return obj;
-            //If it is possible - clone object with Clone() function
-            var cloneable = obj as ICloneable;
-            if (cloneable != null)
-                return (T1) cloneable.Clone();
-            //If there is not possible - find MemberwiseClone in type data
-            MethodInfo memberwiseClone = obj.GetType().GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
-            //Get shallow copy(without fields)
-            var copy = (T1)memberwiseClone.Invoke(obj, null);
-            //Get copy of fields
-            foreach (var f in typeof(T1).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
-            {
-                object original = f.GetValue(obj);
-                f.SetValue(copy, GetObjectClone(original));
-            }
-            return copy;
-        }
         /// <summary>
         /// Divide specified collection into blocks with DefaultBlockSize size.
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="isCloneReferenceTypeObjects">If it true transfer to new blocks reference of copy of collection's reference type objects,
-        ///  otherwise transfer reference to collection's objects.</param>
         /// <returns>Blocks constructed on the basis of a collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, bool isCloneReferenceTypeObjects = false)
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
         {
-            return DivideIntoBlocks(collection, 0, collection.Count, isCloneReferenceTypeObjects);
+            return DivideIntoBlocks(collection, 0, collection.Count);
         }
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, bool isCloneReferenceTypeObjects = false)
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index)
         {
-            return DivideIntoBlocks(collection, index, collection.Count - index, isCloneReferenceTypeObjects);
+            return DivideIntoBlocks(collection, index, collection.Count - index);
         }
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count,
-                                                      bool isCloneReferenceTypeObjects = false)
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count)
         {
             if (index + count > collection.Count)
+            {
                 throw new IndexOutOfRangeException();
+            }
 
             //Calculate blocks count
             int countOfBlocks = count / DefaultBlockSize;
-            if (count % DefaultBlockSize != 0)
+            if (count%DefaultBlockSize != 0)
+            {
                 countOfBlocks++;
+            }
 
             var blocks = new List<T>[countOfBlocks];
             //Transfer data from list to new blocks
@@ -867,9 +966,13 @@ namespace BigDataCollections
                 //Calculate curent block size
                 int currentBlockSize;
                 if (i != countOfBlocks - 1)
+                {
                     currentBlockSize = DefaultBlockSize;
+                }
                 else
-                    currentBlockSize = count - (i * DefaultBlockSize);
+                {
+                    currentBlockSize = count - (i*DefaultBlockSize);
+                }
                 //Declare new block
                 blocks[i] = new List<T>(currentBlockSize);
                 //Transfer data
@@ -877,7 +980,7 @@ namespace BigDataCollections
                 {
                     item.MoveNext();
                     //Insert data
-                    T insertion = isCloneReferenceTypeObjects ? GetObjectClone(item.Current) : item.Current;
+                    T insertion = item.Current;
                     blocks[i].Add(insertion);
                 }
             }
@@ -893,7 +996,9 @@ namespace BigDataCollections
         private void IndexOfBlockAndBlockStartCommonIndex(int index, out int indexOfBlock, out int blockStartCommonIndex)
         {
             if (!IsValidIndex(index))
+            {
                 throw new ArgumentOutOfRangeException();
+            }
 
             //Find needed block
             blockStartCommonIndex = 0;
@@ -934,7 +1039,9 @@ namespace BigDataCollections
             _blocks.RemoveAt(indexOfBlock);
             //If there is no any blocks - add empty block
             if (_blocks.Count == 0)
+            {
                 _blocks.Add(new List<T>(DefaultBlockSize));
+            }
         }
         /// <summary>
         /// Check range to valid in current DistributedArray(T).
@@ -942,7 +1049,11 @@ namespace BigDataCollections
         /// <returns>Return true of range is valid, otherwise return false.</returns>
         private bool IsValidRange(int index, int count)
         {
-            return !(index < 0 || index >= Count || count < 0 || index + count > Count);
+            return IsValidRange(this, index, count);
+        }
+        private bool IsValidRange(ICollection<T> collection, int index, int count)
+        {
+            return !(index < 0 || index >= collection.Count || count < 0 || index + count > collection.Count);
         }
         /// <summary>
         /// Check index to valid in current DistributedArray(T).
@@ -950,7 +1061,11 @@ namespace BigDataCollections
         /// <returns>True if index is valid, otherwise return false.</returns>
         private bool IsValidIndex(int index)
         {
-            return !(index < 0 || index >= Count);
+            return IsValidIndex(this, index);
+        }
+        private bool IsValidIndex(ICollection<T> collection, int index)
+        {
+            return !(index < 0 || index >= collection.Count); 
         }
         /// <summary>
         /// Initialize fields of object in time of creating.

@@ -15,23 +15,33 @@ namespace UnitTests
             var distributedArray = new DistributedArray<int>();
             var count = distributedArray.MaxBlockSize*2;
 
-            for (int i = count / 4; i < count/2; i++)
+            for (int i = count/4; i < count/2; i++)
+            {
                 distributedArray.Add(i);
-            for (int i = 0; i < count / 4; i++)
+            }
+            for (int i = 0; i < count/4; i++)
+            {
                 distributedArray.Insert(i, i);
-            for (int i=count/2; i < count*3/4; i++)
+            }
+            for (int i = count/2; i < count*3/4; i++)
+            {
                 distributedArray.Add(i);
+            }
             for (int i = count*3/4; i < count; i++)
+            {
                 distributedArray.Insert(i, i);
+            }
 
             //DA must be : 0,1,2,3...,n-1,n
             bool isOk = true;
-            for(int i=0;i<distributedArray.Count - 1;i++)
+            for (int i = 0; i < distributedArray.Count - 1; i++)
+            {
                 if (distributedArray[i] + 1 != distributedArray[i + 1])
                 {
                     isOk = false;
                     break;
                 }
+            }
             Assert.IsTrue(isOk);
         }
         [Test]
@@ -47,29 +57,39 @@ namespace UnitTests
 
             //1
             for (int i = count/4; i < count/2; i++)
-                array1[i - count / 4] = i;
+            {
+                array1[i - count/4] = i;
+            }
             distributedArray.AddRange(array1);
             //2
             for (int i = 0; i < count/4; i++)
+            {
                 array2[i] = i;
+            }
             distributedArray.InsertRange(0, array2);
             //3
-            for (int i = count / 2; i < count * 3 / 4; i++)
-                array3[i - count / 2] = i;
+            for (int i = count/2; i < count*3/4; i++)
+            {
+                array3[i - count/2] = i;
+            }
             distributedArray.AddRange(array3);
             //4
-            for (int i = count * 3 / 4; i < count; i++)
-                array4[i - count * 3 / 4] = i;
+            for (int i = count*3/4; i < count; i++)
+            {
+                array4[i - count*3/4] = i;
+            }
             distributedArray.InsertRange(distributedArray.Count, array4);
 
             //DA must be : 0,1,2,3...,n-1,n
             bool isOk = true;
             for (int i = 0; i < distributedArray.Count - 1; i++)
+            {
                 if (distributedArray[i] + 1 != distributedArray[i + 1])
                 {
                     isOk = false;
                     break;
                 }
+            }
             Assert.IsTrue(isOk);
         }
         [Test]
@@ -77,7 +97,9 @@ namespace UnitTests
         {
             var distributedArray = new DistributedArray<int>();
             for (int i = 0; i < 512; i += 2)
+            {
                 distributedArray.Add(i);
+            }
 
             Assert.AreEqual(distributedArray.BinarySearch(128), 64);
             Assert.AreEqual(~distributedArray.BinarySearch(0, 64, 130, Comparer<int>.Default), 64);
@@ -112,10 +134,14 @@ namespace UnitTests
         public static void FindIndex()
         {
             var distributedArray = new DistributedArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++)
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            {
                 distributedArray.Add(i);
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++) //For mistakes with duplicate elements
+            }
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            {
                 distributedArray.Add(i);
+            }
 
             //If MaxBlockSize is change, we need to change this code
             Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
@@ -129,10 +155,14 @@ namespace UnitTests
         public static void FindLastIndex()
         {
             var distributedArray = new DistributedArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++)
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            {
                 distributedArray.Add(i);
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++) //For mistakes with duplicate elements
+            }
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            {
                 distributedArray.Add(i);
+            }
 
             //If MaxBlockSize is change, we need to change this code
             Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
@@ -146,10 +176,14 @@ namespace UnitTests
         public static void IndexOf()
         {
             var distributedArray = new DistributedArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++)
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            {
                 distributedArray.Add(i);
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++) //For mistakes with duplicate elements
+            }
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            {
                 distributedArray.Add(i);
+            }
 
             //If MaxBlockSize is change, we need to change this code
             Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
@@ -163,10 +197,14 @@ namespace UnitTests
         public static void LastIndexOf()
         {
             var distributedArray = new DistributedArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++)
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            {
                 distributedArray.Add(i);
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++) //For mistakes with duplicate elements
+            }
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            {
                 distributedArray.Add(i);
+            }
 
             //If MaxBlockSize is change, we need to change this code
             Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
