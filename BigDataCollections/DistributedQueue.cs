@@ -142,6 +142,39 @@ namespace BigDataCollections
         }
 
         //Data
+        /// <summary>
+        /// Default size of one DistributedQueue(T) block. 
+        /// Because of the way memory allocation is most effective that it is a power of 2.
+        /// </summary>
+        public int DefaultBlockSize
+        {
+            get
+            {
+                return _data.DefaultBlockSize;
+            }
+            set
+            {
+                _data.DefaultBlockSize = value;
+            }
+        }
+        /// <summary>
+        /// The size of any block never will be more than this number.
+        /// Because of the way memory allocation is most effective that it is a power of 2.
+        /// </summary>
+        public int MaxBlockSize
+        {
+            get
+            {
+                return _data.MaxBlockSize;
+            }
+            set
+            {
+                _data.MaxBlockSize = value;
+            }
+        }
+        /// <summary>
+        /// Get the number of elements actually contained in the DistributedQueue(T).
+        /// </summary>
         public int Count
         {
             get
@@ -149,7 +182,9 @@ namespace BigDataCollections
                 return _data.Count;
             }
         }
-
+        /// <summary>
+        /// Gets a value indicating whether the DistributedQueue(T) is read-only.
+        /// </summary>
         public bool IsReadOnly
         {
             get
@@ -157,6 +192,7 @@ namespace BigDataCollections
                 return _data.IsReadOnly;
             }
         }
+
         private readonly DistributedArray<T> _data;
     }
 }

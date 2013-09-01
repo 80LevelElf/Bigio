@@ -1128,12 +1128,46 @@ namespace BigDataCollections
         /// Default size of one DistributedArray(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
         /// </summary>
-        public int DefaultBlockSize { get; set; }
+        public int DefaultBlockSize
+        {
+            get
+            {
+                return _defaultBlockSize;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+                if (value > MaxBlockSize)
+                {
+                    throw new ArgumentOutOfRangeException("value", "DefaultBlockSize cant be more than MaxBlockSize");
+                }
+
+                _defaultBlockSize = value;
+            }
+        }
         /// <summary>
-        /// The size of any block will never be more than this number.
+        /// The size of any block never will be more than this number.
         /// Because of the way memory allocation is most effective that it is a power of 2.
         /// </summary>
-        public int MaxBlockSize { get; set; }
+        public int MaxBlockSize
+        {
+            get
+            {
+                return _maxBlockSize;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                _maxBlockSize = value;
+            }
+        }
         /// <summary>
         /// Get the number of elements actually contained in the DistributedArray(T).
         /// </summary>
@@ -1144,5 +1178,7 @@ namespace BigDataCollections
         public bool IsReadOnly { get; private set; }
 
         private List<List<T>> _blocks;
+        private int _defaultBlockSize;
+        private int _maxBlockSize;
     }
 }
