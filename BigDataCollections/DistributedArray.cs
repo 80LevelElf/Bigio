@@ -48,22 +48,6 @@ namespace BigDataCollections
             Count = collectionCount;
         }
         /// <summary>
-        /// Initializes a new instance of the DistributedArray(T) class that is empty and has the specified initial capacity.
-        /// </summary>
-        /// <param name="capacity">The number of elements that the new array can initially store.</param>
-        public DistributedArray(int capacity)
-        {
-            Initialize();
-
-            int countOfBlocks = capacity/DefaultBlockSize + (capacity%DefaultBlockSize != 0 ? 1 : 0);
-            for (int i = 0; i < countOfBlocks; i++)
-            {
-                _blocks.Add(new List<T>(DefaultBlockSize));
-            }
-
-            Count = capacity;
-        }
-        /// <summary>
         /// Add an object to the end of last block of the DistributedArray(T) or if there is needed - create new block.
         /// </summary>
         public void Add(T value)

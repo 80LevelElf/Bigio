@@ -23,14 +23,6 @@ namespace BigDataCollections
             _data = new DistributedArray<T>(collection);
         }
         /// <summary>
-        /// Create new epmty instance of DistributedQueue(T) based on DistributedArray(T) with specified capacity. 
-        /// </summary>
-        /// <param name="capacity">The number of elements that the new queue can initially store.</param>
-        public DistributedQueue(int capacity)
-        {
-            _data = new DistributedArray<T>(capacity);
-        }
-        /// <summary>
         /// Removes all elements from the DistributedQueue(T). If there is too many elements
         /// (at this moment if count of elements is more or equal than 64*MaxBlockSize) -
         /// force call of garbadge collector to delete all generations of garbage.

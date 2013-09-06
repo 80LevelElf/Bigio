@@ -33,16 +33,10 @@ namespace UnitTests
             }
 
             //DA must be : 0,1,2,3...,n-1,n
-            bool isOk = true;
             for (int i = 0; i < distributedArray.Count - 1; i++)
             {
-                if (distributedArray[i] + 1 != distributedArray[i + 1])
-                {
-                    isOk = false;
-                    break;
-                }
+                Assert.IsTrue(distributedArray[i] + 1 == distributedArray[i + 1]);
             }
-            Assert.IsTrue(isOk);
         }
         [Test]
         public static void AddRangeAndInsertRange()
@@ -81,16 +75,10 @@ namespace UnitTests
             distributedArray.InsertRange(distributedArray.Count, array4);
 
             //DA must be : 0,1,2,3...,n-1,n
-            bool isOk = true;
             for (int i = 0; i < distributedArray.Count - 1; i++)
             {
-                if (distributedArray[i] + 1 != distributedArray[i + 1])
-                {
-                    isOk = false;
-                    break;
-                }
+                Assert.IsTrue(distributedArray[i] + 1 == distributedArray[i + 1]);
             }
-            Assert.IsTrue(isOk);
         }
         [Test]
         public static void BinarySearch()
@@ -127,8 +115,7 @@ namespace UnitTests
 
             var resultArray = new[] {1, 2, 3, 1, 2, 3, 2, 3};
             //Arr must be equal resultArray
-            var isOk = !arr.Where((t, i) => t != resultArray[i]).Any();
-            Assert.IsTrue(isOk);
+            Assert.IsFalse(arr.Where((t, i) => t != resultArray[i]).Any());
         }
         [Test]
         public static void FindIndex()
@@ -146,10 +133,10 @@ namespace UnitTests
             //If MaxBlockSize is change, we need to change this code
             Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
 
-            Assert.AreEqual(distributedArray.FindIndex(Is5000), 5000);
-            Assert.AreEqual(distributedArray.FindIndex(0, 4999, Is5000), -1);
-            Assert.AreEqual(distributedArray.FindIndex(Is128000), -1);
-            Assert.AreEqual(distributedArray.FindIndex(5001, 1000, Is5000), -1);
+            Assert.AreEqual(distributedArray.FindIndex(IsEqual5000), 5000);
+            Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
+            Assert.AreEqual(distributedArray.FindIndex(IsEqual128000), -1);
+            Assert.AreEqual(distributedArray.FindIndex(5001, 1000, IsEqual5000), -1);
         }
         [Test]
         public static void FindLastIndex()
@@ -167,10 +154,28 @@ namespace UnitTests
             //If MaxBlockSize is change, we need to change this code
             Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
 
-            Assert.AreEqual(distributedArray.FindLastIndex(Is5000), 13192);
-            Assert.AreEqual(distributedArray.FindLastIndex(4999, 5000, Is5000), -1);
-            Assert.AreEqual(distributedArray.FindLastIndex(Is128000), -1);
-            Assert.AreEqual(distributedArray.FindLastIndex(5001, 1000, Is5000), 5000);
+            Assert.AreEqual(distributedArray.FindLastIndex(IsEqual5000), 13192);
+            Assert.AreEqual(distributedArray.FindLastIndex(4999, 5000, IsEqual5000), -1);
+            Assert.AreEqual(distributedArray.FindLastIndex(IsEqual128000), -1);
+            Assert.AreEqual(distributedArray.FindLastIndex(5001, 1000, IsEqual5000), 5000);
+        }
+        [Test]
+        public static void Find()
+        {
+            var distributeArray = new DistributedArray<int> {1, 2, 3, 4};
+            var a = distributeArray.Find(IsEqual0);
+            Assert.IsTrue(distributeArray.Find(IsEqual0) == 0);
+            Assert.IsTrue(distributeArray.Find(IsEqual2) == 2);
+        }
+        [Test]
+        public static void FindAll()
+        {
+            var distributedArray = new DistributedArray<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+            distributedArray = distributedArray.FindAll(IsMultipleOf2);
+            var resultArray = new DistributedArray<int> {2, 4, 6, 8, 10};
+
+            //distributedArray must be equal resultArray
+            Assert.IsFalse(distributedArray.Where((t, i) => t != resultArray[i]).Any());
         }
         [Test]
         public static void IndexOf()
@@ -214,15 +219,69 @@ namespace UnitTests
             Assert.AreEqual(distributedArray.LastIndexOf(128000), -1);
             Assert.AreEqual(distributedArray.LastIndexOf(5000, 5001, 1000), 5000);
         }
+        [Test]
+        public static void GetEnumerator()
+        {
+            const int size = 5000;
+            var array = new DistributedArray<int>();
+            for (int i = 0; i < size; i++)
+            {
+                array.Add(i);
+            }
+
+            var newArray = new DistributedArray<int>();
+            foreach (var i in array)
+            {
+                newArray.Add(i);
+            }
+
+            Assert.IsTrue(array.Count == newArray.Count);
+
+            //array must be equal newArray
+            Assert.IsFalse(array.Where((t, i) => t != newArray[i]).Any());
+        }
+        [Test]
+        public static void GetRange()
+        {
+            const int size = 5000;
+            const int rangeCount = 1000;
+            var array = new DistributedArray<int>();
+            //Fill array
+            for (int i = 0; i < size; i++)
+            {
+                array.Add(i);
+            }
+
+            for (int i = 0; i < size/rangeCount; i++)
+            {
+                var range = array.GetRange(i*rangeCount, rangeCount);
+                for (int j = 0; j < rangeCount; j++)
+                {
+                    Assert.IsTrue(range[j] == i*rangeCount + j);
+                }
+            }
+        }
 
         //Support functions
-        private static bool Is5000(int a)
+        private static bool IsEqual5000(int number)
         {
-            return a == 5000;
+            return number == 5000;
         }
-        private static bool Is128000(int a)
+        private static bool IsEqual128000(int number)
         {
-            return a == 128000;
+            return number == 128000;
+        }
+        private static bool IsEqual0(int number)
+        {
+            return number == 0;
+        }
+        private static bool IsEqual2(int number)
+        {
+            return number == 2;
+        }
+        private static bool IsMultipleOf2(int number)
+        {
+            return number%2 == 0;
         }
     }
 }
