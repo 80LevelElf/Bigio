@@ -196,8 +196,8 @@ namespace BigDataCollections
             }
 
             var enumerator = GetEnumerator();
-            ((DistributedArrayEnumerator)enumerator).MoveToIndexBefore(end + 1); // Move to start position
-            var counter = 0; //It exist beacuse of enumerator cant return its index
+            ((DistributedArrayEnumerator)enumerator).MoveToIndex(end); // Move to start position
+            var counter = 0;
             while (end + counter != index + count && comparer.Compare(enumerator.Current, item) != 1)
             {
                 enumerator.MoveNext();
@@ -301,12 +301,17 @@ namespace BigDataCollections
             }
 
             var enumerator = GetEnumerator();
-            ((DistributedArrayEnumerator)enumerator).MoveToIndexBefore(index);
+            ((DistributedArrayEnumerator)enumerator).MoveToIndex(index);
 
             //Transfer data
-            for (int i = arrayIndex; i < arrayIndex + count && enumerator.MoveNext(); i++)
+            for (int i = arrayIndex; i < arrayIndex + count; i++)
             {
                 array[i] = enumerator.Current;
+
+                if (!enumerator.MoveNext())
+                {
+                    break;
+                }
             }
         }
         /// <summary>
@@ -570,13 +575,13 @@ namespace BigDataCollections
             }
 
             var enumerator = GetEnumerator();
-            ((DistributedArrayEnumerator) enumerator).MoveToIndexBefore(index);
+            ((DistributedArrayEnumerator) enumerator).MoveToIndex(index);
             var range = new DistributedArray<T>();
             //Transfer data
             for (int i = 0; i < count; i++)
             {
-                enumerator.MoveNext();
                 range.Add(enumerator.Current);
+                enumerator.MoveNext();
             }
 
             return range;
@@ -927,7 +932,6 @@ namespace BigDataCollections
                 block.TrimExcess();
             }
         }
-
         /// <summary>
         /// Divide specified collection into blocks with DefaultBlockSize size.
         /// </summary>
@@ -1074,8 +1078,8 @@ namespace BigDataCollections
         {
             _blocks = new List<List<T>>();
             IsReadOnly = false;
-            DefaultBlockSize = 1024;
             MaxBlockSize = 4 * 1024;
+            DefaultBlockSize = 1024;
         }
 
         //Debug functions

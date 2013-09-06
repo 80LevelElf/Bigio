@@ -57,7 +57,7 @@ namespace BigDataCollections
         {
             return _data.Contains(item);
         }
-        /// <summary>
+        /*/// <summary>
         /// Copies the entire DistributedQueue(T) to a compatible one-dimensional array, starting at the beginning of the target array.
         /// </summary>
         /// <param name="array">The one-dimensional Array that is the destination of the elements copied from DistributedQueue(T).
@@ -75,7 +75,7 @@ namespace BigDataCollections
         public void CopyTo(T[] array, int arrayIndex)
         {
             _data.CopyTo(array, arrayIndex);
-        }
+        }*/
         /// <summary>
         /// Removes and returns the object at the beginning of the DistributedQueue(T).
         /// </summary>
