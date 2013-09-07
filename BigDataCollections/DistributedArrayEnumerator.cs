@@ -61,6 +61,10 @@ namespace BigDataCollections
                 }
             }
 
+            /// <summary>
+            /// Move enumerator to the specified index of the DistributedArray(T).
+            /// </summary>
+            /// <param name="index">he zero-based index of the element to point to.</param>
             public void MoveToIndex(int index)
             {
                 int indexOfBlock, blockStartCommonIndex;
@@ -79,6 +83,9 @@ namespace BigDataCollections
             }
 
             //Data
+            /// <summary>
+            /// Parent DistributedArray(T) of enumerator.
+            /// </summary>
             public DistributedArray<T> Array;
             private IEnumerator<T> _subEnumerator;
             private int _currentBlockIndex;
