@@ -9,7 +9,6 @@ namespace UnitTests
     {
         static void Main(string[] args)
         {
-            DistributedArrayTest.GetRange();
             Console.ReadKey();
         }
     }

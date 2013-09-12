@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Runtime.Serialization.Formatters;
 using BigDataCollections;
 using NUnit.Framework;
 
@@ -163,7 +164,6 @@ namespace UnitTests
         public static void Find()
         {
             var distributeArray = new DistributedArray<int> {1, 2, 3, 4};
-            var a = distributeArray.Find(IsEqual0);
             Assert.IsTrue(distributeArray.Find(IsEqual0) == 0);
             Assert.IsTrue(distributeArray.Find(IsEqual2) == 2);
         }
@@ -260,6 +260,142 @@ namespace UnitTests
                     Assert.IsTrue(range[j] == i*rangeCount + j);
                 }
             }
+        }
+        [Test]
+        public static void Remove()
+        {
+            const int size = 10000;
+            var distributedArray = new DistributedArray<int>();
+            var list = new List<int>(size);
+            for (int i = 0; i < size; i++)
+            {
+                distributedArray.Add(i);
+                list.Add(i);
+            }
+
+            //Remove last element of first block
+            Assert.IsTrue(distributedArray.Remove(distributedArray.DefaultBlockSize - 1));
+            list.Remove(distributedArray.DefaultBlockSize - 1);
+
+            //Remove first element of second block
+            Assert.IsTrue(distributedArray.Remove(distributedArray.DefaultBlockSize));
+            list.Remove(distributedArray.DefaultBlockSize);
+
+            Assert.IsTrue(distributedArray.Remove(0));
+            list.Remove(0);
+
+            Assert.IsTrue(distributedArray.Remove(distributedArray.Count-1));
+            list.Remove(list.Count - 1);
+
+            //Try to remove nonexistent elements
+            Assert.IsFalse(distributedArray.Remove(0));
+            Assert.IsFalse(distributedArray.Remove(size));
+            Assert.IsFalse(distributedArray.Remove(distributedArray.DefaultBlockSize));
+            Assert.IsFalse(distributedArray.Remove(-1));
+
+            //distributedArray must be equal list
+            Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+        }
+        [Test]
+        public static void RemoveAt()
+        {
+            const int size = 10000;
+            var distributedArray = new DistributedArray<int>();
+            var list = new List<int>(size);
+            for (int i = 0; i < size; i++)
+            {
+                distributedArray.Add(i);
+                list.Add(i);
+            }
+
+            //Remove last element of first block
+            distributedArray.RemoveAt(distributedArray.DefaultBlockSize - 1);
+            list.RemoveAt(distributedArray.DefaultBlockSize - 1);
+
+            //Remove first element of second block
+            distributedArray.RemoveAt(distributedArray.DefaultBlockSize + 1);
+            list.RemoveAt(distributedArray.DefaultBlockSize + 1);
+
+            distributedArray.RemoveAt(0);
+            list.RemoveAt(0);
+
+            distributedArray.RemoveAt(distributedArray.Count - 1);
+            list.RemoveAt(list.Count - 1);
+
+            //Try to remove nonexistent elements
+            //1
+            try
+            {
+                distributedArray.RemoveAt(distributedArray.Count);
+                Assert.IsTrue(false);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+            }
+
+            //2
+            try
+            {
+                distributedArray.RemoveAt(-1);
+                Assert.IsTrue(false);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+            }
+
+            //distributedArray must be equal list
+            Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+        }
+        [Test]
+        public static void RemoveRange()
+        {
+            const int size = 10000;
+            var distributedArray = new DistributedArray<int>();
+            var list = new List<int>(size);
+            for (int i = 0; i < size; i++)
+            {
+                distributedArray.Add(i);
+                list.Add(i);
+            }
+
+            //Remove elements from different blocks
+            distributedArray.RemoveRange(distributedArray.DefaultBlockSize / 2, distributedArray.DefaultBlockSize);
+            list.RemoveRange(distributedArray.DefaultBlockSize / 2, distributedArray.DefaultBlockSize);
+
+            distributedArray.RemoveRange(0, 1);
+            list.RemoveRange(0, 1);
+
+            distributedArray.RemoveRange(distributedArray.Count - 1, 1);
+            list.RemoveRange(list.Count - 1, 1);
+
+            //Try to remove nonexistent elements
+            //1
+            try
+            {
+                distributedArray.RemoveRange(-1, 1);
+                Assert.IsTrue(false);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+            }
+
+            //2
+            try
+            {
+                distributedArray.RemoveRange(distributedArray.Count, 1);
+                Assert.IsTrue(false);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+            }
+
+            //distributedArray must be equal list
+            var a = distributedArray.Where((t, i) => t != list[i]).Any();
+            Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+
+            //Clear distibutedArray
+            distributedArray.RemoveRange(0, distributedArray.Count);
+            Assert.IsTrue(distributedArray.Count == 0);
         }
 
         //Support functions
