@@ -773,16 +773,24 @@ namespace BigDataCollections
                 currentStartIndex -= currentBlock.Count;
                 //Determine blockStartIndex
                 if (i == indexOfStartBlock)
+                {
                     blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
+                }
                 else
+                {
                     blockStartIndex = 0;
+                }
                 //Determine blockEndIndex
                 if (i != indexOfEndBlock)
+                {
                     blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                }
                 //Try to find it in current block
                 int blockFidLastIndex = currentBlock.LastIndexOf(item, blockEndIndex, blockEndIndex - blockStartIndex + 1);
                 if (blockFidLastIndex != -1)
+                {
                     return currentStartIndex + blockFidLastIndex;
+                }
             }
             //If there is no needed value
             return -1;
@@ -870,14 +878,16 @@ namespace BigDataCollections
                 }
                 else
                 {
-                    currentCount = block.Count;
+                    currentCount = block.Count - currentStartIndex;
                 }
 
                 //Remove data
                 if (block.Count == currentCount) //If we want to remove entire block
                 {
                     RemoveBlock(i);
+
                     indexOfEndBlock--;
+                    i--;
                 }
                 else
                 {
