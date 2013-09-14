@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System;
-using System.Runtime.Serialization.Formatters;
 using BigDataCollections;
 using NUnit.Framework;
 
@@ -132,7 +131,7 @@ namespace UnitTests
             }
 
             //If MaxBlockSize is change, we need to change this code
-            Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
+            Assert.AreEqual(distributedArray.MaxBlockSize, distributedArray.MaxBlockSize);
 
             Assert.AreEqual(distributedArray.FindIndex(IsEqual5000), 5000);
             Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
@@ -153,7 +152,7 @@ namespace UnitTests
             }
 
             //If MaxBlockSize is change, we need to change this code
-            Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
+            Assert.AreEqual(distributedArray.MaxBlockSize, distributedArray.MaxBlockSize);
 
             Assert.AreEqual(distributedArray.FindLastIndex(IsEqual5000), 13192);
             Assert.AreEqual(distributedArray.FindLastIndex(4999, 5000, IsEqual5000), -1);
@@ -222,8 +221,8 @@ namespace UnitTests
         [Test]
         public static void GetEnumerator()
         {
-            const int size = 5000;
             var array = new DistributedArray<int>();
+            int size = 4 * array.MaxBlockSize;
             for (int i = 0; i < size; i++)
             {
                 array.Add(i);
@@ -243,9 +242,9 @@ namespace UnitTests
         [Test]
         public static void GetRange()
         {
-            const int size = 5000;
-            const int rangeCount = 1000;
             var array = new DistributedArray<int>();
+            int size = 4 * array.MaxBlockSize;
+            int rangeCount = array.DefaultBlockSize;
             //Fill array
             for (int i = 0; i < size; i++)
             {
@@ -264,8 +263,9 @@ namespace UnitTests
         [Test]
         public static void Remove()
         {
-            const int size = 10000;
             var distributedArray = new DistributedArray<int>();
+
+            int size = 4 * distributedArray.MaxBlockSize;
             var list = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
@@ -274,12 +274,12 @@ namespace UnitTests
             }
 
             //Remove last element of first block
-            Assert.IsTrue(distributedArray.Remove(distributedArray.DefaultBlockSize - 1));
-            list.Remove(distributedArray.DefaultBlockSize - 1);
+            Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize - 1));
+            list.Remove(distributedArray.MaxBlockSize - 1);
 
             //Remove first element of second block
-            Assert.IsTrue(distributedArray.Remove(distributedArray.DefaultBlockSize));
-            list.Remove(distributedArray.DefaultBlockSize);
+            Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize));
+            list.Remove(distributedArray.MaxBlockSize);
 
             Assert.IsTrue(distributedArray.Remove(0));
             list.Remove(0);
@@ -290,7 +290,7 @@ namespace UnitTests
             //Try to remove nonexistent elements
             Assert.IsFalse(distributedArray.Remove(0));
             Assert.IsFalse(distributedArray.Remove(size));
-            Assert.IsFalse(distributedArray.Remove(distributedArray.DefaultBlockSize));
+            Assert.IsFalse(distributedArray.Remove(distributedArray.MaxBlockSize));
             Assert.IsFalse(distributedArray.Remove(-1));
 
             //distributedArray must be equal list
@@ -299,8 +299,9 @@ namespace UnitTests
         [Test]
         public static void RemoveAt()
         {
-            const int size = 10000;
             var distributedArray = new DistributedArray<int>();
+
+            int size = 4 * distributedArray.MaxBlockSize;
             var list = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
@@ -309,12 +310,12 @@ namespace UnitTests
             }
 
             //Remove last element of first block
-            distributedArray.RemoveAt(distributedArray.DefaultBlockSize - 1);
-            list.RemoveAt(distributedArray.DefaultBlockSize - 1);
+            distributedArray.RemoveAt(distributedArray.MaxBlockSize - 1);
+            list.RemoveAt(distributedArray.MaxBlockSize - 1);
 
             //Remove first element of second block
-            distributedArray.RemoveAt(distributedArray.DefaultBlockSize + 1);
-            list.RemoveAt(distributedArray.DefaultBlockSize + 1);
+            distributedArray.RemoveAt(distributedArray.MaxBlockSize + 1);
+            list.RemoveAt(distributedArray.MaxBlockSize + 1);
 
             distributedArray.RemoveAt(0);
             list.RemoveAt(0);
@@ -349,8 +350,9 @@ namespace UnitTests
         [Test]
         public static void RemoveRange()
         {
-            const int size = 10000;
             var distributedArray = new DistributedArray<int>();
+
+            int size = 4 * distributedArray.MaxBlockSize;
             var list = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
@@ -359,8 +361,8 @@ namespace UnitTests
             }
 
             //Remove elements from different blocks
-            distributedArray.RemoveRange(distributedArray.DefaultBlockSize / 2, distributedArray.DefaultBlockSize);
-            list.RemoveRange(distributedArray.DefaultBlockSize / 2, distributedArray.DefaultBlockSize);
+            distributedArray.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
+            list.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
 
             distributedArray.RemoveRange(0, 1);
             list.RemoveRange(0, 1);
@@ -390,7 +392,6 @@ namespace UnitTests
             }
 
             //distributedArray must be equal list
-            var a = distributedArray.Where((t, i) => t != list[i]).Any();
             Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
 
             //Clear distibutedArray
