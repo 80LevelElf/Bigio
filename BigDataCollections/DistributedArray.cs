@@ -923,155 +923,6 @@ namespace BigDataCollections
                 block.TrimExcess();
             }
         }
-        /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size.
-        /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <returns>Blocks constructed on the basis of a collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
-        {
-            return DivideIntoBlocks(collection, 0, collection.Count);
-        }
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index)
-        {
-            return DivideIntoBlocks(collection, index, collection.Count - index);
-        }
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count)
-        {
-            if (index + count > collection.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
-            //Calculate blocks count
-            int countOfBlocks = count / DefaultBlockSize;
-            if (count%DefaultBlockSize != 0)
-            {
-                countOfBlocks++;
-            }
-
-            var blocks = new List<T>[countOfBlocks];
-            //Transfer data from list to new blocks
-            var item = collection.GetEnumerator();
-            for (int i = 0; i < index; i++) //Move item to the index position
-                item.MoveNext();
-
-            for (int i = 0; i < countOfBlocks; i++)
-            {
-                //Calculate curent block size
-                int currentBlockSize;
-                if (i != countOfBlocks - 1)
-                {
-                    currentBlockSize = DefaultBlockSize;
-                }
-                else
-                {
-                    currentBlockSize = count - (i*DefaultBlockSize);
-                }
-                //Declare new block
-                blocks[i] = new List<T>(currentBlockSize);
-                //Transfer data
-                for (int j = 0; j < currentBlockSize; j++)
-                {
-                    item.MoveNext();
-                    //Insert data
-                    T insertion = item.Current;
-                    blocks[i].Add(insertion);
-                }
-            }
-            //Return result
-            return blocks;
-        }
-        /// <summary>
-        /// Calculate indexOfBlock and blockStartCommonIndex by index. 
-        /// </summary>
-        /// <param name="index">Common index of element in DistributedArray(T). index = [0; Count).</param>
-        /// <param name="indexOfBlock">Index of block where situate index. indexOfBlock = [0; _blocks.Count).</param>
-        /// <param name="blockStartCommonIndex">Common index, which is start index of _blocks[indexOfBlock].</param>
-        private void IndexOfBlockAndBlockStartCommonIndex(int index, out int indexOfBlock, out int blockStartCommonIndex)
-        {
-            if (!IsValidIndex(index))
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            //Find needed block
-            blockStartCommonIndex = 0;
-            indexOfBlock = 0;
-            for (int i = 0; i < _blocks.Count; i++)
-            {
-                var currentList = _blocks[i];
-                //If there is needed range
-                if (index >= blockStartCommonIndex && index < blockStartCommonIndex + currentList.Count)
-                {
-                    indexOfBlock = i;
-                    break;
-                }
-
-                blockStartCommonIndex += currentList.Count;
-            }
-        }
-        /// <summary>
-        /// If count of elements in specified block equal or bigger then MaxBlockCount - divide it.
-        /// </summary>
-        /// <param name="blockIndex">Index of specified block.</param>
-        private void DivideBlockIfMaxSize(int blockIndex)
-        {
-            if (_blocks[blockIndex].Count >= MaxBlockSize)
-            {
-                var newBlocks = DivideIntoBlocks(_blocks[blockIndex]);
-                //Insert new blocks instead old block
-                _blocks.RemoveAt(blockIndex);
-                _blocks.InsertRange(blockIndex, newBlocks);
-            }
-        }
-        /// <summary>
-        /// Removes the block at the specified index of the _blocks.
-        /// </summary>
-        /// <param name="indexOfBlock">The zero-based index of the block to remove.</param>
-        private void RemoveBlock(int indexOfBlock)
-        {
-            _blocks.RemoveAt(indexOfBlock);
-            //If there is no any blocks - add empty block
-            if (_blocks.Count == 0)
-            {
-                _blocks.Add(new List<T>(DefaultBlockSize));
-            }
-        }
-        /// <summary>
-        /// Check range to valid in current DistributedArray(T).
-        /// </summary>
-        /// <returns>Return true of range is valid, otherwise return false.</returns>
-        private bool IsValidRange(int index, int count)
-        {
-            return IsValidRange(this, index, count);
-        }
-        private bool IsValidRange(ICollection<T> collection, int index, int count)
-        {
-            return !(index < 0 || index >= collection.Count || count < 0 || index + count > collection.Count);
-        }
-        /// <summary>
-        /// Check index to valid in current DistributedArray(T).
-        /// </summary>
-        /// <returns>True if index is valid, otherwise return false.</returns>
-        private bool IsValidIndex(int index)
-        {
-            return IsValidIndex(this, index);
-        }
-        private bool IsValidIndex(ICollection<T> collection, int index)
-        {
-            return !(index < 0 || index >= collection.Count); 
-        }
-        /// <summary>
-        /// Initialize fields of object in time of creating.
-        /// </summary>
-        private void Initialize()
-        {
-            _blocks = new List<List<T>>();
-            IsReadOnly = false;
-            MaxBlockSize = 4 * 1024;
-            DefaultBlockSize = 1024;
-        }
 
         //Debug functions
 #if DEBUG
@@ -1175,5 +1026,185 @@ namespace BigDataCollections
         private List<List<T>> _blocks;
         private int _defaultBlockSize;
         private int _maxBlockSize;
+
+        //Support functions
+        /// <summary>
+        /// Divide specified collection into blocks with DefaultBlockSize size.
+        /// </summary>
+        /// <param name="collection">Collection, which must be divided.</param>
+        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
+        {
+            return DivideIntoBlocks(collection, 0, collection.Count);
+        }
+        /// <summary>
+        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// </summary>
+        /// <param name="collection">Collection, which must be divided.</param>
+        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
+        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index)
+        {
+            return DivideIntoBlocks(collection, index, collection.Count - index);
+        }
+        /// <summary>
+        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// </summary>
+        /// <param name="collection">Collection, which must be divided.</param>
+        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
+        /// <param name="count">The number of elements of the collection to divide.</param>
+        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count)
+        {
+            if (index + count > collection.Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+
+            //Calculate blocks count
+            int countOfBlocks = count / DefaultBlockSize;
+            if (count%DefaultBlockSize != 0)
+            {
+                countOfBlocks++;
+            }
+
+            var blocks = new List<T>[countOfBlocks];
+            //Transfer data from list to new blocks
+            var item = collection.GetEnumerator();
+            for (int i = 0; i < index; i++) //Move item to the index position
+                item.MoveNext();
+
+            for (int i = 0; i < countOfBlocks; i++)
+            {
+                //Calculate curent block size
+                int currentBlockSize;
+                if (i != countOfBlocks - 1)
+                {
+                    currentBlockSize = DefaultBlockSize;
+                }
+                else
+                {
+                    currentBlockSize = count - (i*DefaultBlockSize);
+                }
+                //Declare new block
+                blocks[i] = new List<T>(currentBlockSize);
+                //Transfer data
+                for (int j = 0; j < currentBlockSize; j++)
+                {
+                    item.MoveNext();
+                    //Insert data
+                    T insertion = item.Current;
+                    blocks[i].Add(insertion);
+                }
+            }
+            //Return result
+            return blocks;
+        }
+        /// <summary>
+        /// Calculate indexOfBlock and blockStartCommonIndex by index. 
+        /// </summary>
+        /// <param name="index">Common index of element in DistributedArray(T). index = [0; Count).</param>
+        /// <param name="indexOfBlock">Index of block where situate index. indexOfBlock = [0; _blocks.Count).</param>
+        /// <param name="blockStartCommonIndex">Common index, which is start index of _blocks[indexOfBlock].</param>
+        private void IndexOfBlockAndBlockStartCommonIndex(int index, out int indexOfBlock, out int blockStartCommonIndex)
+        {
+            if (!IsValidIndex(index))
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            //Find needed block
+            blockStartCommonIndex = 0;
+            indexOfBlock = 0;
+            for (int i = 0; i < _blocks.Count; i++)
+            {
+                var currentList = _blocks[i];
+                //If there is needed range
+                if (index >= blockStartCommonIndex && index < blockStartCommonIndex + currentList.Count)
+                {
+                    indexOfBlock = i;
+                    break;
+                }
+
+                blockStartCommonIndex += currentList.Count;
+            }
+        }
+        /// <summary>
+        /// If count of elements in specified block equal or bigger then MaxBlockCount - divide it.
+        /// </summary>
+        /// <param name="blockIndex">Index of specified block.</param>
+        private void DivideBlockIfMaxSize(int blockIndex)
+        {
+            if (_blocks[blockIndex].Count >= MaxBlockSize)
+            {
+                var newBlocks = DivideIntoBlocks(_blocks[blockIndex]);
+                //Insert new blocks instead old block
+                _blocks.RemoveAt(blockIndex);
+                _blocks.InsertRange(blockIndex, newBlocks);
+            }
+        }
+        /// <summary>
+        /// Removes the block at the specified index of the _blocks.
+        /// </summary>
+        /// <param name="indexOfBlock">The zero-based index of the block to remove.</param>
+        private void RemoveBlock(int indexOfBlock)
+        {
+            _blocks.RemoveAt(indexOfBlock);
+            //If there is no any blocks - add empty block
+            if (_blocks.Count == 0)
+            {
+                _blocks.Add(new List<T>(DefaultBlockSize));
+            }
+        }
+        /// <summary>
+        /// Check range of the current DistributedArray(T) to valid.
+        /// </summary>
+        /// <param name="index">The zero-based starting index of range of the DistributedArray(T) to check.</param>
+        /// <param name="count">The number of elements of the range to check.</param>
+        /// <returns>Return true of range is valid, otherwise return false.</returns>
+        private bool IsValidRange(int index, int count)
+        {
+            return IsValidRange(this, index, count);
+        }
+        /// <summary>
+        /// Check range of the specified collection to valid.
+        /// </summary>
+        /// <param name="collection">Collection which must to be check.</param>
+        /// <param name="index">The zero-based starting index of range of the specified collection to check.</param>
+        /// <param name="count">The number of elements of the range to check.</param>
+        /// <returns>Return true of range is valid, otherwise return false.</returns>
+        private bool IsValidRange(ICollection<T> collection, int index, int count)
+        {
+            return !(index < 0 || index >= collection.Count || count < 0 || index + count > collection.Count);
+        }
+        /// <summary>
+        /// Check index to valid in current DistributedArray(T).
+        /// </summary>
+        /// <param name="index">The zero-based starting index of the DistributedArray(T) element.</param>
+        /// <returns>True if index is valid, otherwise return false.</returns>
+        private bool IsValidIndex(int index)
+        {
+            return IsValidIndex(this, index);
+        }
+        /// <summary>
+        /// Check index to valid in current DistributedArray(T).
+        /// </summary>
+        /// <param name="collection">Collection which must to be check.</param>
+        /// <param name="index">The zero-based starting index of the specified collection element.</param>
+        /// <returns>True if index is valid, otherwise return false.</returns>
+        private bool IsValidIndex(ICollection<T> collection, int index)
+        {
+            return !(index < 0 || index >= collection.Count); 
+        }
+        /// <summary>
+        /// Initialize fields of object in time of creating.
+        /// </summary>
+        private void Initialize()
+        {
+            _blocks = new List<List<T>>();
+            IsReadOnly = false;
+            MaxBlockSize = 4 * 1024;
+            DefaultBlockSize = 1024;
+        }
     }
 }
