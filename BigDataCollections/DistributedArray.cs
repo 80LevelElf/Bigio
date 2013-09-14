@@ -872,13 +872,20 @@ namespace BigDataCollections
                 {
                     currentCount = block.Count;
                 }
+
                 //Remove data
-                block.RemoveRange(currentStartIndex, currentCount);
-                if (block.Count == 0)
+                if (block.Count == currentCount) //If we want to remove entire block
                 {
                     RemoveBlock(i);
+                    indexOfEndBlock--;
+                }
+                else
+                {
+                    block.RemoveRange(currentStartIndex, currentCount);
                 }
             }
+
+            Count -= count;
         }
         /// <summary>
         /// Reverses the order of the elements in the entire DistributedArray(T).

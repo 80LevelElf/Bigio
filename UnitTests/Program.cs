@@ -9,6 +9,7 @@ namespace UnitTests
     {
         static void Main(string[] args)
         {
+            DistributedArrayTest.RemoveRange();
             Console.ReadKey();
         }
     }
