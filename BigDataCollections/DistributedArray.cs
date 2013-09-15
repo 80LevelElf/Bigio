@@ -52,14 +52,14 @@ namespace BigDataCollections
         /// </summary>
         public void Add(T value)
         {            
-            int blockIndex = _blocks.Count - 1;
-            if (_blocks[blockIndex].Count >= MaxBlockSize)
+            int indexOfBlock = _blocks.Count - 1;
+            if (_blocks[indexOfBlock].Count >= MaxBlockSize)
             {
                 _blocks.Add(new List<T>(DefaultBlockSize));
-                blockIndex++;
+                indexOfBlock++;
             }
 
-            _blocks[blockIndex].Add(value);
+            _blocks[indexOfBlock].Add(value);
             Count++;
         }
         /// <summary>
@@ -76,8 +76,8 @@ namespace BigDataCollections
             }
 
             //Transfer data to the last block while it is possible
-            var lastBlock = _blocks[_blocks.Count - 1];
-            var emptySize = MaxBlockSize - lastBlock.Count;
+            var lastBlockIndex = _blocks[_blocks.Count - 1];
+            var emptySize = MaxBlockSize - lastBlockIndex.Count;
             var sizeToFill = 0;
             if (emptySize != 0)
             {
@@ -151,43 +151,43 @@ namespace BigDataCollections
                 comparer = Comparer<T>.Default;
             }
 
-            int start = index;
-            int end = index + count;
+            int startIndex = index;
+            int endIndex = index + count;
             T middleValue;
 
-            while (start <= end)
+            while (startIndex <= endIndex)
             {
-                int middlePosition = (start + end)/2;
+                int middlePosition = (startIndex + endIndex)/2;
                 middleValue = this[middlePosition];
                 //Compare
                 int comparerResult = comparer.Compare(item, middleValue);
                 switch (comparerResult)
                 {
                     case -1:
-                        end = middlePosition - 1;
+                        endIndex = middlePosition - 1;
                         break;
                     case 0:
                         return middlePosition;
                     case 1:
-                        start = middlePosition + 1;
+                        startIndex = middlePosition + 1;
                         break;
                 }
             }
             //If there is no such item specify the location where the element should be
-            if (end == -1) // if we need first element
+            if (endIndex == -1) // if we need first element
             {
                 return -1;
             }
 
             var enumerator = GetEnumerator();
-            ((DistributedArrayEnumerator)enumerator).MoveToIndex(end); // Move to start position
+            ((DistributedArrayEnumerator)enumerator).MoveToIndex(endIndex); // Move to start position
             var counter = 0;
-            while (end + counter != index + count && comparer.Compare(enumerator.Current, item) != 1)
+            while (endIndex + counter != index + count && comparer.Compare(enumerator.Current, item) != 1)
             {
                 enumerator.MoveNext();
                 counter++;
             }
-            return ~(end + counter);
+            return ~(endIndex + counter);
         }
         /// <summary>
         /// Removes all elements from the DistributedArray(T). If there is too many elements
@@ -388,49 +388,49 @@ namespace BigDataCollections
         ///  if found; otherwise, –1. </returns>
         public int FindIndex(int index, int count, Predicate<T> match)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             if (match == null)
             {
                 throw new ArgumentNullException("match");
             }
 
             //Determine needed indexes
-            int commonStartIndex = index;
-            int commonEndIndex = index + count - 1;
+            int startIndex = index;
+            int endIndex = index + count - 1;
 
-            int indexOfStartBlock, startBlockCommonStartIndex;
-            int indexOfEndBlock, endBlockCommonStartIndex;
-            IndexOfBlockAndBlockStartCommonIndex(commonStartIndex, out indexOfStartBlock, out startBlockCommonStartIndex);
-            IndexOfBlockAndBlockStartCommonIndex(commonEndIndex, out indexOfEndBlock, out endBlockCommonStartIndex);
+            int indexOfStartBlock, startBlockStartIndex;
+            int indexOfEndBlock, endBlockStartIndex;
+            IndexOfBlockAndBlockStartIndex(startIndex, out indexOfStartBlock, out startBlockStartIndex);
+            IndexOfBlockAndBlockStartIndex(endIndex, out indexOfEndBlock, out endBlockStartIndex);
             //Find index of item
-            int blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
-            int blockEndIndex;
-            int currentStartIndex = startBlockCommonStartIndex;
+            int startSubindex = startIndex - startBlockStartIndex;
+            int endSubindex;
+            int currentStartIndex = startBlockStartIndex;
             for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
             {
-                var currentBlock = _blocks[i];
+                var block = _blocks[i];
                 //Determine blockStartIndex
                 if (i != indexOfStartBlock)
                 {
-                    blockStartIndex = 0;
+                    startSubindex = 0;
                 }
                 //Determine blockEndIndex
                 if (i == indexOfEndBlock)
                 {
-                    blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
+                    endSubindex = endIndex - endBlockStartIndex;
                 }
                 else
                 {
-                    blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                    endSubindex = block.Count - startSubindex - 1;
                 }
                 //Try to find it in current block
-                int blockFindIndex = currentBlock.FindIndex(blockStartIndex, blockEndIndex - blockStartIndex + 1, match);
-                if (blockFindIndex != -1)
+                int findSubindex = block.FindIndex(startSubindex, endSubindex - startSubindex + 1, match);
+                if (findSubindex != -1)
                 {
-                    return currentStartIndex + blockFindIndex;
+                    return currentStartIndex + findSubindex;
                 }
 
-                currentStartIndex += currentBlock.Count;
+                currentStartIndex += block.Count;
             }
             //If there is no needed value
             return -1;
@@ -445,12 +445,12 @@ namespace BigDataCollections
         {
             for (int i = _blocks.Count - 1; i != 0; i--)
             {
-                var currentBlock = _blocks[i];
-                for (int j = currentBlock.Count - 1; j != 0; j--)
+                var block = _blocks[i];
+                for (int j = block.Count - 1; j != 0; j--)
                 {
-                    if (match.Invoke(currentBlock[j]))
+                    if (match.Invoke(block[j]))
                     {
-                        return currentBlock[j];
+                        return block[j];
                     }
                 }
             }
@@ -488,47 +488,47 @@ namespace BigDataCollections
         /// <returns></returns>
         public int FindLastIndex(int index, int count, Predicate<T> match)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             if (match == null)
             {
                 throw new ArgumentOutOfRangeException("match");
             }
 
             //Determine needed indexes
-            int commonStartIndex = index - count + 1;
-            int commonEndIndex = index;
+            int startIndex = index - count + 1;
+            int endIndex = index;
 
-            int indexOfStartBlock, startBlockCommonStartIndex;
-            int indexOfEndBlock, endBlockCommonStartIndex;
-            IndexOfBlockAndBlockStartCommonIndex(commonStartIndex, out indexOfStartBlock, out startBlockCommonStartIndex);
-            IndexOfBlockAndBlockStartCommonIndex(commonEndIndex, out indexOfEndBlock, out endBlockCommonStartIndex);
+            int indexOfStartBlock, startBlockStartIndex;
+            int indexOfEndBlock, endBlockStartIndex;
+            IndexOfBlockAndBlockStartIndex(startIndex, out indexOfStartBlock, out startBlockStartIndex);
+            IndexOfBlockAndBlockStartIndex(endIndex, out indexOfEndBlock, out endBlockStartIndex);
             //Find index of item
-            int blockStartIndex;
-            int blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
-            int currentStartIndex = endBlockCommonStartIndex + _blocks[indexOfEndBlock].Count;
+            int startSubindex;
+            int endSubindex = endIndex - endBlockStartIndex;
+            int currentStartIndex = endBlockStartIndex + _blocks[indexOfEndBlock].Count;
             for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
             {
-                var currentBlock = _blocks[i];
-                currentStartIndex -= currentBlock.Count;
+                var block = _blocks[i];
+                currentStartIndex -= block.Count;
                 //Determine blockStartIndex
                 if (i == indexOfStartBlock)
                 {
-                    blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
+                    startSubindex = startIndex - startBlockStartIndex;
                 }
                 else
                 {
-                    blockStartIndex = 0;
+                    startSubindex = 0;
                 }
                 //Determine blockEndIndex
                 if (i != indexOfEndBlock)
                 {
-                    blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                    endSubindex = block.Count - startSubindex - 1;
                 }
                 //Try to find it in current block
-                int blockFidLastIndex = currentBlock.FindLastIndex(blockEndIndex, blockEndIndex - blockStartIndex + 1, match);
-                if (blockFidLastIndex != -1)
+                int lastSubindex = block.FindLastIndex(endSubindex, endSubindex - startSubindex + 1, match);
+                if (lastSubindex != -1)
                 {
-                    return currentStartIndex + blockFidLastIndex;
+                    return currentStartIndex + lastSubindex;
                 }
             }
             //If there is no needed value
@@ -604,44 +604,44 @@ namespace BigDataCollections
         ///  in the DistributedArray(T) that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
         public int IndexOf(T item, int index, int count)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             //Determine needed indexes
-            int commonStartIndex = index;
-            int commonEndIndex = index + count - 1;
+            int startIndex = index;
+            int endIndex = index + count - 1;
 
-            int indexOfStartBlock, startBlockCommonStartIndex;
-            int indexOfEndBlock, endBlockCommonStartIndex;
-            IndexOfBlockAndBlockStartCommonIndex(commonStartIndex, out indexOfStartBlock, out startBlockCommonStartIndex);
-            IndexOfBlockAndBlockStartCommonIndex(commonEndIndex, out indexOfEndBlock, out endBlockCommonStartIndex);
+            int indexOfStartBlock, startBlockStartIndex;
+            int indexOfEndBlock, endBlockStartIndex;
+            IndexOfBlockAndBlockStartIndex(startIndex, out indexOfStartBlock, out startBlockStartIndex);
+            IndexOfBlockAndBlockStartIndex(endIndex, out indexOfEndBlock, out endBlockStartIndex);
             //Find index of item
-            int blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
-            int blockEndIndex;
-            int currentStartIndex = startBlockCommonStartIndex;
+            int startSubindex = startIndex - startBlockStartIndex;
+            int endSubindex;
+            int currentStartIndex = startBlockStartIndex;
             for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
             {
-                var currentBlock = _blocks[i];
+                var block = _blocks[i];
                 //Determine blockStartIndex
                 if (i != indexOfStartBlock)
                 {
-                    blockStartIndex = 0;
+                    startSubindex = 0;
                 }
                 //Determine blockEndIndex
                 if (i == indexOfEndBlock)
                 {
-                    blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
+                    endSubindex = endIndex - endBlockStartIndex;
                 }
                 else
                 {
-                    blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                    endSubindex = block.Count - startSubindex - 1;
                 }
                 //Try to find it in current block
-                int blockIndexOf = currentBlock.IndexOf(item, blockStartIndex, blockEndIndex - blockStartIndex + 1);
-                if (blockIndexOf != -1)
+                int subindexOf = block.IndexOf(item, startSubindex, endSubindex - startSubindex + 1);
+                if (subindexOf != -1)
                 {
-                    return currentStartIndex + blockIndexOf;
+                    return currentStartIndex + subindexOf;
                 }
 
-                currentStartIndex += currentBlock.Count;
+                currentStartIndex += block.Count;
             }
             //If there is no needed value
             return -1;
@@ -653,13 +653,13 @@ namespace BigDataCollections
         /// <param name="item">The data to be placed.</param>
         public void Insert(int index, T item)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
-
+            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             if (index == Count)
             {
                 Add(item);
                 return;
             }
+
             //Find needed block
             int blockStartIndex;
             int indexOfBlock;
@@ -670,19 +670,20 @@ namespace BigDataCollections
             }
             else
             {
-                IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex);
+                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
             }
+
             //Insert
-            int commonIndexInBlock = index - blockStartIndex;
+            int blockSubindex = index - blockStartIndex;
             //If there is start of block - try to add item to last block(it is faster)
-            if (commonIndexInBlock == 0 && indexOfBlock != 0)
+            if (blockSubindex == 0 && indexOfBlock != 0)
             {
                 _blocks[--indexOfBlock].Add(item);
             }
             //Otherwise insert in current block
             else
             {
-                _blocks[indexOfBlock].Insert(commonIndexInBlock, item);
+                _blocks[indexOfBlock].Insert(blockSubindex, item);
             }
 
             DivideBlockIfMaxSize(indexOfBlock);
@@ -696,7 +697,7 @@ namespace BigDataCollections
         ///  The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
         public void InsertRange(int index, ICollection<T> collection)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
 
             int indexOfBlock;
             int blockStartIndex;
@@ -713,7 +714,7 @@ namespace BigDataCollections
             }
             else
             {
-                IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex); // Default case
+                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex); // Default case
             }
             //Insert
             _blocks[indexOfBlock].InsertRange(index - blockStartIndex, collection);
@@ -754,18 +755,18 @@ namespace BigDataCollections
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             //Determine needed indexes
-            int commonStartIndex = index - count + 1;
-            int commonEndIndex = index;
+            int startIndex = index - count + 1;
+            int endIndex = index;
 
             int indexOfStartBlock, startBlockCommonStartIndex;
             int indexOfEndBlock, endBlockCommonStartIndex;
-            IndexOfBlockAndBlockStartCommonIndex(commonStartIndex, out indexOfStartBlock, out startBlockCommonStartIndex);
-            IndexOfBlockAndBlockStartCommonIndex(commonEndIndex, out indexOfEndBlock, out endBlockCommonStartIndex);
+            IndexOfBlockAndBlockStartIndex(startIndex, out indexOfStartBlock, out startBlockCommonStartIndex);
+            IndexOfBlockAndBlockStartIndex(endIndex, out indexOfEndBlock, out endBlockCommonStartIndex);
             //Find index of item
-            int blockStartIndex;
-            int blockEndIndex = commonEndIndex - endBlockCommonStartIndex;
+            int startSubindex;
+            int endSubindex = endIndex - endBlockCommonStartIndex;
             int currentStartIndex = endBlockCommonStartIndex + _blocks[indexOfEndBlock].Count;
             for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
             {
@@ -774,19 +775,19 @@ namespace BigDataCollections
                 //Determine blockStartIndex
                 if (i == indexOfStartBlock)
                 {
-                    blockStartIndex = commonStartIndex - startBlockCommonStartIndex;
+                    startSubindex = startIndex - startBlockCommonStartIndex;
                 }
                 else
                 {
-                    blockStartIndex = 0;
+                    startSubindex = 0;
                 }
                 //Determine blockEndIndex
                 if (i != indexOfEndBlock)
                 {
-                    blockEndIndex = currentBlock.Count - blockStartIndex - 1;
+                    endSubindex = currentBlock.Count - startSubindex - 1;
                 }
                 //Try to find it in current block
-                int blockFidLastIndex = currentBlock.LastIndexOf(item, blockEndIndex, blockEndIndex - blockStartIndex + 1);
+                int blockFidLastIndex = currentBlock.LastIndexOf(item, endSubindex, endSubindex - startSubindex + 1);
                 if (blockFidLastIndex != -1)
                 {
                     return currentStartIndex + blockFidLastIndex;
@@ -830,11 +831,11 @@ namespace BigDataCollections
         /// <param name="index">The zero-based index of the element to remove.</param>
         public void RemoveAt(int index)
         {
-            //Validate of index check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index check in IndexOfBlockAndBlockStartIndex
             //Calculate position of this element
             int indexOfBlock;
             int blockStartIndex;
-            IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex);
+            IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
             //Remove
             _blocks[indexOfBlock].RemoveAt(index - blockStartIndex);
             //If there is empty block remove it
@@ -851,38 +852,38 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to remove.</param>
         public void RemoveRange(int index, int count)
         {
-            //Validate of index check in IndexOfBlockAndBlockStartCommonIndex
+            //Validate of index check in IndexOfBlockAndBlockStartIndex
             //Calculate needed indexes
             int indexOfStartBlock, startBlockStartCommonIndex;
             int indexOfEndBlock, endBlockStartCommonIndex;
-            IndexOfBlockAndBlockStartCommonIndex(index, out indexOfStartBlock, out startBlockStartCommonIndex);
-            IndexOfBlockAndBlockStartCommonIndex(index + count - 1, out indexOfEndBlock, out endBlockStartCommonIndex);
+            IndexOfBlockAndBlockStartIndex(index, out indexOfStartBlock, out startBlockStartCommonIndex);
+            IndexOfBlockAndBlockStartIndex(index + count - 1, out indexOfEndBlock, out endBlockStartCommonIndex);
             //Remove specified range in blocks
-            int currentStartIndex;
-            int currentCount;
+            int subindex;
+            int subcount;
             for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
             {
                 var block = _blocks[i];
                 //Determine currentStartIndex and currentCount
                 if (i == indexOfStartBlock)
                 {
-                    currentStartIndex = index - startBlockStartCommonIndex;
+                    subindex = index - startBlockStartCommonIndex;
                 }
                 else
                 {
-                    currentStartIndex = 0;
+                    subindex = 0;
                 }
                 if (i == indexOfEndBlock)
                 {
-                    currentCount = index + count - currentStartIndex - endBlockStartCommonIndex;
+                    subcount = index + count - subindex - endBlockStartCommonIndex;
                 }
                 else
                 {
-                    currentCount = block.Count - currentStartIndex;
+                    subcount = block.Count - subindex;
                 }
 
                 //Remove data
-                if (block.Count == currentCount) //If we want to remove entire block
+                if (block.Count == subcount) //If we want to remove entire block
                 {
                     RemoveBlock(i);
 
@@ -891,7 +892,7 @@ namespace BigDataCollections
                 }
                 else
                 {
-                    block.RemoveRange(currentStartIndex, currentCount);
+                    block.RemoveRange(subindex, subcount);
                 }
             }
 
@@ -965,18 +966,18 @@ namespace BigDataCollections
         {
             get
             {
-                //Check for exceptions in IndexOfBlockAndBlockStartCommonIndex()
+                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
                 int indexOfBlock;
                 int blockStartIndex;
-                IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex);
+                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
                 return _blocks[indexOfBlock][index - blockStartIndex];
             }
             set
             {
-                //Check for exceptions in IndexOfBlockAndBlockStartCommonIndex()
+                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
                 int indexOfBlock;
                 int blockStartIndex;
-                IndexOfBlockAndBlockStartCommonIndex(index, out indexOfBlock, out blockStartIndex);
+                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
                 _blocks[indexOfBlock][index - blockStartIndex] = value;
             }
         }
@@ -1111,12 +1112,12 @@ namespace BigDataCollections
             return blocks;
         }
         /// <summary>
-        /// Calculate indexOfBlock and blockStartCommonIndex by index. 
+        /// Calculate indexOfBlock and blockStartIndex by index. 
         /// </summary>
         /// <param name="index">Common index of element in DistributedArray(T). index = [0; Count).</param>
         /// <param name="indexOfBlock">Index of block where situate index. indexOfBlock = [0; _blocks.Count).</param>
-        /// <param name="blockStartCommonIndex">Common index, which is start index of _blocks[indexOfBlock].</param>
-        private void IndexOfBlockAndBlockStartCommonIndex(int index, out int indexOfBlock, out int blockStartCommonIndex)
+        /// <param name="blockStartIndex">Common index, which is start index of _blocks[indexOfBlock].</param>
+        private void IndexOfBlockAndBlockStartIndex(int index, out int indexOfBlock, out int blockStartIndex)
         {
             if (!IsValidIndex(index))
             {
@@ -1124,33 +1125,33 @@ namespace BigDataCollections
             }
 
             //Find needed block
-            blockStartCommonIndex = 0;
+            blockStartIndex = 0;
             indexOfBlock = 0;
             for (int i = 0; i < _blocks.Count; i++)
             {
                 var currentList = _blocks[i];
                 //If there is needed range
-                if (index >= blockStartCommonIndex && index < blockStartCommonIndex + currentList.Count)
+                if (index >= blockStartIndex && index < blockStartIndex + currentList.Count)
                 {
                     indexOfBlock = i;
                     break;
                 }
 
-                blockStartCommonIndex += currentList.Count;
+                blockStartIndex += currentList.Count;
             }
         }
         /// <summary>
         /// If count of elements in specified block equal or bigger then MaxBlockCount - divide it.
         /// </summary>
-        /// <param name="blockIndex">Index of specified block.</param>
-        private void DivideBlockIfMaxSize(int blockIndex)
+        /// <param name="indexOfBlock">Index of specified block.</param>
+        private void DivideBlockIfMaxSize(int indexOfBlock)
         {
-            if (_blocks[blockIndex].Count >= MaxBlockSize)
+            if (_blocks[indexOfBlock].Count >= MaxBlockSize)
             {
-                var newBlocks = DivideIntoBlocks(_blocks[blockIndex]);
+                var newBlocks = DivideIntoBlocks(_blocks[indexOfBlock]);
                 //Insert new blocks instead old block
-                _blocks.RemoveAt(blockIndex);
-                _blocks.InsertRange(blockIndex, newBlocks);
+                _blocks.RemoveAt(indexOfBlock);
+                _blocks.InsertRange(indexOfBlock, newBlocks);
             }
         }
         /// <summary>
