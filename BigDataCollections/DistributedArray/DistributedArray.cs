@@ -389,7 +389,6 @@ namespace BigDataCollections
         ///  if found; otherwise, –1. </returns>
         public int FindIndex(int index, int count, Predicate<T> match)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             if (match == null)
             {
                 throw new ArgumentNullException("match");
@@ -465,47 +464,23 @@ namespace BigDataCollections
         /// <returns></returns>
         public int FindLastIndex(int index, int count, Predicate<T> match)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             if (match == null)
             {
                 throw new ArgumentOutOfRangeException("match");
             }
 
-            //Determine needed indexes
-            int startIndex = index - count + 1;
-            int endIndex = index;
+            int indexOfStartBlock = IndexOfBlock(index - count + 1);
+            int indexOfEndBlock = IndexOfBlock(index);
 
-            int indexOfStartBlock, startBlockStartIndex;
-            int indexOfEndBlock, endBlockStartIndex;
-            IndexOfBlockAndBlockStartIndex(startIndex, out indexOfStartBlock, out startBlockStartIndex);
-            IndexOfBlockAndBlockStartIndex(endIndex, out indexOfEndBlock, out endBlockStartIndex);
             //Find index of item
-            int startSubindex;
-            int endSubindex = endIndex - endBlockStartIndex;
-            int currentStartIndex = endBlockStartIndex + _blocks[indexOfEndBlock].Count;
             for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
             {
-                var block = _blocks[i];
-                currentStartIndex -= block.Count;
-                //Determine blockStartIndex
-                if (i == indexOfStartBlock)
-                {
-                    startSubindex = startIndex - startBlockStartIndex;
-                }
-                else
-                {
-                    startSubindex = 0;
-                }
-                //Determine blockEndIndex
-                if (i != indexOfEndBlock)
-                {
-                    endSubindex = block.Count - startSubindex - 1;
-                }
+                var range = RevereseBlockRange(i, index, count);
                 //Try to find it in current block
-                int lastSubindex = block.FindLastIndex(endSubindex, endSubindex - startSubindex + 1, match);
+                int lastSubindex = _blocks[i].FindLastIndex(range.StartSubindex, range.Count, match);
                 if (lastSubindex != -1)
                 {
-                    return currentStartIndex + lastSubindex;
+                    return BlockStartIndex(i) + lastSubindex;
                 }
             }
             //If there is no needed value
@@ -707,42 +682,18 @@ namespace BigDataCollections
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
-            //Determine needed indexes
-            int startIndex = index - count + 1;
-            int endIndex = index;
+            int indexOfStartBlock = IndexOfBlock(index - count + 1);
+            int indexOfEndBlock = IndexOfBlock(index);
 
-            int indexOfStartBlock, startBlockCommonStartIndex;
-            int indexOfEndBlock, endBlockCommonStartIndex;
-            IndexOfBlockAndBlockStartIndex(startIndex, out indexOfStartBlock, out startBlockCommonStartIndex);
-            IndexOfBlockAndBlockStartIndex(endIndex, out indexOfEndBlock, out endBlockCommonStartIndex);
-            //Find index of item
-            int startSubindex;
-            int endSubindex = endIndex - endBlockCommonStartIndex;
-            int currentStartIndex = endBlockCommonStartIndex + _blocks[indexOfEndBlock].Count;
             for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
             {
-                var currentBlock = _blocks[i];
-                currentStartIndex -= currentBlock.Count;
-                //Determine blockStartIndex
-                if (i == indexOfStartBlock)
-                {
-                    startSubindex = startIndex - startBlockCommonStartIndex;
-                }
-                else
-                {
-                    startSubindex = 0;
-                }
-                //Determine blockEndIndex
-                if (i != indexOfEndBlock)
-                {
-                    endSubindex = currentBlock.Count - startSubindex - 1;
-                }
+                var range = RevereseBlockRange(i, index, count);
+
                 //Try to find it in current block
-                int blockFidLastIndex = currentBlock.LastIndexOf(item, endSubindex, endSubindex - startSubindex + 1);
+                int blockFidLastIndex = _blocks[i].LastIndexOf(item, range.StartSubindex, range.Count);
                 if (blockFidLastIndex != -1)
                 {
-                    return currentStartIndex + blockFidLastIndex;
+                    return BlockStartIndex(i) + blockFidLastIndex;
                 }
             }
             //If there is no needed value
