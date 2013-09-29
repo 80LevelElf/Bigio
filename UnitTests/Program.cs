@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using BigDataCollections;
-using UnitTests;
 
 namespace UnitTests
 {
@@ -9,7 +7,6 @@ namespace UnitTests
     {
         static void Main(string[] args)
         {
-            DistributedArrayTest.GetRange();
             Console.ReadKey();
         }
     }
