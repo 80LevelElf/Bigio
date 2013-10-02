@@ -1,4 +1,4 @@
-﻿namespace BigDataCollections.Support
+﻿namespace BigDataCollections.DistributedArray.Support
 {
     public struct BlockRange
     {

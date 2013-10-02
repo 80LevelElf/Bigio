@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using BigDataCollections.Support;
+using BigDataCollections.DistributedArray.Managers;
+using BigDataCollections.DistributedArray.Support;
 
 namespace BigDataCollections
 {
@@ -18,7 +19,7 @@ namespace BigDataCollections
     /// <typeparam name="T">Type of array elements.</typeparam>
     public partial class DistributedArray<T> : IList<T>
     {
-        //User functions
+        //API
         /// <summary>
         /// Create a new instance of the DistributedArray(T) class that is empty 
         /// and has one empty block with DefaultBlockSize capacity.
@@ -199,27 +200,10 @@ namespace BigDataCollections
         /// in DistributedQueue(T) and DistributedStack(T) classes. </remarks>
         public void Clear()
         {
-            Clear(Count >= 64*MaxBlockSize);
-        }
-        /// <summary>
-        /// Removes all elements from the DistributedArray(T).
-        /// </summary>
-        /// <param name="isImmediately">If true - force call of garbadge collector
-        /// to delete all generations of garbage, otherwise - just remove links to the data
-        /// and wait whan garbadge collector remove it independently.</param>
-        /// <remarks>(!)If your change this documentation - please, dont fogret to change it
-        /// in DistributedQueue(T) and DistributedStack(T) classes. </remarks>
-        public void Clear(bool isImmediately)
-        {
             //Create new block array with empty first block
             _blocks = new List<List<T>> { new List<T>(DefaultBlockSize) };
 
             Count = 0;
-
-            if (isImmediately)
-            {
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-            }
         }
         /// <summary>
         /// Remove true if DistributedArray(T) contains value, otherwise return false.
@@ -910,11 +894,45 @@ namespace BigDataCollections
         /// <summary>
         /// Get the number of elements actually contained in the DistributedArray(T).
         /// </summary>
-        public int Count { get; private set; }
+        public int Count
+        {
+            get
+            {
+                return _count;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value", "Count cant be less then 0!");
+                }
+                //Subtraction is happaned
+                if (value < Count)
+                {
+                    GarabeCollectorManager.CurrentCountOfRemovedElements += (Count - value);
+                }
+                _count = value;
+            }
+        }
         /// <summary>
         /// Gets a value indicating whether the DistributedArray(T) is read-only.
         /// </summary>
         public bool IsReadOnly { get; private set; }
+        public GarabeCollectorManager GarabeCollectorManager
+        {
+            get
+            {
+                return _garabeCollectorManager;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "GarabeCollectorManager cant be null!");
+                }
+                _garabeCollectorManager = value;
+            }
+        }
 
         /// <summary>
         /// It is main data container where we save information.
@@ -929,6 +947,8 @@ namespace BigDataCollections
         /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
         /// </summary>
         private int _maxBlockSize;
+        private int _count;
+        private GarabeCollectorManager _garabeCollectorManager;
 
         //Support functions
         /// <summary>
@@ -1154,73 +1174,15 @@ namespace BigDataCollections
             }
         }
         /// <summary>
-        /// Check range of the the current DistributedArray(T) to valid.
-        /// </summary>
-        /// <param name="index">The zero-based starting index of range of the DistributedArray(T) to check.</param>
-        /// <param name="count">The number of elements of the range to check.</param>
-        /// <returns>Return true of range is valid, otherwise return false.</returns>
-        private bool IsValidRange(int index, int count)
-        {
-            return IsValidRange(this, index, count);
-        }
-        /// <summary>
-        /// Check range of the specified collection to valid.
-        /// </summary>
-        /// <param name="collection">Collection which must to be check.</param>
-        /// <param name="index">The zero-based starting index of range of the specified collection to check.</param>
-        /// <param name="count">The number of elements of the range to check.</param>
-        /// <returns>Return true of range is valid, otherwise return false.</returns>
-        private static bool IsValidRange(ICollection<T> collection, int index, int count)
-        {
-            return !(index < 0 || index >= collection.Count || count < 0 || index + count > collection.Count);
-        }
-        /// <summary>
-        /// Check index to valid in the current DistributedArray(T).
-        /// </summary>
-        /// <param name="index">The zero-based starting index of the DistributedArray(T) element.</param>
-        /// <returns>True if index is valid, otherwise return false.</returns>
-        private bool IsValidIndex(int index)
-        {
-            return IsValidIndex(this, index);
-        }
-        /// <summary>
-        /// Check index to valid in current DistributedArray(T).
-        /// </summary>
-        /// <param name="collection">Collection which must to be check.</param>
-        /// <param name="index">The zero-based starting index of the specified collection element.</param>
-        /// <returns>True if index is valid, otherwise return false.</returns>
-        private static bool IsValidIndex(ICollection<T> collection, int index)
-        {
-            return !(index < 0 || index >= collection.Count); 
-        }
-        /// <summary>
-        /// Check count to valid in the current DistributedArray(T).
-        /// </summary>
-        /// <param name="count">Count to check.</param>
-        /// <returns>True if count is valid, otherwise return false.</returns>
-        private bool IsValidCount(int count)
-        {
-            return IsValidCount(this, count);
-        }
-        /// <summary>
-        /// Check count to valid in the specified collection.
-        /// </summary>
-        /// <param name="collection">Collection which must to be check.</param>
-        /// <param name="count">Count to check.</param>
-        /// <returns>True if count is valid, otherwise return false.</returns>
-        private static bool IsValidCount(ICollection<T> collection, int count)
-        {
-            return !(count < 0 || count > collection.Count);
-        }
-        /// <summary>
         /// Initialize fields of object in time of creating.
         /// </summary>
         private void Initialize()
         {
             _blocks = new List<List<T>>();
             IsReadOnly = false;
-            MaxBlockSize = 4 * 1024;
-            DefaultBlockSize = 1024;
+            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
+            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
+            GarabeCollectorManager = DefaultValuesManager.GarabeCollectorManager;
         }
     }
 }

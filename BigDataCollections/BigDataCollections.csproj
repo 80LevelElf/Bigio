@@ -43,9 +43,12 @@
   <ItemGroup>
     <Compile Include="DistributedArray\DistributedArray.cs" />
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
+    <Compile Include="DistributedArray\ValidationPart.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
+    <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
+    <Compile Include="DistributedArray\Managers\GarabeCollectorManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\BlockRange.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockRange.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,6 +6,7 @@ namespace BigDataCollections
 {
     class DistributedQueue<T> : IEnumerable<T>
     {
+        //API
         /// <summary>
         /// Crerate new empty instance of DistributedQueue(T) based on DistributedArray(T).
         /// </summary>
@@ -30,16 +31,6 @@ namespace BigDataCollections
         public void Clear()
         {
             _data.Clear();
-        }
-        /// <summary>
-        /// Removes all elements from the DistributedQueue(T).
-        /// </summary>
-        /// <param name="isImmediately">If true - force call of garbadge collector
-        /// to delete all generations of garbage, otherwise - just remove links to the data
-        /// and wait whan garbadge collector remove it independently.</param>
-        public void Clear(bool isImmediately)
-        {
-            _data.Clear(isImmediately);
         }
         /// <summary>
         /// Remove true if DistributedQueue(T) contains value, otherwise return false.
