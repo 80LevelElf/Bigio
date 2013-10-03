@@ -9,7 +9,6 @@ namespace BigDataCollections.DistributedArray.Managers
         {
             DefaultBlockSize = 1024;
             MaxBlockSize = 4*DefaultBlockSize;
-            MaxCountOfRemovedElementsToCallGC = 16*MaxBlockSize;
         }
         public static int DefaultBlockSize
         {
@@ -45,32 +44,9 @@ namespace BigDataCollections.DistributedArray.Managers
                 _maxBlockSize = value;
             }
         }
-        public static int MaxCountOfRemovedElementsToCallGC
-        {
-            get
-            {
-                return _maxCountOfRemovedElementsToCallGC;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value", "MaxCountOfRemovedElementsToCallGC cant be less than 0.");
-                }
-                _maxCountOfRemovedElementsToCallGC = value;
-            }
-        }
-        public static GarabeCollectorManager GarabeCollectorManager
-        {
-            get
-            {
-                return new GarabeCollectorManager(MaxCountOfRemovedElementsToCallGC);
-            }
-        }
 
         //Data
         private static int _defaultBlockSize;
         private static int _maxBlockSize;
-        private static int _maxCountOfRemovedElementsToCallGC;
     }
 }

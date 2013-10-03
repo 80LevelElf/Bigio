@@ -1,6 +1,6 @@
 ﻿namespace BigDataCollections.DistributedArray.Support
 {
-    public struct BlockRange
+    struct BlockRange
     {
         public BlockRange(int startSubindex, int count)
         {

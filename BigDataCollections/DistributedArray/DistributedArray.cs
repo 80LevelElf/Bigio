@@ -564,40 +564,48 @@ namespace BigDataCollections
         /// <param name="item">The data to be placed.</param>
         public void Insert(int index, T item)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
             if (index == Count)
             {
                 Add(item);
                 return;
             }
 
-            //Find needed block
             int blockStartIndex;
             int indexOfBlock;
-            if (Count == 0 && index == 0) // If there is insertion in empty DistributedArray
-            {
-                blockStartIndex = 0;
-                indexOfBlock = 0;
-            }
-            else
-            {
-                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
-            }
+            IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
 
             //Insert
             int blockSubindex = index - blockStartIndex;
-            //If there is start of block - try to add item to last block(it is faster)
-            if (blockSubindex == 0 && indexOfBlock != 0)
+            var block = _blocks[indexOfBlock];
+
+            bool isMaxSize = (block.Count == MaxBlockSize);
+            bool isStartIndex = (blockSubindex == 0);
+
+            if (isMaxSize)
             {
-                _blocks[--indexOfBlock].Add(item);
-            }
-            //Otherwise insert in current block
-            else
-            {
-                _blocks[indexOfBlock].Insert(blockSubindex, item);
+                DivideBlockIfItIsTooBig(indexOfBlock);
+                Insert(index, item);
+                return;
             }
 
-            DivideBlockIfMaxSize(indexOfBlock);
+            //Try to add to the previous block
+            if (isStartIndex)
+            {
+                //If there is need - add new block
+                if (indexOfBlock == 0
+                    || (indexOfBlock != 0 && _blocks[indexOfBlock - 1].Count == MaxBlockSize))
+                {
+                    _blocks.Insert(indexOfBlock, new List<T>(DefaultBlockSize));
+                    indexOfBlock++;
+                }
+                _blocks[indexOfBlock - 1].Add(item);
+            }
+            else
+            {
+               _blocks[indexOfBlock].Insert(blockSubindex, item);
+               DivideBlockIfItIsTooBig(indexOfBlock);
+            }
+
             Count++;
         }
         /// <summary>
@@ -629,7 +637,7 @@ namespace BigDataCollections
             }
             //Insert
             _blocks[indexOfBlock].InsertRange(index - blockStartIndex, collection);
-            DivideBlockIfMaxSize(indexOfBlock);
+            DivideBlockIfItIsTooBig(indexOfBlock);
 
             Count += collection.Count;
         }
@@ -906,11 +914,6 @@ namespace BigDataCollections
                 {
                     throw new ArgumentOutOfRangeException("value", "Count cant be less then 0!");
                 }
-                //Subtraction is happaned
-                if (value < Count)
-                {
-                    GarabeCollectorManager.CurrentCountOfRemovedElements += (Count - value);
-                }
                 _count = value;
             }
         }
@@ -918,22 +921,6 @@ namespace BigDataCollections
         /// Gets a value indicating whether the DistributedArray(T) is read-only.
         /// </summary>
         public bool IsReadOnly { get; private set; }
-        public GarabeCollectorManager GarabeCollectorManager
-        {
-            get
-            {
-                return _garabeCollectorManager;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value", "GarabeCollectorManager cant be null!");
-                }
-                _garabeCollectorManager = value;
-            }
-        }
-
         /// <summary>
         /// It is main data container where we save information.
         /// It is cant be null. There is always one block even it is empty.
@@ -948,7 +935,6 @@ namespace BigDataCollections
         /// </summary>
         private int _maxBlockSize;
         private int _count;
-        private GarabeCollectorManager _garabeCollectorManager;
 
         //Support functions
         /// <summary>
@@ -995,7 +981,9 @@ namespace BigDataCollections
             //Transfer data from list to new blocks
             var item = collection.GetEnumerator();
             for (int i = 0; i < index; i++) //Move item to the index position
+            {
                 item.MoveNext();
+            }
 
             for (int i = 0; i < countOfBlocks; i++)
             {
@@ -1150,7 +1138,7 @@ namespace BigDataCollections
         /// If count of elements in specified block equal or bigger then MaxBlockCount - divide it.
         /// </summary>
         /// <param name="indexOfBlock">Index of specified block.</param>
-        private void DivideBlockIfMaxSize(int indexOfBlock)
+        private void DivideBlockIfItIsTooBig(int indexOfBlock)
         {
             if (_blocks[indexOfBlock].Count >= MaxBlockSize)
             {
@@ -1182,7 +1170,6 @@ namespace BigDataCollections
             IsReadOnly = false;
             MaxBlockSize = DefaultValuesManager.MaxBlockSize;
             DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
-            GarabeCollectorManager = DefaultValuesManager.GarabeCollectorManager;
         }
     }
 }
