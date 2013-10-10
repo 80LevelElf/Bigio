@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.Support;
+using BigDataCollections.DistributedArray.SupportClasses;
 
 namespace BigDataCollections
 {
@@ -40,7 +41,7 @@ namespace BigDataCollections
 
             if (collectionCount != 0)
             {
-                _blocks.AddRange(DivideIntoBlocks(collection));
+                _blocks.AddRange(_blocks.DivideIntoBlocks(collection));
             }
             else
             {
@@ -84,7 +85,7 @@ namespace BigDataCollections
             if (emptySize != 0)
             {
                 sizeToFill = (emptySize > collection.Count) ? collection.Count : emptySize;
-                var blocksToInsert = DivideIntoBlocks(collection, 0, sizeToFill);
+                var blocksToInsert = _blocks.DivideIntoBlocks(collection, 0, sizeToFill);
                 //Transfer data
                 var block = blocksToInsert.GetEnumerator();
                 for (int i = 0; i < blocksToInsert.Count; i++)
@@ -94,7 +95,7 @@ namespace BigDataCollections
                 }
             }
             //Transfer other data as new blocks
-            var newBlocks = DivideIntoBlocks(collection, sizeToFill);
+            var newBlocks = _blocks.DivideIntoBlocks(collection, sizeToFill);
             _blocks.AddRange(newBlocks);
 
             Count += newBlocks.Count;
@@ -200,9 +201,7 @@ namespace BigDataCollections
         /// in DistributedQueue(T) and DistributedStack(T) classes. </remarks>
         public void Clear()
         {
-            //Create new block array with empty first block
-            _blocks = new List<List<T>> { new List<T>(DefaultBlockSize) };
-
+            _blocks.Clear();
             Count = 0;
         }
         /// <summary>
@@ -264,7 +263,7 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to copy.</param>
         public void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
-            if (!IsValidIndex(index) || !IsValidRange(array, arrayIndex, count))
+            if (!IsValidIndex(index) || !ValidationManager.IsValidRange(array, arrayIndex, count))
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -489,22 +488,27 @@ namespace BigDataCollections
         /// <returns></returns>
         public DistributedArray<T> GetRange(int index, int count)
         {
-            if (!IsValidRange(index, count))
+            var newArray = new DistributedArray<T>();
+
+            var indexOfStartBlock = IndexOfBlock(index);
+            var indexOfEndBlock = IndexOfBlock(index + count - 1);
+
+            for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
             {
-                throw new ArgumentOutOfRangeException();
+                var block = _blocks[i];
+                var range = BlockRange(i, index, count);
+
+                if (block.Count != 0 && block.Count == range.Count)
+                {
+                    newArray._blocks.Add(block);
+                }
+                else
+                {
+                    newArray.AddRange(block.GetRange(range.StartSubindex, range.Count));
+                }
             }
 
-            var enumerator = GetEnumerator();
-            ((DistributedArrayEnumerator) enumerator).MoveToIndex(index);
-            var range = new DistributedArray<T>();
-            //Transfer data
-            for (int i = 0; i < count; i++)
-            {
-                range.Add(enumerator.Current);
-                enumerator.MoveNext();
-            }
-
-            return range;
+            return newArray;
         }
         /// <summary>
         /// If value conatins in DistributedArray(T) returns index of this value, otherwise return -1.
@@ -710,7 +714,7 @@ namespace BigDataCollections
                     //If there is empty block - remove it
                     if (block.Count == 0)
                     {
-                        RemoveBlock(i);
+                        _blocks.RemoveAt(i);
                     }
 
                     Count--;
@@ -736,7 +740,7 @@ namespace BigDataCollections
             //If there is empty block remove it
             if (_blocks[indexOfBlock].Count == 0)
             {
-                RemoveBlock(indexOfBlock);
+                _blocks.RemoveAt(indexOfBlock);
             }
             Count--;
         }
@@ -758,7 +762,7 @@ namespace BigDataCollections
                 //Remove data
                 if (block.Count == range.Count) //If we want to remove entire block
                 {
-                    RemoveBlock(i);
+                    _blocks.RemoveAt(i);
 
                     indexOfEndBlock--;
                     i--;
@@ -856,50 +860,6 @@ namespace BigDataCollections
             }
         }
         /// <summary>
-        /// Default size of one DistributedArray(T) block. 
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int DefaultBlockSize
-        {
-            get
-            {
-                return _defaultBlockSize;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                if (value > MaxBlockSize)
-                {
-                    throw new ArgumentOutOfRangeException("value", "DefaultBlockSize cant be more than MaxBlockSize");
-                }
-
-                _defaultBlockSize = value;
-            }
-        }
-        /// <summary>
-        /// The size of any block never will be more than this number.
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int MaxBlockSize
-        {
-            get
-            {
-                return _maxBlockSize;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-
-                _maxBlockSize = value;
-            }
-        }
-        /// <summary>
         /// Get the number of elements actually contained in the DistributedArray(T).
         /// </summary>
         public int Count
@@ -922,94 +882,78 @@ namespace BigDataCollections
         /// </summary>
         public bool IsReadOnly { get; private set; }
         /// <summary>
+        /// Default size of one DistributedArray(T) block. 
+        /// Because of the way memory allocation is most effective that it is a power of 2.
+        /// </summary>
+        public int DefaultBlockSize 
+        {
+            get
+            {
+                return _blocks.DefaultBlockSize;
+            }
+            set
+            {
+                _blocks.DefaultBlockSize = value;
+            }
+        }
+        /// <summary>
+        /// The size of any block never will be more than this number.
+        /// Because of the way memory allocation is most effective that it is a power of 2.
+        /// </summary>
+        public int MaxBlockSize
+        {
+            get
+            {
+                return _blocks.MaxBlockSize;
+            }
+            set
+            {
+                _blocks.MaxBlockSize = value;
+            }
+        }
+        /// <summary>
         /// It is main data container where we save information.
         /// It is cant be null. There is always one block even it is empty.
         /// </summary>
-        private List<List<T>> _blocks;
-        /// <summary>
-        /// Internal value of DefaultBlockSize. Never used it out of DefaultBlockSize set and get method.
-        /// </summary>
-        private int _defaultBlockSize;
-        /// <summary>
-        /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
-        /// </summary>
-        private int _maxBlockSize;
         private int _count;
+        private Blocks<T> _blocks; 
 
         //Support functions
         /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size.
+        /// Initialize fields of object in time of creating.
         /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
+        private void Initialize()
         {
-            return DivideIntoBlocks(collection, 0, collection.Count);
+            _blocks = new Blocks<T>();
+            IsReadOnly = false;
         }
         /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// Check range of the the current DistributedArray(T) to valid.
         /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index)
+        /// <param name="index">The zero-based starting index of range of the DistributedArray(T) to check.</param>
+        /// <param name="count">The number of elements of the range to check.</param>
+        /// <returns>Return true of range is valid, otherwise return false.</returns>
+        public bool IsValidRange(int index, int count)
         {
-            return DivideIntoBlocks(collection, index, collection.Count - index);
+            return ValidationManager.IsValidRange(this, index, count);
         }
         /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// Check index to valid in the current DistributedArray(T).
         /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
-        /// <param name="count">The number of elements of the collection to divide.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count)
+        /// <param name="index">The zero-based starting index of the DistributedArray(T) element.</param>
+        /// <returns>True if index is valid, otherwise return false.</returns>
+        public bool IsValidIndex(int index)
         {
-            if (index + count > collection.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
-            //Calculate blocks count
-            int countOfBlocks = count / DefaultBlockSize;
-            if (count%DefaultBlockSize != 0)
-            {
-                countOfBlocks++;
-            }
-
-            var blocks = new List<T>[countOfBlocks];
-            //Transfer data from list to new blocks
-            var item = collection.GetEnumerator();
-            for (int i = 0; i < index; i++) //Move item to the index position
-            {
-                item.MoveNext();
-            }
-
-            for (int i = 0; i < countOfBlocks; i++)
-            {
-                //Calculate curent block size
-                int currentBlockSize;
-                if (i != countOfBlocks - 1)
-                {
-                    currentBlockSize = DefaultBlockSize;
-                }
-                else
-                {
-                    currentBlockSize = count - (i*DefaultBlockSize);
-                }
-                //Declare new block
-                blocks[i] = new List<T>(currentBlockSize);
-                //Transfer data
-                for (int j = 0; j < currentBlockSize; j++)
-                {
-                    item.MoveNext();
-                    //Insert data
-                    T insertion = item.Current;
-                    blocks[i].Add(insertion);
-                }
-            }
-            //Return result
-            return blocks;
+            return ValidationManager.IsValidIndex(this, index);
+        }
+        /// <summary>
+        /// Check count to valid in the current DistributedArray(T).
+        /// </summary>
+        /// <param name="count">Count to check.</param>
+        /// <returns>True if count is valid, otherwise return false.</returns>
+        public bool IsValidCount(int count)
+        {
+            return ValidationManager.IsValidCount(this, count);
         }
         /// <summary>
         /// Calculate indexOfBlock and blockStartIndex by index. 
@@ -1142,34 +1086,11 @@ namespace BigDataCollections
         {
             if (_blocks[indexOfBlock].Count >= MaxBlockSize)
             {
-                var newBlocks = DivideIntoBlocks(_blocks[indexOfBlock]);
+                var newBlocks = _blocks.DivideIntoBlocks(_blocks[indexOfBlock]);
                 //Insert new blocks instead old block
                 _blocks.RemoveAt(indexOfBlock);
                 _blocks.InsertRange(indexOfBlock, newBlocks);
             }
-        }
-        /// <summary>
-        /// Removes the block at the specified index of the _blocks.
-        /// </summary>
-        /// <param name="indexOfBlock">The zero-based index of the block to remove.</param>
-        private void RemoveBlock(int indexOfBlock)
-        {
-            _blocks.RemoveAt(indexOfBlock);
-            //If there is no any blocks - add empty block
-            if (_blocks.Count == 0)
-            {
-                _blocks.Add(new List<T>(DefaultBlockSize));
-            }
-        }
-        /// <summary>
-        /// Initialize fields of object in time of creating.
-        /// </summary>
-        private void Initialize()
-        {
-            _blocks = new List<List<T>>();
-            IsReadOnly = false;
-            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
-            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
         }
     }
 }

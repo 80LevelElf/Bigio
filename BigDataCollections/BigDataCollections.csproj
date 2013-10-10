@@ -43,7 +43,8 @@
   <ItemGroup>
     <Compile Include="DistributedArray\DistributedArray.cs" />
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
-    <Compile Include="DistributedArray\ValidationPart.cs" />
+    <Compile Include="DistributedArray\Managers\ValidationManager.cs" />
+    <Compile Include="DistributedArray\SupportClasses\Blocks.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
     <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
