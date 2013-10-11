@@ -51,7 +51,7 @@ namespace BigDataCollections
             Count = collectionCount;
         }
         /// <summary>
-        /// Add an object to the end of last block of the DistributedArray(T) or if there is needed - create new block.
+        /// Add an object to the end of last block of the DistributedArray(T).
         /// </summary>
         public void Add(T value)
         {            
@@ -562,7 +562,7 @@ namespace BigDataCollections
             return -1;
         }
         /// <summary>
-        /// Inserts an element into the DistributedArray(T) at the index.
+        /// Inserts an element into the DistributedArray(T) at the specified index.
         /// </summary>
         /// <param name="index">Index of DistibutedArray(T) where the value will be.</param>
         /// <param name="item">The data to be placed.</param>

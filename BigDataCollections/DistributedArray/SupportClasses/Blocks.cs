@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using BigDataCollections.DistributedArray.Managers;
 
 namespace BigDataCollections.DistributedArray.SupportClasses
@@ -9,21 +10,49 @@ namespace BigDataCollections.DistributedArray.SupportClasses
     class Blocks<T> : IEnumerable<List<T>>
     {
         //API
+        /// <summary>
+        /// Create a new instance of Blocks(T) class.
+        /// Blocks(T) is a shell of blocks collection, which use for more
+        /// simple usage of it.
+        /// </summary>
         public Blocks():this(new Collection<T>())
         {
         }
+        /// <summary>
+        /// Create a new instance of Blocks(T) class.
+        /// Blocks(T) is a shell of blocks collection, which use for more
+        /// simple usage of it. 
+        /// </summary>
+        /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
+        /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
         public Blocks(ICollection<T> collection)
         {
             MaxBlockSize = DefaultValuesManager.MaxBlockSize;
             DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
             _blocks = new List<List<T>>(DivideIntoBlocks(collection));
         }
+        /// <summary>
+        /// Add new block to the end of collection of blocks of the DistributedArray(T).
+        /// </summary>
+        /// <param name="block">Block to add. Block cant be null.</param>
         public void Add(List<T> block)
         {
+            if (block == null)
+            {
+                throw new ArgumentNullException("block");
+            }
             _blocks.Add(block);
         }
+        /// <summary>
+        /// Add range of blocks to the end of the collection of blocks.
+        /// </summary>
+        /// <param name="range">Collection of blocks to add. It cant be null.</param>
         public void AddRange(IEnumerable<List<T>> range)
         {
+            if (range == null)
+            {
+                throw new ArgumentNullException("range");
+            }
             _blocks.AddRange(range);
         }
         /// <summary>
@@ -118,6 +147,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 _blocks.Add(new List<T>(DefaultBlockSize));
             }
         }
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection of blocks.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<List<T>> GetEnumerator()
         {
             return _blocks.GetEnumerator();
@@ -126,14 +159,35 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         {
             return GetEnumerator();
         }
+        /// <summary>
+        /// Inserts an element into the DistributedArray(T) at the specified index.
+        /// </summary>
+        /// <param name="index">Index of collection of block where the new block will be.</param>
+        /// <param name="block">Block to insert.</param>
         public void Insert(int index, List<T> block)
         {
             _blocks.Insert(index, block);
         }
+        /// <summary>
+        /// Inserts the elements of a block range into the block collection at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="range">The range whose elements should be inserted into the block collection.
+        ///  The range it self cannot be null, and cant contain null blocks.</param>
         public void InsertRange(int index, IEnumerable<List<T>> range)
         {
-            _blocks.InsertRange(index, range);
+            //We need to get enumerable because of multiple enumaration.
+            var enumerable = range as List<T>[] ?? range.ToArray();
+            if (enumerable.Any(block => block == null))
+            {
+                throw new ArgumentNullException();
+            }
+
+            _blocks.InsertRange(index, enumerable);
         }
+        /// <summary>
+        ///  Reverses the order of the blocks in the entire block collection.
+        /// </summary>
         public void Reverse()
         {
             _blocks.Reverse();
