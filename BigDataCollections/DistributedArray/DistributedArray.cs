@@ -381,7 +381,7 @@ namespace BigDataCollections
             for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
             {
                 var blockRange = range[i - range.IndexOfStartBlock];
-                int findIndexResult = _blocks[i].FindIndex(blockRange.StartSubindex, blockRange.Count, match);
+                int findIndexResult = _blocks[i].FindIndex(blockRange.Subindex, blockRange.Count, match);
 
                 if (findIndexResult != -1)
                 {
@@ -439,7 +439,7 @@ namespace BigDataCollections
         /// last occurrence within the range of elements in the DistributedArray(T) that contains the specified number of elements and ends at the specified index.
         /// </summary>
         /// <param name="index">The zero-based starting index of the backward search.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
+        /// <param name="count">The number of elements to search.</param>
         /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
         /// <returns></returns>
         public int FindLastIndex(int index, int count, Predicate<T> match)
@@ -449,18 +449,18 @@ namespace BigDataCollections
                 throw new ArgumentOutOfRangeException("match");
             }
 
-            int indexOfStartBlock = IndexOfBlock(index - count + 1);
-            int indexOfEndBlock = IndexOfBlock(index);
+            var range = ReverseMultyblockRange(index, count);
 
-            //Find index of item
-            for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
+            //Find it
+            for (int i = range.IndexOfStartBlock; i >= range.IndexOfStartBlock - range.Count + 1; i--)
             {
-                var range = RevereseBlockRange(i, index, count);
+                var blockRange = range[i];
+
                 //Try to find it in current block
-                int lastSubindex = _blocks[i].FindLastIndex(range.StartSubindex, range.Count, match);
-                if (lastSubindex != -1)
+                int findLastIndexResult = _blocks[i].FindLastIndex(blockRange.Subindex, blockRange.Count, match);
+                if (findLastIndexResult != -1)
                 {
-                    return BlockStartIndex(i) + lastSubindex;
+                    return blockRange.CommonBlockStartIndex + findLastIndexResult;
                 }
             }
             //If there is no needed value
@@ -500,7 +500,7 @@ namespace BigDataCollections
                     }
                     else
                     {
-                        newArray.AddRange(block.GetRange(blockRange.StartSubindex, blockRange.Count));
+                        newArray.AddRange(block.GetRange(blockRange.Subindex, blockRange.Count));
                     }
                 }
             }
@@ -546,7 +546,7 @@ namespace BigDataCollections
             for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
             {
                 var blockRange = range[i - range.IndexOfStartBlock];
-                int indexOfResult = _blocks[i].IndexOf(item, blockRange.StartSubindex, blockRange.Count);
+                int indexOfResult = _blocks[i].IndexOf(item, blockRange.Subindex, blockRange.Count);
 
                 if (indexOfResult != -1)
                 {
@@ -673,18 +673,18 @@ namespace BigDataCollections
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
-            int indexOfStartBlock = IndexOfBlock(index - count + 1);
-            int indexOfEndBlock = IndexOfBlock(index);
+            var range = ReverseMultyblockRange(index, count);
 
-            for (int i = indexOfEndBlock; i >= indexOfStartBlock; i--)
+            //Find it
+            for (int i = range.IndexOfStartBlock; i >= range.IndexOfStartBlock - range.Count + 1; i--)
             {
-                var range = RevereseBlockRange(i, index, count);
+                var blockRange = range[i];
 
                 //Try to find it in current block
-                int blockFidLastIndex = _blocks[i].LastIndexOf(item, range.StartSubindex, range.Count);
-                if (blockFidLastIndex != -1)
+                int lastIndexOfResult = _blocks[i].LastIndexOf(item, blockRange.Subindex, blockRange.Count);
+                if (lastIndexOfResult != -1)
                 {
-                    return BlockStartIndex(i) + blockFidLastIndex;
+                    return blockRange.CommonBlockStartIndex + lastIndexOfResult;
                 }
             }
             //If there is no needed value
@@ -762,7 +762,7 @@ namespace BigDataCollections
                     }
                     else
                     {
-                        block.RemoveRange(blockRange.StartSubindex, blockRange.Count);
+                        block.RemoveRange(blockRange.Subindex, blockRange.Count);
                     }
                 }
             }
@@ -805,6 +805,29 @@ namespace BigDataCollections
                 block.TrimExcess();
             }
         }
+        /// <summary>
+        /// Gets or sets the element at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the element to get or set. </param>
+        public T this[int index]
+        {
+            get
+            {
+                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
+                int indexOfBlock;
+                int blockStartIndex;
+                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
+                return _blocks[indexOfBlock][index - blockStartIndex];
+            }
+            set
+            {
+                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
+                int indexOfBlock;
+                int blockStartIndex;
+                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
+                _blocks[indexOfBlock][index - blockStartIndex] = value;
+            }
+        }
 
         //Debug functions
 #if DEBUG
@@ -829,29 +852,6 @@ namespace BigDataCollections
 #endif
 
         //Data
-        /// <summary>
-        /// Gets or sets the element at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index of the element to get or set. </param>
-        public T this[int index]
-        {
-            get
-            {
-                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
-                int indexOfBlock;
-                int blockStartIndex;
-                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
-                return _blocks[indexOfBlock][index - blockStartIndex];
-            }
-            set
-            {
-                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
-                int indexOfBlock;
-                int blockStartIndex;
-                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
-                _blocks[indexOfBlock][index - blockStartIndex] = value;
-            }
-        }
         /// <summary>
         /// Get the number of elements actually contained in the DistributedArray(T).
         /// </summary>
@@ -909,6 +909,9 @@ namespace BigDataCollections
         /// It is cant be null. There is always one block even it is empty.
         /// </summary>
         private int _count;
+        /// <summary>
+        /// The blocks object provides API for easy work with blocks.
+        /// </summary>
         private Blocks<T> _blocks; 
 
         //Support functions
@@ -1005,57 +1008,12 @@ namespace BigDataCollections
             return indexOfBlock;
         }
         /// <summary>
-        /// Calculate a subrange in the needed block of range by index and count.
+        /// Calculate a block range for all blocks that overlap with specified range.
+        /// Block range provide information about overlapping specified range and block.
         /// </summary>
-        /// <param name="indexOfBlock">Block where we need to calculate subrange.</param>
-        /// <param name="index">Zero-based start index of miltyblock range.</param>
-        /// <param name="count">Count of elements of multyblock range.</param>
-        /// <returns>Subrange in the needed block of range by index and count.</returns>
-        private BlockRange BlockRange(int indexOfBlock, int index, int count)
-        {
-            if (!IsValidRange(index, count) || indexOfBlock >= _blocks.Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            var range = new BlockRange();
-
-            var startIndex = index;
-            var endIndex = index + count - 1;
-            var blockStartIndex = BlockStartIndex(indexOfBlock);
-            var blockEndIndex = blockStartIndex + _blocks[indexOfBlock].Count - 1;
-
-            //If needed block is out
-            if (endIndex < blockStartIndex || startIndex > blockEndIndex)
-            {
-                range.StartSubindex = 0;
-                range.Count = 0;
-            }
-            else
-            {
-                //StartSubindex
-                if (blockStartIndex > startIndex)
-                {
-                    range.StartSubindex = 0;
-                }
-                else
-                {
-                    range.StartSubindex = startIndex - blockStartIndex;
-                }
-
-                //Count
-                if (blockEndIndex < endIndex)
-                {
-                    range.Count = blockEndIndex - (blockStartIndex + range.StartSubindex) + 1;
-                }
-                else
-                {
-                    range.Count = endIndex - (blockStartIndex + range.StartSubindex) + 1;
-                }
-            }
-
-            return range;
-        }
+        /// <param name="index">The zero-based starting index of range of the DistributedArray(T) to check.</param>
+        /// <param name="count">The number of elements of the range to check.</param>
+        /// <returns>Return MultyblockRange object provides information about overlapping of specified range and block.</returns>
         private MultyblockRange MultyblockRange(int index, int count)
         {
             if (!IsValidRange(index, count))
@@ -1108,17 +1066,28 @@ namespace BigDataCollections
             return new MultyblockRange(indexOfStartBlock, ranges.ToArray());
         }
         /// <summary>
-        /// Calculate a reverse subrange in the needed block of range by index and count.
-        /// Reverse range is range where index situated in the end of range.
+        /// Calculate a reverse block range for all blocks that overlap with specified range.
+        /// Block range provide information about overlapping specified range and block.
+        /// Reverse MultyblockRange start with last BlockRange(IndexOfStartBlock is index of last overlap block)
+        /// , but blocks in array are in the right order.
         /// </summary>
-        /// <param name="indexOfBlock">>Block where we need to calculate subrange.</param>
-        /// <param name="index">Zero-based start index of miltyblock range.</param>
-        /// <param name="count">Count of elements of multyblock range.</param>
-        /// <returns></returns>
-        private BlockRange RevereseBlockRange(int indexOfBlock, int index, int count)
+        /// <param name="index">The zero-based starting index of the backward calculation of overlapping.</param>
+        /// <param name="count">The number of elements to overlapping calculate.</param>
+        /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
+        private MultyblockRange ReverseMultyblockRange(int index, int count)
         {
-            var range = BlockRange(indexOfBlock, index - count + 1, count);
-            var reverseRange = new BlockRange(range.StartSubindex + range.Count - 1, range.Count);
+            var range = MultyblockRange(index - count + 1, count);
+            var reverseRange = new MultyblockRange(range.IndexOfStartBlock + range.Count - 1, new BlockRange[range.Count]);
+
+            //Reverse all block ranges
+            for (int i = 0; i < range.Count; i++)
+            {
+                var currentBlockRange = range[i];
+                var reverseBlockRange = new BlockRange(currentBlockRange.Subindex + currentBlockRange.Count - 1
+                    , currentBlockRange.Count, currentBlockRange.CommonBlockStartIndex);
+
+                reverseRange[i] = reverseBlockRange;
+            }
 
             return reverseRange;
         }

@@ -2,14 +2,16 @@
 {
     struct BlockRange
     {
-        public BlockRange(int startSubindex, int count, int commonBlockStartIndex = -1)
+        //API
+        public BlockRange(int subindex, int count, int commonBlockStartIndex = -1)
         {
-            StartSubindex = startSubindex;
+            Subindex = subindex;
             CommonBlockStartIndex = commonBlockStartIndex;
             Count = count;
         }
 
-        public int StartSubindex;
+        //Data
+        public int Subindex;
         public int CommonBlockStartIndex;
         public int Count;
     }

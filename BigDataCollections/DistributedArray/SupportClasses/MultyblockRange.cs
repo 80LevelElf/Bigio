@@ -55,6 +55,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses
             {
                 return Ranges[index];
             }
+            set
+            {
+                Ranges[index] = value;
+            }
         }
 
         //Data

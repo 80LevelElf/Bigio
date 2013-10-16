@@ -192,8 +192,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         {
             _blocks.Reverse();
         }
-
-        //Data
+        /// <summary>
+        /// Gets or sets the block at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the block to get or set.</param>
         public List<T> this[int index]
         {
             get
@@ -201,6 +203,8 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 return _blocks[index];
             }
         }
+
+        //Data
         /// <summary>
         /// Default size of one DistributedArray(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -245,6 +249,9 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 _maxBlockSize = value;
             }
         }
+        /// <summary>
+        /// Get the number of blocks actually contained in the block collection.
+        /// </summary>
         public int Count
         {
             get
@@ -261,6 +268,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
         /// </summary>
         private int _maxBlockSize;
+        /// <summary>
+        /// Collection with blocks provides the main data object in the Blocks class.
+        /// It contain at least one block(this block can be empty).
+        /// </summary>
         private readonly List<List<T>> _blocks;
     }
 }
