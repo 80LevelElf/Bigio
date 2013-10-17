@@ -48,6 +48,7 @@
     <Compile Include="DistributedArray\SupportClasses\MultyblockRange.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
     <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
+    <Compile Include="DistributedStack\DistributedStack.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockRange.cs" />
   </ItemGroup>

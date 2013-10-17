@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace BigDataCollections
 {
+    /// <summary>
+    /// Represents a first-in, first-out collection of objects based on DistributedArray(T).
+    /// </summary>
+    /// <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
     class DistributedQueue<T> : IEnumerable<T>
     {
         //API
         /// <summary>
         /// Crerate new empty instance of DistributedQueue(T) based on DistributedArray(T).
         /// </summary>
-        public DistributedQueue()
+        public DistributedQueue() : this(new Collection<T>())
         {
-            _data = new DistributedArray<T>();
+            
         }
         /// <summary>
         /// Crerate new instance of DistributedQueue(T) based on DistributedArray(T) using specified collection.
@@ -21,7 +26,7 @@ namespace BigDataCollections
         /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
         public DistributedQueue(ICollection<T> collection)
         {
-            _data = new DistributedArray<T>(collection);
+            _array = new DistributedArray<T>(collection);
         }
         /// <summary>
         /// Removes all elements from the DistributedQueue(T). If there is too many elements
@@ -30,7 +35,7 @@ namespace BigDataCollections
         /// </summary>
         public void Clear()
         {
-            _data.Clear();
+            _array.Clear();
         }
         /// <summary>
         /// Remove true if DistributedQueue(T) contains value, otherwise return false.
@@ -38,16 +43,7 @@ namespace BigDataCollections
         /// <param name="item">Data to be checked.</param>
         public bool Contains(T item)
         {
-            return _data.Contains(item);
-        }
-        /*/// <summary>
-        /// Copies the entire DistributedQueue(T) to a compatible one-dimensional array, starting at the beginning of the target array.
-        /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from DistributedQueue(T).
-        ///  The Array must have zero-based indexing.</param>
-        public void CopyTo(T[] array)
-        {
-            _data.CopyTo(array);
+            return _array.Contains(item);
         }
         /// <summary>
         /// Copies the entire DistributedQueue(T) to a compatible one-dimensional array, starting at the specified index of the target array.
@@ -57,22 +53,22 @@ namespace BigDataCollections
         /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            _data.CopyTo(array, arrayIndex);
-        }*/
+            _array.CopyTo(array, arrayIndex);
+        }
         /// <summary>
         /// Removes and returns the object at the beginning of the DistributedQueue(T).
         /// </summary>
         /// <returns>The object that is removed from the beginning of the DistributedQueue(T).</returns>
         public T Dequeue()
         {
-            if (_data.Count == 0)
+            if (_array.Count == 0)
             {
                 throw new InvalidOperationException("There queue is empty!");
             }
 
-            int lastIndex = _data.Count - 1;
-            T item = _data[lastIndex];
-            _data.RemoveAt(lastIndex);
+            int lastIndex = _array.Count - 1;
+            T item = _array[lastIndex];
+            _array.RemoveAt(lastIndex);
 
             return item;
         }
@@ -82,14 +78,14 @@ namespace BigDataCollections
         /// <param name="item">The object to add to the DistributedQueue(T). The value can benull for reference types.</param>
         public void Enqueue(T item)
         {
-            _data.Add(item);
+            _array.Add(item);
         }
         /// <summary>
         /// Returns an enumerator that iterates through the DistributedArray(T).
         /// </summary>
         public IEnumerator<T> GetEnumerator()
         {
-            return _data.GetEnumerator();
+            return _array.GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -101,12 +97,12 @@ namespace BigDataCollections
         /// <returns>The object at the beginning of the DistributedArray(T).</returns>
         public T Peek()
         {
-            if (_data.Count == 0)
+            if (_array.Count == 0)
             {
                 throw new InvalidOperationException("There queue is empty!");
             }
 
-            return _data[0];
+            return _array[0];
         }
         /// <summary>
         /// Copies the elements of the DistributedQueue(T) to a new array.
@@ -114,14 +110,14 @@ namespace BigDataCollections
         /// <returns>An array containing copies of the elements of the DistributedQueue(T).</returns>
         public T[] ToArray()
         {
-            return _data.ToArray();
+            return _array.ToArray();
         }
         /// <summary>
         /// Sets the capacity of every block of based DistributedArray(T) to the actual number of elements in it.
         /// </summary>
         public void TrimExcess()
         {
-            _data.TrimExcess();
+            _array.TrimExcess();
         }
 
         //Data
@@ -133,11 +129,11 @@ namespace BigDataCollections
         {
             get
             {
-                return _data.DefaultBlockSize;
+                return _array.DefaultBlockSize;
             }
             set
             {
-                _data.DefaultBlockSize = value;
+                _array.DefaultBlockSize = value;
             }
         }
         /// <summary>
@@ -148,11 +144,11 @@ namespace BigDataCollections
         {
             get
             {
-                return _data.MaxBlockSize;
+                return _array.MaxBlockSize;
             }
             set
             {
-                _data.MaxBlockSize = value;
+                _array.MaxBlockSize = value;
             }
         }
         /// <summary>
@@ -162,7 +158,7 @@ namespace BigDataCollections
         {
             get
             {
-                return _data.Count;
+                return _array.Count;
             }
         }
         /// <summary>
@@ -172,10 +168,10 @@ namespace BigDataCollections
         {
             get
             {
-                return _data.IsReadOnly;
+                return _array.IsReadOnly;
             }
         }
 
-        private readonly DistributedArray<T> _data;
+        private readonly DistributedArray<T> _array;
     }
 }
