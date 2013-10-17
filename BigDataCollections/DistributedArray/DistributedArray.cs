@@ -153,6 +153,11 @@ namespace BigDataCollections
                 comparer = Comparer<T>.Default;
             }
 
+            if (index == 0 && count == 0)
+            {
+                return ~0;
+            }
+
             int startIndex = index;
             int endIndex = index + count;
             T middleValue;
@@ -262,6 +267,12 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to copy.</param>
         public void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
+            //If there is empty distributed array
+            if (index == 0 && Count == 0)
+            {
+                return;
+            }
+
             if (!IsValidIndex(index) || !ValidationManager.IsValidRange(array, arrayIndex, count))
             {
                 throw new ArgumentOutOfRangeException();
@@ -421,7 +432,8 @@ namespace BigDataCollections
         /// <returns>The zero-based index of the last occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
         public int FindLastIndex(Predicate<T> match)
         {
-            return FindLastIndex(Count - 1, Count, match);
+            int index = (Count == 0) ? 0 : Count - 1;
+            return FindLastIndex(index, Count, match);
         }
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the last 
@@ -1031,7 +1043,9 @@ namespace BigDataCollections
             //If user want to select empty block
             if (count == 0)
             {
-                return new MultyblockRange(BlockStartIndex(IndexOfBlock(index)), new BlockRange[0]);
+                return (index == 0) 
+                    ? new MultyblockRange(0, new BlockRange[0]) 
+                    : new MultyblockRange(BlockStartIndex(IndexOfBlock(index)), new BlockRange[0]);
             }
 
             for (int i = 0; i < _blocks.Count; i++)
@@ -1076,8 +1090,15 @@ namespace BigDataCollections
         /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
         private MultyblockRange ReverseMultyblockRange(int index, int count)
         {
-            var range = MultyblockRange(index - count + 1, count);
-            var reverseRange = new MultyblockRange(range.IndexOfStartBlock + range.Count - 1, new BlockRange[range.Count]);
+            int normalIndex = (index == 0 && count == 0) ? 0 : index - count + 1;
+            var range = MultyblockRange(normalIndex, count);
+
+            int indexOfStartBlock = range.IndexOfStartBlock + range.Count - 1;
+            if (indexOfStartBlock < 0)
+            {
+                indexOfStartBlock = 0;
+            }
+            var reverseRange = new MultyblockRange(indexOfStartBlock, new BlockRange[range.Count]);
 
             //Reverse all block ranges
             for (int i = 0; i < range.Count; i++)

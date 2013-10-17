@@ -13,7 +13,7 @@ namespace BigDataCollections.DistributedArray.Managers
         /// <returns>Return true of range is valid, otherwise return false.</returns>
         public static bool IsValidRange<T>(ICollection<T> collection, int index, int count)
         {
-            return !(index < 0 || index >= collection.Count || count < 0 || index + count > collection.Count);
+            return !(index < 0 || count < 0 || index + count > collection.Count);
         }
         /// <summary>
         /// Check index to valid in current DistributedArray(T).
