@@ -197,12 +197,8 @@ namespace BigDataCollections
             return ~(endIndex + counter);
         }
         /// <summary>
-        /// Removes all elements from the DistributedArray(T). If there is too many elements
-        /// (at this moment if count of elements is more or equal than 64*MaxBlockSize) -
-        /// force call of garbadge collector to delete all generations of garbage.
+        /// Removes all elements from the DistributedArray(T).
         /// </summary>
-        /// <remarks>(!)If your change this documentation - please, dont fogret to change it
-        /// in DistributedQueue(T) and DistributedStack(T) classes. </remarks>
         public void Clear()
         {
             _blocks.Clear();

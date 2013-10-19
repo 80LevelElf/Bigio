@@ -29,9 +29,7 @@ namespace BigDataCollections
             _array = new DistributedArray<T>(collection);
         }
         /// <summary>
-        /// Removes all elements from the DistributedQueue(T). If there is too many elements
-        /// (at this moment if count of elements is more or equal than 64*MaxBlockSize) -
-        /// force call of garbadge collector to delete all generations of garbage.
+        /// Removes all elements from the DistributedQueue(T). 
         /// </summary>
         public void Clear()
         {
