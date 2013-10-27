@@ -160,12 +160,11 @@ namespace BigDataCollections
 
             int startIndex = index;
             int endIndex = index + count;
-            T middleValue;
 
             while (startIndex <= endIndex)
             {
                 int middlePosition = (startIndex + endIndex)/2;
-                middleValue = this[middlePosition];
+                T middleValue = this[middlePosition];
                 //Compare
                 int comparerResult = comparer.Compare(item, middleValue);
                 switch (comparerResult)
@@ -577,20 +576,18 @@ namespace BigDataCollections
                 return;
             }
 
-            int blockStartIndex;
-            int indexOfBlock;
-            IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
+            var blockInfo = BlockInformation(index);
 
             //Insert
-            int blockSubindex = index - blockStartIndex;
-            var block = _blocks[indexOfBlock];
+            int blockSubindex = index - blockInfo.BlockStartIndex;
+            var block = _blocks[blockInfo.IndexOfBlock];
 
             bool isMaxSize = (block.Count == MaxBlockSize);
             bool isStartIndex = (blockSubindex == 0);
 
             if (isMaxSize)
             {
-                DivideBlockIfItIsTooBig(indexOfBlock);
+                DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
                 Insert(index, item);
                 return;
             }
@@ -599,18 +596,18 @@ namespace BigDataCollections
             if (isStartIndex)
             {
                 //If there is need - add new block
-                if (indexOfBlock == 0
-                    || (indexOfBlock != 0 && _blocks[indexOfBlock - 1].Count == MaxBlockSize))
+                if (blockInfo.IndexOfBlock == 0
+                    || (blockInfo.IndexOfBlock != 0 && _blocks[blockInfo.IndexOfBlock - 1].Count == MaxBlockSize))
                 {
-                    _blocks.Insert(indexOfBlock, new List<T>(DefaultBlockSize));
-                    indexOfBlock++;
+                    _blocks.Insert(blockInfo.IndexOfBlock, new List<T>(DefaultBlockSize));
+                    blockInfo.IndexOfBlock++;
                 }
-                _blocks[indexOfBlock - 1].Add(item);
+                _blocks[blockInfo.IndexOfBlock - 1].Add(item);
             }
             else
             {
-               _blocks[indexOfBlock].Insert(blockSubindex, item);
-               DivideBlockIfItIsTooBig(indexOfBlock);
+                _blocks[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
+                DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
             }
 
             Count++;
@@ -623,28 +620,27 @@ namespace BigDataCollections
         ///  The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
         public void InsertRange(int index, ICollection<T> collection)
         {
-            //Validate of index and count check in IndexOfBlockAndBlockStartIndex
+            //Validate of index and count check in BlockInformation
 
-            int indexOfBlock;
-            int blockStartIndex;
+            var blockInfo = new BlockInformation();
             //Determine indexOfBlock and blockStartIndex
             if (index == Count)
             {
-                indexOfBlock = _blocks.Count - 1;
-                blockStartIndex = Count - _blocks[indexOfBlock].Count;
+                blockInfo.IndexOfBlock = _blocks.Count - 1;
+                blockInfo.BlockStartIndex = Count - _blocks[blockInfo.IndexOfBlock].Count;
             }
             else if (Count == 0 && index == 0) // If there is insertion in empty DistributedArray
             {
-                indexOfBlock = 0;
-                blockStartIndex = 0;
+                blockInfo.IndexOfBlock = 0;
+                blockInfo.BlockStartIndex = 0;
             }
             else
             {
-                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex); // Default case
+                blockInfo = BlockInformation(index); // Default case
             }
             //Insert
-            _blocks[indexOfBlock].InsertRange(index - blockStartIndex, collection);
-            DivideBlockIfItIsTooBig(indexOfBlock);
+            _blocks[blockInfo.IndexOfBlock].InsertRange(index - blockInfo.BlockStartIndex, collection);
+            DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
         }
@@ -733,17 +729,15 @@ namespace BigDataCollections
         /// <param name="index">The zero-based index of the element to remove.</param>
         public void RemoveAt(int index)
         {
-            //Validate of index check in IndexOfBlockAndBlockStartIndex
-            //Calculate position of this element
-            int indexOfBlock;
-            int blockStartIndex;
-            IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
+            //Validate of index check in BlockInformation
+
+            var blockInfo = BlockInformation(index);
             //Remove
-            _blocks[indexOfBlock].RemoveAt(index - blockStartIndex);
+            _blocks[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.BlockStartIndex);
             //If there is empty block remove it
-            if (_blocks[indexOfBlock].Count == 0)
+            if (_blocks[blockInfo.IndexOfBlock].Count == 0)
             {
-                _blocks.RemoveAt(indexOfBlock);
+                _blocks.RemoveAt(blockInfo.IndexOfBlock);
             }
             Count--;
         }
@@ -821,19 +815,15 @@ namespace BigDataCollections
         {
             get
             {
-                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
-                int indexOfBlock;
-                int blockStartIndex;
-                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
-                return _blocks[indexOfBlock][index - blockStartIndex];
+                //Check for exceptions in BlockInformation()
+                var blockInfo = BlockInformation(index);
+                return _blocks[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex];
             }
             set
             {
-                //Check for exceptions in IndexOfBlockAndBlockStartIndex()
-                int indexOfBlock;
-                int blockStartIndex;
-                IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
-                _blocks[indexOfBlock][index - blockStartIndex] = value;
+                //Check for exceptions in BlockInformation()
+                var blockInfo = BlockInformation(index);
+                _blocks[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
             }
         }
 
@@ -963,9 +953,7 @@ namespace BigDataCollections
         /// Calculate indexOfBlock and blockStartIndex by index. 
         /// </summary>
         /// <param name="index">Common index of element in DistributedArray(T). index = [0; Count).</param>
-        /// <param name="indexOfBlock">Index of block where situate index. indexOfBlock = [0; _blocks.Count).</param>
-        /// <param name="blockStartIndex">Common index, which is start index of _blocks[indexOfBlock].</param>
-        private void IndexOfBlockAndBlockStartIndex(int index, out int indexOfBlock, out int blockStartIndex)
+        private BlockInformation BlockInformation(int index)
         {
             if (!IsValidIndex(index))
             {
@@ -973,8 +961,8 @@ namespace BigDataCollections
             }
 
             //Find needed block
-            blockStartIndex = 0;
-            indexOfBlock = 0;
+            int blockStartIndex = 0;
+            int indexOfBlock = 0;
             for (int i = 0; i < _blocks.Count; i++)
             {
                 var block = _blocks[i];
@@ -987,6 +975,8 @@ namespace BigDataCollections
 
                 blockStartIndex += block.Count;
             }
+
+            return new BlockInformation(indexOfBlock, blockStartIndex);
         }
         /// <summary>
         /// Calculate start zero-based common index of specified block.
@@ -1010,10 +1000,8 @@ namespace BigDataCollections
         /// <returns>Index of block witch containt element with specified zero-base index.</returns>
         private int IndexOfBlock(int index)
         {
-            int indexOfBlock, blockStartIndex;
-            IndexOfBlockAndBlockStartIndex(index, out indexOfBlock, out blockStartIndex);
-
-            return indexOfBlock;
+            var blockInfo = BlockInformation(index);
+            return blockInfo.IndexOfBlock;
         }
         /// <summary>
         /// Calculate a block range for all blocks that overlap with specified range.

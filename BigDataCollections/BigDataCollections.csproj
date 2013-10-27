@@ -46,6 +46,7 @@
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />
     <Compile Include="DistributedArray\SupportClasses\Blocks.cs" />
     <Compile Include="DistributedArray\SupportClasses\MultyblockRange.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockInformation.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
     <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
     <Compile Include="DistributedStack\DistributedStack.cs" />

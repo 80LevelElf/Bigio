@@ -93,6 +93,9 @@ namespace UnitTests
             Assert.AreEqual(~distributedArray.BinarySearch(0, 64, 130, Comparer<int>.Default), 64);
             Assert.AreEqual(~distributedArray.BinarySearch(-100), 0);
             Assert.AreEqual(~distributedArray.BinarySearch(1), 1);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(~emptyArray.BinarySearch(1), 0);
         }
         [Test]
         public static void Contains()
@@ -102,20 +105,27 @@ namespace UnitTests
             Assert.IsFalse(distributedArray.Contains(0));
             Assert.IsTrue(distributedArray.Contains(1));
             Assert.IsFalse(distributedArray.Contains(2));
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.Contains(0), false);
         }
         [Test]
         public static void CopyTo()
         {
             var distibutedArray = new DistributedArray<int> {1,2,3};
-            var arr = new int[8];
+            var array = new int[8];
 
-            distibutedArray.CopyTo(arr);
-            distibutedArray.CopyTo(arr, 3);
-            distibutedArray.CopyTo(1, arr, 6, 2);
+            distibutedArray.CopyTo(array);
+            distibutedArray.CopyTo(array, 3);
+            distibutedArray.CopyTo(1, array, 6, 2);
 
             var resultArray = new[] {1, 2, 3, 1, 2, 3, 2, 3};
+
+            var emptyArray = new DistributedArray<int>();
+            emptyArray.CopyTo(array);
+
             //Arr must be equal resultArray
-            Assert.IsFalse(arr.Where((t, i) => t != resultArray[i]).Any());
+            Assert.IsFalse(array.Where((t, i) => t != resultArray[i]).Any());
         }
         [Test]
         public static void FindIndex()
@@ -137,6 +147,9 @@ namespace UnitTests
             Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
             Assert.AreEqual(distributedArray.FindIndex(IsEqual128000), -1);
             Assert.AreEqual(distributedArray.FindIndex(5001, 1000, IsEqual5000), -1);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.FindIndex(IsEqual0), -1);
         }
         [Test]
         public static void FindLastIndex()
@@ -158,13 +171,19 @@ namespace UnitTests
             Assert.AreEqual(distributedArray.FindLastIndex(4999, 5000, IsEqual5000), -1);
             Assert.AreEqual(distributedArray.FindLastIndex(IsEqual128000), -1);
             Assert.AreEqual(distributedArray.FindLastIndex(5001, 1000, IsEqual5000), 5000);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.FindLastIndex(IsEqual0), -1);
         }
         [Test]
         public static void Find()
         {
             var distributeArray = new DistributedArray<int> {1, 2, 3, 4};
-            Assert.IsTrue(distributeArray.Find(IsEqual0) == 0);
-            Assert.IsTrue(distributeArray.Find(IsEqual2) == 2);
+            Assert.AreEqual(distributeArray.Find(IsEqual0), 0);
+            Assert.AreEqual(distributeArray.Find(IsEqual2), 2);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.Find(IsEqual0), 0);
         }
         [Test]
         public static void FindAll()
@@ -175,6 +194,9 @@ namespace UnitTests
 
             //distributedArray must be equal resultArray
             Assert.IsFalse(distributedArray.Where((t, i) => t != resultArray[i]).Any());
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2));
         }
         [Test]
         public static void IndexOf()
@@ -196,6 +218,9 @@ namespace UnitTests
             Assert.AreEqual(distributedArray.IndexOf(0, 1, 5000), -1);
             Assert.AreEqual(distributedArray.IndexOf(128000), -1);
             Assert.AreEqual(distributedArray.IndexOf(5001, 0, 5000), -1);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.IndexOf(0), -1);
         }
         [Test]
         public static void LastIndexOf()
@@ -217,6 +242,9 @@ namespace UnitTests
             Assert.AreEqual(distributedArray.LastIndexOf(5000, 4999, 5000), -1);
             Assert.AreEqual(distributedArray.LastIndexOf(128000), -1);
             Assert.AreEqual(distributedArray.LastIndexOf(5000, 5001, 1000), 5000);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.LastIndexOf(0), -1);
         }
         [Test]
         public static void GetEnumerator()
@@ -245,6 +273,7 @@ namespace UnitTests
             var array = new DistributedArray<int>();
             int size = 4 * array.MaxBlockSize;
             int rangeCount = array.DefaultBlockSize;
+
             //Fill array
             for (int i = 0; i < size; i++)
             {
@@ -259,6 +288,9 @@ namespace UnitTests
                     Assert.IsTrue(range[j] == i*rangeCount + j);
                 }
             }
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.IsEmpty(emptyArray.GetRange(0, 0));
         }
         [Test]
         public static void Remove()
@@ -397,6 +429,10 @@ namespace UnitTests
             //Clear distibutedArray
             distributedArray.RemoveRange(0, distributedArray.Count);
             Assert.IsTrue(distributedArray.Count == 0);
+
+            var emptyArray = new DistributedArray<int>();
+            emptyArray.RemoveRange(0, 0);
+            Assert.IsEmpty(emptyArray);
         }
 
         //Support functions
