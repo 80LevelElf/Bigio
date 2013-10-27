@@ -40,11 +40,11 @@ namespace BigDataCollections
 
             if (collectionCount != 0)
             {
-                _blocks.AddRange(_blocks.DivideIntoBlocks(collection));
+                _blockCollection.AddRange(_blockCollection.DivideIntoBlocks(collection));
             }
             else
             {
-                _blocks.Add(new List<T>());
+                _blockCollection.Add(new List<T>());
             }
 
             Count = collectionCount;
@@ -54,14 +54,14 @@ namespace BigDataCollections
         /// </summary>
         public void Add(T value)
         {            
-            int indexOfBlock = _blocks.Count - 1;
-            if (_blocks[indexOfBlock].Count >= MaxBlockSize)
+            int indexOfBlock = _blockCollection.Count - 1;
+            if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
             {
-                _blocks.Add(new List<T>(DefaultBlockSize));
+                _blockCollection.Add(new List<T>(DefaultBlockSize));
                 indexOfBlock++;
             }
 
-            _blocks[indexOfBlock].Add(value);
+            _blockCollection[indexOfBlock].Add(value);
             Count++;
         }
         /// <summary>
@@ -78,13 +78,13 @@ namespace BigDataCollections
             }
 
             //Transfer data to the last block while it is possible
-            var lastBlockIndex = _blocks[_blocks.Count - 1];
+            var lastBlockIndex = _blockCollection[_blockCollection.Count - 1];
             var emptySize = MaxBlockSize - lastBlockIndex.Count;
             var sizeToFill = 0;
             if (emptySize != 0)
             {
                 sizeToFill = (emptySize > collection.Count) ? collection.Count : emptySize;
-                var blocksToInsert = _blocks.DivideIntoBlocks(collection, 0, sizeToFill);
+                var blocksToInsert = _blockCollection.DivideIntoBlocks(collection, 0, sizeToFill);
                 //Transfer data
                 var block = blocksToInsert.GetEnumerator();
                 for (int i = 0; i < blocksToInsert.Count; i++)
@@ -94,8 +94,8 @@ namespace BigDataCollections
                 }
             }
             //Transfer other data as new blocks
-            var newBlocks = _blocks.DivideIntoBlocks(collection, sizeToFill);
-            _blocks.AddRange(newBlocks);
+            var newBlocks = _blockCollection.DivideIntoBlocks(collection, sizeToFill);
+            _blockCollection.AddRange(newBlocks);
 
             Count += newBlocks.Count;
         }
@@ -200,7 +200,7 @@ namespace BigDataCollections
         /// </summary>
         public void Clear()
         {
-            _blocks.Clear();
+            _blockCollection.Clear();
             Count = 0;
         }
         /// <summary>
@@ -226,9 +226,9 @@ namespace BigDataCollections
 
             var result = new DistributedArray<TOutput>();
             //Convert all blocks
-            foreach (var block in _blocks)
+            foreach (var block in _blockCollection)
             {
-                result._blocks.Add(block.ConvertAll(converter));
+                result._blockCollection.Add(block.ConvertAll(converter));
             }
             return result;
         }
@@ -294,7 +294,7 @@ namespace BigDataCollections
         /// <returns>True if the DistributedArray(T) contains one or more elements that match the conditions defined by the specified predicate; otherwise false. </returns>
         public bool Exists(Predicate<T> match)
         {
-            return _blocks.Any(block => block.Exists(match));
+            return _blockCollection.Any(block => block.Exists(match));
         }
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
@@ -387,7 +387,7 @@ namespace BigDataCollections
             for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
             {
                 var blockRange = range[i - range.IndexOfStartBlock];
-                int findIndexResult = _blocks[i].FindIndex(blockRange.Subindex, blockRange.Count, match);
+                int findIndexResult = _blockCollection[i].FindIndex(blockRange.Subindex, blockRange.Count, match);
 
                 if (findIndexResult != -1)
                 {
@@ -405,9 +405,9 @@ namespace BigDataCollections
         /// <returns>The last element that matches the conditions defined by the specified predicate, if found; otherwise, the default value for type T.</returns>
         public T FindLast(Predicate<T> match)
         {
-            for (int i = _blocks.Count - 1; i != 0; i--)
+            for (int i = _blockCollection.Count - 1; i != 0; i--)
             {
-                var block = _blocks[i];
+                var block = _blockCollection[i];
                 for (int j = block.Count - 1; j != 0; j--)
                 {
                     if (match.Invoke(block[j]))
@@ -464,7 +464,7 @@ namespace BigDataCollections
                 var blockRange = range[i];
 
                 //Try to find it in current block
-                int findLastIndexResult = _blocks[i].FindLastIndex(blockRange.Subindex, blockRange.Count, match);
+                int findLastIndexResult = _blockCollection[i].FindLastIndex(blockRange.Subindex, blockRange.Count, match);
                 if (findLastIndexResult != -1)
                 {
                     return blockRange.CommonBlockStartIndex + findLastIndexResult;
@@ -497,13 +497,13 @@ namespace BigDataCollections
             for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
             {
                 var blockRange = range[i - range.IndexOfStartBlock];
-                var block = _blocks[i];
+                var block = _blockCollection[i];
 
                 if (blockRange.Count != 0)
                 {
                     if (block.Count == blockRange.Count)
                     {
-                        newArray._blocks.Add(block);
+                        newArray._blockCollection.Add(block);
                     }
                     else
                     {
@@ -553,7 +553,7 @@ namespace BigDataCollections
             for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
             {
                 var blockRange = range[i - range.IndexOfStartBlock];
-                int indexOfResult = _blocks[i].IndexOf(item, blockRange.Subindex, blockRange.Count);
+                int indexOfResult = _blockCollection[i].IndexOf(item, blockRange.Subindex, blockRange.Count);
 
                 if (indexOfResult != -1)
                 {
@@ -580,7 +580,7 @@ namespace BigDataCollections
 
             //Insert
             int blockSubindex = index - blockInfo.BlockStartIndex;
-            var block = _blocks[blockInfo.IndexOfBlock];
+            var block = _blockCollection[blockInfo.IndexOfBlock];
 
             bool isMaxSize = (block.Count == MaxBlockSize);
             bool isStartIndex = (blockSubindex == 0);
@@ -597,16 +597,16 @@ namespace BigDataCollections
             {
                 //If there is need - add new block
                 if (blockInfo.IndexOfBlock == 0
-                    || (blockInfo.IndexOfBlock != 0 && _blocks[blockInfo.IndexOfBlock - 1].Count == MaxBlockSize))
+                    || (blockInfo.IndexOfBlock != 0 && _blockCollection[blockInfo.IndexOfBlock - 1].Count == MaxBlockSize))
                 {
-                    _blocks.Insert(blockInfo.IndexOfBlock, new List<T>(DefaultBlockSize));
+                    _blockCollection.Insert(blockInfo.IndexOfBlock, new List<T>(DefaultBlockSize));
                     blockInfo.IndexOfBlock++;
                 }
-                _blocks[blockInfo.IndexOfBlock - 1].Add(item);
+                _blockCollection[blockInfo.IndexOfBlock - 1].Add(item);
             }
             else
             {
-                _blocks[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
+                _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
                 DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
             }
 
@@ -626,8 +626,8 @@ namespace BigDataCollections
             //Determine indexOfBlock and blockStartIndex
             if (index == Count)
             {
-                blockInfo.IndexOfBlock = _blocks.Count - 1;
-                blockInfo.BlockStartIndex = Count - _blocks[blockInfo.IndexOfBlock].Count;
+                blockInfo.IndexOfBlock = _blockCollection.Count - 1;
+                blockInfo.BlockStartIndex = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
             }
             else if (Count == 0 && index == 0) // If there is insertion in empty DistributedArray
             {
@@ -639,7 +639,7 @@ namespace BigDataCollections
                 blockInfo = BlockInformation(index); // Default case
             }
             //Insert
-            _blocks[blockInfo.IndexOfBlock].InsertRange(index - blockInfo.BlockStartIndex, collection);
+            _blockCollection[blockInfo.IndexOfBlock].InsertRange(index - blockInfo.BlockStartIndex, collection);
             DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
@@ -685,7 +685,7 @@ namespace BigDataCollections
                 var blockRange = range[i];
 
                 //Try to find it in current block
-                int lastIndexOfResult = _blocks[i].LastIndexOf(item, blockRange.Subindex, blockRange.Count);
+                int lastIndexOfResult = _blockCollection[i].LastIndexOf(item, blockRange.Subindex, blockRange.Count);
                 if (lastIndexOfResult != -1)
                 {
                     return blockRange.CommonBlockStartIndex + lastIndexOfResult;
@@ -702,9 +702,9 @@ namespace BigDataCollections
         ///  This method also returns false if item was not found in the DistributedArray(T).</returns>
         public bool Remove(T item)
         {
-            for (int i = 0; i < _blocks.Count; i++)
+            for (int i = 0; i < _blockCollection.Count; i++)
             {
-                var block = _blocks[i];
+                var block = _blockCollection[i];
                 int blockIndexOf = block.IndexOf(item);
                 //If there is value in this block 
                 if (blockIndexOf != -1)
@@ -713,7 +713,7 @@ namespace BigDataCollections
                     //If there is empty block - remove it
                     if (block.Count == 0)
                     {
-                        _blocks.RemoveAt(i);
+                        _blockCollection.RemoveAt(i);
                     }
 
                     Count--;
@@ -733,11 +733,11 @@ namespace BigDataCollections
 
             var blockInfo = BlockInformation(index);
             //Remove
-            _blocks[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.BlockStartIndex);
+            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.BlockStartIndex);
             //If there is empty block remove it
-            if (_blocks[blockInfo.IndexOfBlock].Count == 0)
+            if (_blockCollection[blockInfo.IndexOfBlock].Count == 0)
             {
-                _blocks.RemoveAt(blockInfo.IndexOfBlock);
+                _blockCollection.RemoveAt(blockInfo.IndexOfBlock);
             }
             Count--;
         }
@@ -753,13 +753,13 @@ namespace BigDataCollections
             for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
             {
                 var blockRange = range[i - range.IndexOfStartBlock];
-                var block = _blocks[i - shift];
+                var block = _blockCollection[i - shift];
 
                 if (blockRange.Count != 0)
                 {
                     if (block.Count == blockRange.Count)
                     {
-                        _blocks.RemoveAt(i - shift);
+                        _blockCollection.RemoveAt(i - shift);
                         shift++;
                     }
                     else
@@ -776,11 +776,11 @@ namespace BigDataCollections
         /// </summary>
         public void Reverse()
         {
-            foreach (var block in _blocks)
+            foreach (var block in _blockCollection)
             {
                 block.Reverse();
             }
-            _blocks.Reverse();
+            _blockCollection.Reverse();
         }
         /// <summary>
         /// Copies the elements of the DistributedArray(T) to a new array.
@@ -802,10 +802,10 @@ namespace BigDataCollections
         /// </summary>
         public void Rebalance()
         {
-            var divideBlocks = _blocks.DivideIntoBlocks(this);
+            var divideBlocks = _blockCollection.DivideIntoBlocks(this);
 
-            _blocks.Clear();
-            _blocks.AddRange(divideBlocks);
+            _blockCollection.Clear();
+            _blockCollection.AddRange(divideBlocks);
         }
         /// <summary>
         /// Gets or sets the element at the specified index.
@@ -817,13 +817,13 @@ namespace BigDataCollections
             {
                 //Check for exceptions in BlockInformation()
                 var blockInfo = BlockInformation(index);
-                return _blocks[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex];
+                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex];
             }
             set
             {
                 //Check for exceptions in BlockInformation()
                 var blockInfo = BlockInformation(index);
-                _blocks[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
+                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
             }
         }
 
@@ -880,11 +880,11 @@ namespace BigDataCollections
         {
             get
             {
-                return _blocks.DefaultBlockSize;
+                return _blockCollection.DefaultBlockSize;
             }
             set
             {
-                _blocks.DefaultBlockSize = value;
+                _blockCollection.DefaultBlockSize = value;
             }
         }
         /// <summary>
@@ -895,11 +895,11 @@ namespace BigDataCollections
         {
             get
             {
-                return _blocks.MaxBlockSize;
+                return _blockCollection.MaxBlockSize;
             }
             set
             {
-                _blocks.MaxBlockSize = value;
+                _blockCollection.MaxBlockSize = value;
             }
         }
         /// <summary>
@@ -910,7 +910,7 @@ namespace BigDataCollections
         /// <summary>
         /// The blocks object provides API for easy work with blocks.
         /// </summary>
-        private Blocks<T> _blocks; 
+        private BlockCollection<T> _blockCollection; 
 
         //Support functions
         /// <summary>
@@ -918,7 +918,7 @@ namespace BigDataCollections
         /// </summary>
         private void Initialize()
         {
-            _blocks = new Blocks<T>();
+            _blockCollection = new BlockCollection<T>();
             IsReadOnly = false;
         }
         /// <summary>
@@ -963,9 +963,9 @@ namespace BigDataCollections
             //Find needed block
             int blockStartIndex = 0;
             int indexOfBlock = 0;
-            for (int i = 0; i < _blocks.Count; i++)
+            for (int i = 0; i < _blockCollection.Count; i++)
             {
-                var block = _blocks[i];
+                var block = _blockCollection[i];
                 //If there is needed block
                 if (index >= blockStartIndex && index < blockStartIndex + block.Count)
                 {
@@ -988,7 +988,7 @@ namespace BigDataCollections
             int blockStartIndex = 0;
             for (int i = 0; i < indexOfBlock; i++)
             {
-                blockStartIndex += _blocks[i].Count;
+                blockStartIndex += _blockCollection[i].Count;
             }
 
             return blockStartIndex;
@@ -1032,9 +1032,9 @@ namespace BigDataCollections
                     : new MultyblockRange(BlockStartIndex(IndexOfBlock(index)), new BlockRange[0]);
             }
 
-            for (int i = 0; i < _blocks.Count; i++)
+            for (int i = 0; i < _blockCollection.Count; i++)
             {
-                var block = _blocks[i];
+                var block = _blockCollection[i];
                 currentEndIndex += block.Count;
 
                 //f ranges overlap
@@ -1102,12 +1102,12 @@ namespace BigDataCollections
         /// <param name="indexOfBlock">Index of specified block.</param>
         private void DivideBlockIfItIsTooBig(int indexOfBlock)
         {
-            if (_blocks[indexOfBlock].Count >= MaxBlockSize)
+            if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
             {
-                var newBlocks = _blocks.DivideIntoBlocks(_blocks[indexOfBlock]);
+                var newBlocks = _blockCollection.DivideIntoBlocks(_blockCollection[indexOfBlock]);
                 //Insert new blocks instead old block
-                _blocks.RemoveAt(indexOfBlock);
-                _blocks.InsertRange(indexOfBlock, newBlocks);
+                _blockCollection.RemoveAt(indexOfBlock);
+                _blockCollection.InsertRange(indexOfBlock, newBlocks);
             }
         }
     }

@@ -2,6 +2,10 @@
 
 namespace BigDataCollections.DistributedArray.Managers
 {
+    /// <summary>
+    /// ValidationManager contain different validation functions for check validate
+    /// data for collections. 
+    /// </summary>
     static class ValidationManager
     {
         /// <summary>

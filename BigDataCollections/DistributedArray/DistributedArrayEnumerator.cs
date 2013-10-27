@@ -5,6 +5,9 @@ namespace BigDataCollections
 {
     public partial class DistributedArray<T>
     {
+        /// <summary>
+        /// Enumerates the elements of a DistributedArray(T).
+        /// </summary>
         public class DistributedArrayEnumerator : IEnumerator<T>
         {
             /// <summary>
@@ -34,10 +37,10 @@ namespace BigDataCollections
                 if (!canMove)
                 {
                     //Try to move next block
-                    if (_indexOfCurrentBlock < Array._blocks.Count - 1)
+                    if (_indexOfCurrentBlock < Array._blockCollection.Count - 1)
                     {
                         _indexOfCurrentBlock++;
-                        _subenumerator = Array._blocks[_indexOfCurrentBlock].GetEnumerator();
+                        _subenumerator = Array._blockCollection[_indexOfCurrentBlock].GetEnumerator();
                         return MoveNext();
                     }
                     //There is no block to move
@@ -50,7 +53,7 @@ namespace BigDataCollections
             {
                 if (Array.Count != 0)
                 {
-                    _subenumerator = Array._blocks[0].GetEnumerator();
+                    _subenumerator = Array._blockCollection[0].GetEnumerator();
                     _indexOfCurrentBlock = 0;
                 }
             }
@@ -73,7 +76,7 @@ namespace BigDataCollections
             {
                 var blockInfo = Array.BlockInformation(index);
 
-                _subenumerator = Array._blocks[blockInfo.IndexOfBlock].GetEnumerator();
+                _subenumerator = Array._blockCollection[blockInfo.IndexOfBlock].GetEnumerator();
                 for (int i = blockInfo.BlockStartIndex; i <= index; i++)
                 {
                     _subenumerator.MoveNext();
