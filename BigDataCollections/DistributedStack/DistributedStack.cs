@@ -105,9 +105,12 @@ namespace BigDataCollections
         {
             return _array.ToArray();
         }
-        public void TrimExcess()
+        /// <summary>
+        /// Rebalance DistributedStack(T) to every block have DefaultBlockSize elements.
+        /// </summary>
+        public void Rebalance()
         {
-            _array.TrimExcess();
+            _array.Rebalance();
         }
 
         //Data

@@ -111,11 +111,11 @@ namespace BigDataCollections
             return _array.ToArray();
         }
         /// <summary>
-        /// Sets the capacity of every block of based DistributedArray(T) to the actual number of elements in it.
+        /// Rebalance DistributedQueue(T) to every block have DefaultBlockSize elements.
         /// </summary>
-        public void TrimExcess()
+        public void Rebalance()
         {
-            _array.TrimExcess();
+            _array.Rebalance();
         }
 
         //Data

@@ -798,14 +798,14 @@ namespace BigDataCollections
             return array;
         }
         /// <summary>
-        /// Sets the capacity of every block to the actual number of elements in it.
+        /// Rebalance DistributedArray(T) to every block have DefaultBlockSize elements.
         /// </summary>
-        public void TrimExcess()
+        public void Rebalance()
         {
-            foreach (var block in _blocks)
-            {
-                block.TrimExcess();
-            }
+            var divideBlocks = _blocks.DivideIntoBlocks(this);
+
+            _blocks.Clear();
+            _blocks.AddRange(divideBlocks);
         }
         /// <summary>
         /// Gets or sets the element at the specified index.
