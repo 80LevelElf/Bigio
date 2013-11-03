@@ -44,7 +44,7 @@ namespace BigDataCollections
             }
             else
             {
-                _blockCollection.Add(new List<T>());
+                _blockCollection.AddNewBlock();
             }
 
             Count = collectionCount;
@@ -57,7 +57,7 @@ namespace BigDataCollections
             int indexOfBlock = _blockCollection.Count - 1;
             if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
             {
-                _blockCollection.Add(new List<T>(DefaultBlockSize));
+                _blockCollection.AddNewBlock();
                 indexOfBlock++;
             }
 
@@ -599,7 +599,7 @@ namespace BigDataCollections
                 if (blockInfo.IndexOfBlock == 0
                     || (blockInfo.IndexOfBlock != 0 && _blockCollection[blockInfo.IndexOfBlock - 1].Count == MaxBlockSize))
                 {
-                    _blockCollection.Insert(blockInfo.IndexOfBlock, new List<T>(DefaultBlockSize));
+                    _blockCollection.InsertNewBlock(blockInfo.IndexOfBlock);
                     blockInfo.IndexOfBlock++;
                 }
                 _blockCollection[blockInfo.IndexOfBlock - 1].Add(item);
