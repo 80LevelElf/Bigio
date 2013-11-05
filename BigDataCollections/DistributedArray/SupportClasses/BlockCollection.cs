@@ -9,10 +9,11 @@ namespace BigDataCollections.DistributedArray.SupportClasses
 {
     /// <summary>
     /// BlockCollection is collection of blocks which abstracts you from internal work with block 
-    /// collection.
+    /// collection. BlockCollection always contain at least one block(it is can be empty)
+    /// that called "default block".
     /// </summary>
     /// <typeparam name="T">Type of block elements.</typeparam>
-    class BlockCollection<T> : IEnumerable<List<T>>
+    class BlockCollection<T> : ICollection<List<T>>
     {
         //API
         /// <summary>
@@ -29,113 +30,139 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// simple usage of it. 
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
-        /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
+        /// The collection it self cannot be null and cant contain null blocks
+        /// , if type T is a reference type. </param>
         public BlockCollection(ICollection<T> collection)
         {
             MaxBlockSize = DefaultValuesManager.MaxBlockSize;
             DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
+            _blocks = new List<List<T>>();
 
-            _blocks = new List<List<T>>(DivideIntoBlocks(collection));
+            TryToAddDefaultBlock(); //Add default block
+            var blocks = DivideIntoBlocks(collection);
+            AddRange(blocks);
         }
         /// <summary>
-        /// Add new block to the end of collection of blocks of the DistributedArray(T).
+        /// Add new block to the end of collection of blocks of the BlockCollection(T).
+        /// If your block is too big - function try to divite it into blocks.
+        /// If the block is empty - function dont add 
+        /// it(If you want to do it - use AddNewBlock function).
         /// </summary>
-        /// <param name="block">Block to add. Block cant be null.</param
+        /// <param name="block">Block to add. Block cant be null.</param>
         public void Add(List<T> block)
+        {
+            Add(block, 0, Count);
+        }
+        /// <summary>
+        /// Add new block to the end of collection of blocks of the BlockCollection(T).
+        /// If your block is too big - function try to divite it into blocks.
+        /// If the block is empty - function dont add 
+        /// it(If you want to do it - use AddNewBlock function).
+        /// </summary>
+        /// <param name="block">Block to add. Block cant be null.</param>
+        public void Add(ICollection<T> block)
+        {
+            Add(block, 0, block.Count);
+        }
+        /// <summary>
+        /// Add data starting with index of block to the end of collection 
+        /// of blocks of the BlockCollection(T) as new blocks.
+        /// If your block is too big - function try to divite it into blocks.
+        /// If the block is empty - function dont add 
+        /// it(If you want to do it - use AddNewBlock function).
+        /// </summary>
+        /// <param name="block">Block to add. Block cant be null.</param>
+        /// <param name="blockSubindex">The zero-based index in block at which copying begins.</param>
+        public void Add(ICollection<T> block, int blockSubindex)
+        {
+            Add(block, blockSubindex, block.Count - blockSubindex);
+        }
+        /// <summary>
+        /// Add data from specified range of block to the end of collection
+        /// of blocks of the BlockCollection(T) as new blocks.
+        /// If your block is too big - function try to divite it into blocks.
+        /// If the block is empty - function dont add 
+        /// it(If you want to do it - use AddNewBlock function).
+        /// </summary>
+        /// <param name="block">Block to add. Block cant be null.</param>
+        /// <param name="blockSubindex">The zero-based index in block at which copying begins.</param>
+        /// <param name="blockCount">The number of elements of block to copy.</param>
+        public void Add(ICollection<T> block, int blockSubindex, int blockCount)
         {
             if (block == null)
             {
                 throw new ArgumentNullException("block");
             }
 
-            AddRange(DivideIntoBlocks(block));
+            AddRange(DivideIntoBlocks(block, blockSubindex, blockCount));
         }
+        /// <summary>
+        /// Add new block as last block. New block will have DefaultBlockSize capacity.
+        /// You need to use this function istead of Add(emptyBlock) because if
+        /// block is empty Add() function dont add it in the BlockCollection. 
+        /// </summary>
         public void AddNewBlock()
         {
             _blocks.Add(new List<T>(DefaultBlockSize));
         }
+        /// <summary>
+        /// Adds the blocks of the specified collection to the end of the BlockCollection.
+        /// If block is too big - it divide into several blocks.
+        /// All blocks in the range cant be null, but block can be empty
+        /// (in this way function dont add block in the BlockCollection).
+        /// </summary>
+        /// <param name="range">The collection of blocks whose elements should be added 
+        /// to the end of the BlockCollection(T).
+        /// The collection itself cannot benull and cant contain null elements.</param>
         public void AddRange(ICollection<List<T>> range)
         {
-            _blocks.AddRange(range);
-        }
-        /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size.
-        /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        public ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
-        {
-            return DivideIntoBlocks(collection, 0, collection.Count);
-        }
-        /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
-        /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        public ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index)
-        {
-            return DivideIntoBlocks(collection, index, collection.Count - index);
-        }
-        /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
-        /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
-        /// <param name="count">The number of elements of the collection to divide.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        public ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count)
-        {
-            if (index + count > collection.Count)
+            var blocksToAdd = new List<List<T>>(range.Count);
+            foreach (var block in range)
             {
-                throw new IndexOutOfRangeException();
+                blocksToAdd.AddRange(DivideIntoBlocks(block));
             }
 
-            //Calculate blocks count
-            int countOfBlocks = count / DefaultBlockSize;
-            if (count % DefaultBlockSize != 0)
-            {
-                countOfBlocks++;
-            }
-
-            var blocks = new List<T>[countOfBlocks];
-            //Transfer data from list to new blocks
-            var item = collection.GetEnumerator();
-            for (int i = 0; i < index; i++) //Move item to the index position
-            {
-                item.MoveNext();
-            }
-
-            for (int i = 0; i < countOfBlocks; i++)
-            {
-                //Calculate curent block size
-                int currentBlockSize;
-                if (i != countOfBlocks - 1)
-                {
-                    currentBlockSize = DefaultBlockSize;
-                }
-                else
-                {
-                    currentBlockSize = count - (i * DefaultBlockSize);
-                }
-                //Declare new block
-                blocks[i] = new List<T>(currentBlockSize);
-                //Transfer data
-                for (int j = 0; j < currentBlockSize; j++)
-                {
-                    item.MoveNext();
-                    //Insert data
-                    T insertion = item.Current;
-                    blocks[i].Add(insertion);
-                }
-            }
-            //Return result
-            return blocks;
+            TryToRemoveDefaultBlock();
+            _blocks.AddRange(blocksToAdd);
         }
+        /// <summary>
+        /// Remove all blocks from the BlockCollection(T) and add default block.
+        /// </summary>
         public void Clear()
         {
             _blocks.Clear();
-            _blocks.Add(new List<T>(DefaultBlockSize));
+            TryToAddDefaultBlock();
+        }
+        /// <summary>
+        /// Remove true if BlockCollection(T) contains value, otherwise return false.
+        /// </summary>
+        /// <param name="item">Block to be checked.</param>
+        public bool Contains(List<T> item)
+        {
+            return _blocks.Contains(item);
+        }
+        /// <summary>
+        /// Copies the entire BlockCollection(T) to a compatible one-dimensional array
+        /// , starting at the specified index of the target array.
+        /// </summary>
+        /// <param name="array">The one-dimensional Array that is the destination of the blocks copied from BlockCollection(T).
+        ///  The Array must have zero-based indexing. </param>
+        /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
+        public void CopyTo(List<T>[] array, int arrayIndex)
+        {
+            _blocks.CopyTo(array, arrayIndex);
+        }
+        /// <summary>
+        /// Removes the first occurrence of a specific block from the BlockCollection(T).
+        /// </summary>
+        /// <param name="block">The object to remove from the DistributedArray(T).</param>
+        /// <returns>True if item is successfully removed; otherwise, false.
+        ///  This method also returns false if item was not found in the BlockCollection(T).</returns>
+        public bool Remove(List<T> block)
+        {
+            var reslut = _blocks.Remove(block);
+            TryToAddDefaultBlock();
+            return reslut;
         }
         /// <summary>
         /// Removes the block at the specified index of the _blocks.
@@ -144,11 +171,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         public void RemoveAt(int index)
         {
             _blocks.RemoveAt(index);
-            //If there is no any blocks - add empty block
-            if (_blocks.Count == 0)
-            {
-                _blocks.Add(new List<T>(DefaultBlockSize));
-            }
+            TryToAddDefaultBlock();
         }
         /// <summary>
         /// Returns an enumerator that iterates through the collection of blocks.
@@ -164,6 +187,9 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         }
         /// <summary>
         /// Inserts an element into the DistributedArray(T) at the specified index.
+        /// If your block is too big - function try to divite it into blocks.
+        /// If the block is empty - function dont insert 
+        /// it(If you want to do it - use InsertNewBlock function).
         /// </summary>
         /// <param name="index">Index of collection of block where the new block will be.</param>
         /// <param name="block">Block to insert.</param>
@@ -177,20 +203,23 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         }
         /// <summary>
         /// Inserts the elements of a block range into the block collection at the specified index.
+        /// If block is too big - it divide into several blocks.
+        /// All blocks in the range cant be null, but block can be empty
+        /// (in this way function dont insert block in the BlockCollection).
         /// </summary>
         /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="range">The range whose elements should be inserted into the block collection.
         ///  The range it self cannot be null, and cant contain null blocks.</param>
-        public void InsertRange(int index, IEnumerable<List<T>> range)
+        public void InsertRange(int index, ICollection<List<T>> range)
         {
-            //We need to get enumerable because of multiple enumaration.
-            var enumerable = range as List<T>[] ?? range.ToArray();
-            if (enumerable.Any(block => block == null))
+            var blocksToInsert = new List<List<T>>(range.Count);
+            foreach (var block in range)
             {
-                throw new ArgumentNullException();
+                blocksToInsert.AddRange(DivideIntoBlocks(block));
             }
 
-            _blocks.InsertRange(index, enumerable);
+            _blocks.InsertRange(index, blocksToInsert);
+            TryToRemoveDefaultBlock();
         }
         /// <summary>
         ///  Reverses the order of the blocks in the entire block collection.
@@ -198,6 +227,15 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         public void Reverse()
         {
             _blocks.Reverse();
+        }
+        public void TryToDivideBlock(int indexOfBlock)
+        {
+            if (_blocks[indexOfBlock].Count >= MaxBlockSize)
+            {
+                var newBlocks = DivideIntoBlocks(_blocks[indexOfBlock]);
+                RemoveAt(indexOfBlock);
+                InsertRange(indexOfBlock, newBlocks);
+            }
         }
         /// <summary>
         /// Gets or sets the block at the specified index.
@@ -266,6 +304,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 return _blocks.Count;
             }
         }
+        public bool IsReadOnly { get; private set; }
 
         /// <summary>
         /// Internal value of DefaultBlockSize. Never used it out of DefaultBlockSize set and get method.
@@ -280,5 +319,95 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// It contain at least one block(this block can be empty).
         /// </summary>
         private readonly List<List<T>> _blocks;
+
+        //Support function
+        private void TryToAddDefaultBlock()
+        {
+            if (Count == 0)
+            {
+                AddNewBlock();
+            }
+        }
+        private void TryToRemoveDefaultBlock()
+        {
+            if (Count!= 0 && this[0].Count == 0)
+            {
+                RemoveAt(0);
+            }
+        }
+        /// <summary>
+        /// Divide specified collection into blocks with DefaultBlockSize size.
+        /// </summary>
+        /// <param name="collection">Collection, which must be divided.</param>
+        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
+        {
+            return DivideIntoBlocks(collection, 0, collection.Count);
+        }
+        /// <summary>
+        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// </summary>
+        /// <param name="collection">Collection, which must be divided.</param>
+        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
+        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index)
+        {
+            return DivideIntoBlocks(collection, index, collection.Count - index);
+        }
+        /// <summary>
+        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// </summary>
+        /// <param name="collection">Collection, which must be divided.</param>
+        /// <param name="index">The zero-based starting index of the collection of elements to divide.</param>
+        /// <param name="count">The number of elements of the collection to divide.</param>
+        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection, int index, int count)
+        {
+            if (index + count > collection.Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+
+            //Calculate blocks count
+            int countOfBlocks = count / DefaultBlockSize;
+            if (count % DefaultBlockSize != 0)
+            {
+                countOfBlocks++;
+            }
+
+            var blocks = new List<T>[countOfBlocks];
+            //Transfer data from list to new blocks
+            var item = collection.GetEnumerator();
+            for (int i = 0; i < index; i++) //Move item to the index position
+            {
+                item.MoveNext();
+            }
+
+            for (int i = 0; i < countOfBlocks; i++)
+            {
+                //Calculate curent block size
+                int currentBlockSize;
+                if (i != countOfBlocks - 1)
+                {
+                    currentBlockSize = DefaultBlockSize;
+                }
+                else
+                {
+                    currentBlockSize = count - (i * DefaultBlockSize);
+                }
+                //Declare new block
+                blocks[i] = new List<T>(currentBlockSize);
+                //Transfer data
+                for (int j = 0; j < currentBlockSize; j++)
+                {
+                    item.MoveNext();
+                    //Insert data
+                    T insertion = item.Current;
+                    blocks[i].Add(insertion);
+                }
+            }
+            //Return result
+            return blocks;
+        }
     }
 }

@@ -34,20 +34,10 @@ namespace BigDataCollections
         /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
         public DistributedArray(ICollection<T> collection)
         {
-            Initialize();
-            //Add divided blocks by collection
-            int collectionCount = collection.Count;
+            IsReadOnly = false;
+            Count = collection.Count;
 
-            if (collectionCount != 0)
-            {
-                _blockCollection.AddRange(_blockCollection.DivideIntoBlocks(collection));
-            }
-            else
-            {
-                _blockCollection.AddNewBlock();
-            }
-
-            Count = collectionCount;
+            _blockCollection = new BlockCollection<T>(collection);
         }
         /// <summary>
         /// Add an object to the end of last block of the DistributedArray(T).
@@ -77,27 +67,28 @@ namespace BigDataCollections
                 throw new ArgumentNullException("collection");
             }
 
+            var lastBlock = _blockCollection[_blockCollection.Count - 1];
+
             //Transfer data to the last block while it is possible
-            var lastBlockIndex = _blockCollection[_blockCollection.Count - 1];
-            var emptySize = MaxBlockSize - lastBlockIndex.Count;
             var sizeToFill = 0;
+            var emptySize = MaxBlockSize - lastBlock.Count;
+
             if (emptySize != 0)
             {
-                sizeToFill = (emptySize > collection.Count) ? collection.Count : emptySize;
-                var blocksToInsert = _blockCollection.DivideIntoBlocks(collection, 0, sizeToFill);
-                //Transfer data
-                var block = blocksToInsert.GetEnumerator();
-                for (int i = 0; i < blocksToInsert.Count; i++)
+                sizeToFill = (emptySize < collection.Count) ? emptySize : collection.Count;
+                var enumerator = collection.GetEnumerator();
+
+                for (int i = 0; i < sizeToFill; i++)
                 {
-                    block.MoveNext();
-                    InsertRange(Count, block.Current);
+                    enumerator.MoveNext();
+                    lastBlock.Add(enumerator.Current);
                 }
             }
-            //Transfer other data as new blocks
-            var newBlocks = _blockCollection.DivideIntoBlocks(collection, sizeToFill);
-            _blockCollection.AddRange(newBlocks);
 
-            Count += newBlocks.Count;
+            //Transfer other data as new blocks
+            _blockCollection.Add(collection, sizeToFill);
+
+            Count += collection.Count;
         }
         /// <summary>
         /// Returns a read-only wrapper based on current DistributedArray(T).
@@ -242,7 +233,8 @@ namespace BigDataCollections
             CopyTo(0, array, 0, array.Length);
         }
         /// <summary>
-        /// Copies the entire DistributedArray(T) to a compatible one-dimensional array, starting at the specified index of the target array.
+        /// Copies the entire DistributedArray(T) to a compatible one-dimensional array
+        /// , starting at the specified index of the target array.
         /// </summary>
         /// <param name="array">The one-dimensional Array that is the destination of the elements copied from DistributedArray(T).
         ///  The Array must have zero-based indexing. </param>
@@ -587,7 +579,7 @@ namespace BigDataCollections
 
             if (isMaxSize)
             {
-                DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
+                _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
                 Insert(index, item);
                 return;
             }
@@ -607,7 +599,7 @@ namespace BigDataCollections
             else
             {
                 _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
-                DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
+                _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
             }
 
             Count++;
@@ -640,7 +632,7 @@ namespace BigDataCollections
             }
             //Insert
             _blockCollection[blockInfo.IndexOfBlock].InsertRange(index - blockInfo.BlockStartIndex, collection);
-            DivideBlockIfItIsTooBig(blockInfo.IndexOfBlock);
+            _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
         }
@@ -697,7 +689,8 @@ namespace BigDataCollections
         /// <summary>
         /// Removes the first occurrence of a specific object from the DistributedArray(T).
         /// </summary>
-        /// <param name="item">The object to remove from the DistributedArray(T). The value can benull for reference types.</param>
+        /// <param name="item">The object to remove from the DistributedArray(T).
+        /// The value can benull for reference types.</param>
         /// <returns>True if item is successfully removed; otherwise, false.
         ///  This method also returns false if item was not found in the DistributedArray(T).</returns>
         public bool Remove(T item)
@@ -802,7 +795,7 @@ namespace BigDataCollections
         /// </summary>
         public void Rebalance()
         {
-            var divideBlocks = _blockCollection.DivideIntoBlocks(this);
+            var divideBlocks = new BlockCollection<T>(this);
 
             _blockCollection.Clear();
             _blockCollection.AddRange(divideBlocks);
@@ -910,17 +903,9 @@ namespace BigDataCollections
         /// <summary>
         /// The blocks object provides API for easy work with blocks.
         /// </summary>
-        private BlockCollection<T> _blockCollection; 
+        private readonly BlockCollection<T> _blockCollection; 
 
         //Support functions
-        /// <summary>
-        /// Initialize fields of object in time of creating.
-        /// </summary>
-        private void Initialize()
-        {
-            _blockCollection = new BlockCollection<T>();
-            IsReadOnly = false;
-        }
         /// <summary>
         /// Check range of the the current DistributedArray(T) to valid.
         /// </summary>
@@ -1095,20 +1080,6 @@ namespace BigDataCollections
             }
 
             return reverseRange;
-        }
-        /// <summary>
-        /// If count of elements in specified block equal or bigger then MaxBlockCount - divide it.
-        /// </summary>
-        /// <param name="indexOfBlock">Index of specified block.</param>
-        private void DivideBlockIfItIsTooBig(int indexOfBlock)
-        {
-            if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
-            {
-                var newBlocks = _blockCollection.DivideIntoBlocks(_blockCollection[indexOfBlock]);
-                //Insert new blocks instead old block
-                _blockCollection.RemoveAt(indexOfBlock);
-                _blockCollection.InsertRange(indexOfBlock, newBlocks);
-            }
         }
     }
 }
