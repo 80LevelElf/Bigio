@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.SupportClasses;
 
@@ -819,30 +821,6 @@ namespace BigDataCollections
                 _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
             }
         }
-
-        //Debug functions
-#if DEBUG
-        public void Display()
-        {
-            foreach (var item in this)
-            {
-                Console.WriteLine(item.ToString());
-            }
-        }
-        public void DisplayByBlocks()
-        {
-            foreach (var block in _blocks)
-            {
-                foreach (var item in block)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-                Console.WriteLine();
-            }
-        }
-#endif
-
-        //Data
         /// <summary>
         /// Get the number of elements actually contained in the DistributedArray(T).
         /// </summary>
@@ -869,7 +847,7 @@ namespace BigDataCollections
         /// Default size of one DistributedArray(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
         /// </summary>
-        public int DefaultBlockSize 
+        public int DefaultBlockSize
         {
             get
             {
@@ -895,6 +873,29 @@ namespace BigDataCollections
                 _blockCollection.MaxBlockSize = value;
             }
         }
+        //Debug functions
+#if DEBUG
+        public void Display()
+        {
+            foreach (var item in this)
+            {
+                Console.WriteLine(item.ToString());
+            }
+        }
+        public void DisplayByBlocks()
+        {
+            foreach (var block in _blocks)
+            {
+                foreach (var item in block)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+                Console.WriteLine();
+            }
+        }
+#endif
+
+        //Data
         /// <summary>
         /// It is main data container where we save information.
         /// It is cant be null. There is always one block even it is empty.
