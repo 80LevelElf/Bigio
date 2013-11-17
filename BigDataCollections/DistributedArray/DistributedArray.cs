@@ -585,23 +585,24 @@ namespace BigDataCollections
                 Insert(index, item);
                 return;
             }
-
+            
             //Try to add to the previous block
-            if (isStartIndex)
+            if (!isStartIndex)
+            {
+                _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
+                _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
+            }
+            else
             {
                 //If there is need - add new block
                 if (blockInfo.IndexOfBlock == 0
-                    || (blockInfo.IndexOfBlock != 0 && _blockCollection[blockInfo.IndexOfBlock - 1].Count == MaxBlockSize))
+                    ||
+                    (blockInfo.IndexOfBlock != 0 && _blockCollection[blockInfo.IndexOfBlock - 1].Count == MaxBlockSize))
                 {
                     _blockCollection.InsertNewBlock(blockInfo.IndexOfBlock);
                     blockInfo.IndexOfBlock++;
                 }
                 _blockCollection[blockInfo.IndexOfBlock - 1].Add(item);
-            }
-            else
-            {
-                _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
-                _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
             }
 
             Count++;

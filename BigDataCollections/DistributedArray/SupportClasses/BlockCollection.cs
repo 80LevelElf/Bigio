@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using BigDataCollections.DistributedArray.Managers;
 
@@ -10,7 +13,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
     /// <summary>
     /// BlockCollection is collection of blocks which abstracts you from internal work with block 
     /// collection. BlockCollection always contain at least one block(it is can be empty)
-    /// that called "default block".
+    /// that called "insuring block".
     /// </summary>
     /// <typeparam name="T">Type of block elements.</typeparam>
     class BlockCollection<T> : ICollection<List<T>>
@@ -38,9 +41,15 @@ namespace BigDataCollections.DistributedArray.SupportClasses
             DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
             _blocks = new List<List<T>>();
 
-            TryToAddDefaultBlock(); //Add default block
             var blocks = DivideIntoBlocks(collection);
-            AddRange(blocks);
+            if (blocks.Count != 0)
+            {
+                AddRange(blocks);
+            }
+            else
+            {
+                TryToAddInsuringBlock();
+            }
         }
         /// <summary>
         /// Add new block to the end of collection of blocks of the BlockCollection(T).
@@ -51,7 +60,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// <param name="block">Block to add. Block cant be null.</param>
         public void Add(List<T> block)
         {
-            Add(block, 0, Count);
+            Add(block, 0, block.Count);
         }
         /// <summary>
         /// Add new block to the end of collection of blocks of the BlockCollection(T).
@@ -94,7 +103,8 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 throw new ArgumentNullException("block");
             }
 
-            AddRange(DivideIntoBlocks(block, blockSubindex, blockCount));
+            var blocks = DivideIntoBlocks(block, blockSubindex, blockCount);
+            AddRange(blocks);
         }
         /// <summary>
         /// Add new block as last block. New block will have DefaultBlockSize capacity.
@@ -103,6 +113,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// </summary>
         public void AddNewBlock()
         {
+            TryToRemoveInsuringBlock();
             _blocks.Add(new List<T>(DefaultBlockSize));
         }
         /// <summary>
@@ -122,16 +133,21 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 blocksToAdd.AddRange(DivideIntoBlocks(block));
             }
 
-            TryToRemoveDefaultBlock();
-            _blocks.AddRange(blocksToAdd);
+            if (blocksToAdd.Count != 0)
+            {
+                TryToRemoveInsuringBlock();
+                _blocks.AddRange(blocksToAdd);
+            }
         }
         /// <summary>
-        /// Remove all blocks from the BlockCollection(T) and add default block.
+        /// Remove all blocks from the BlockCollection(T) and add insuring block.
         /// </summary>
         public void Clear()
         {
+            TryToRemoveInsuringBlock(); //Unload InsuringBlock to _blocks
             _blocks.Clear();
-            TryToAddDefaultBlock();
+
+            TryToAddInsuringBlock();
         }
         /// <summary>
         /// Remove true if BlockCollection(T) contains value, otherwise return false.
@@ -139,7 +155,14 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// <param name="item">Block to be checked.</param>
         public bool Contains(List<T> item)
         {
-            return _blocks.Contains(item);
+            var result = _blocks.Contains(item);
+
+            if (!result && InsuringBlock != null)
+            {
+                result = item.Equals(InsuringBlock);
+            }
+
+            return result;
         }
         /// <summary>
         /// Copies the entire BlockCollection(T) to a compatible one-dimensional array
@@ -150,6 +173,12 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
         public void CopyTo(List<T>[] array, int arrayIndex)
         {
+            if (InsuringBlock != null)
+            {
+                array[arrayIndex] = InsuringBlock;
+                arrayIndex++;
+            }
+
             _blocks.CopyTo(array, arrayIndex);
         }
         /// <summary>
@@ -160,9 +189,19 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         ///  This method also returns false if item was not found in the BlockCollection(T).</returns>
         public bool Remove(List<T> block)
         {
-            var reslut = _blocks.Remove(block);
-            TryToAddDefaultBlock();
-            return reslut;
+            bool result;
+            if (InsuringBlock != null && block.Equals(InsuringBlock))
+            {
+                TryToRemoveInsuringBlock();
+                result = true;
+            }
+            else
+            {
+                result = _blocks.Remove(block);                
+            }
+
+            TryToAddInsuringBlock();
+            return result;
         }
         /// <summary>
         /// Removes the block at the specified index of the _blocks.
@@ -170,9 +209,25 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// <param name="index">The zero-based index of the block to remove.</param>
         public void RemoveAt(int index)
         {
-            _blocks.RemoveAt(index);
-            TryToAddDefaultBlock();
+            if (InsuringBlock == null)
+            {
+                _blocks.RemoveAt(index);
+            }
+                //Remove InsuringBlock
+            else
+            {
+                if (index == 0)
+                {
+                    TryToRemoveInsuringBlock();
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("index");
+                }
+            }
+            TryToAddInsuringBlock();
         }
+
         /// <summary>
         /// Returns an enumerator that iterates through the collection of blocks.
         /// </summary>
@@ -199,6 +254,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         }
         public void InsertNewBlock(int index)
         {
+            TryToRemoveInsuringBlock();
             _blocks.Insert(index, new List<T>(DefaultBlockSize));
         }
         /// <summary>
@@ -218,25 +274,38 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 blocksToInsert.AddRange(DivideIntoBlocks(block));
             }
 
-            _blocks.InsertRange(index, blocksToInsert);
-            TryToRemoveDefaultBlock();
-        }
-        /// <summary>
-        ///  Reverses the order of the blocks in the entire block collection.
-        /// </summary>
-        public void Reverse()
-        {
-            _blocks.Reverse();
+            if (blocksToInsert.Count != 0)
+            {
+                TryToRemoveInsuringBlock();
+                _blocks.InsertRange(index, blocksToInsert);                
+            }
         }
         public void TryToDivideBlock(int indexOfBlock)
         {
-            if (_blocks[indexOfBlock].Count >= MaxBlockSize)
+            if (InsuringBlock == null)
             {
-                var newBlocks = DivideIntoBlocks(_blocks[indexOfBlock]);
-                RemoveAt(indexOfBlock);
-                InsertRange(indexOfBlock, newBlocks);
+                if (_blocks[indexOfBlock].Count >= MaxBlockSize)
+                {
+                    var newBlocks = DivideIntoBlocks(_blocks[indexOfBlock]);
+                    RemoveAt(indexOfBlock);
+                    InsertRange(indexOfBlock, newBlocks);
+                }
+            }
+            //Try to divide InsuringBlock
+            else
+            {
+                if (indexOfBlock == 0)
+                {
+                    TryToRemoveInsuringBlock();
+                    TryToDivideBlock(0); //Divide InsuringBlock as simple block
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("indexOfBlock");
+                }
             }
         }
+
         /// <summary>
         /// Gets or sets the block at the specified index.
         /// </summary>
@@ -245,6 +314,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         {
             get
             {
+                if (_blocks.Count == 0 && index == 0)
+                {
+                    return InsuringBlock;
+                }
                 return _blocks[index];
             }
         }
@@ -301,6 +374,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         {
             get
             {
+                if (_blocks.Count == 0)
+                {
+                    return 1; //In this way we have InsuringBlock.
+                }
                 return _blocks.Count;
             }
         }
@@ -319,20 +396,26 @@ namespace BigDataCollections.DistributedArray.SupportClasses
         /// It contain at least one block(this block can be empty).
         /// </summary>
         private readonly List<List<T>> _blocks;
+        private List<T> InsuringBlock { get; set; }
 
         //Support function
-        private void TryToAddDefaultBlock()
+        private void TryToAddInsuringBlock()
         {
-            if (Count == 0)
+            if (_blocks.Count == 0 && InsuringBlock == null)
             {
-                AddNewBlock();
+                InsuringBlock = new List<T>(DefaultBlockSize);
             }
         }
-        private void TryToRemoveDefaultBlock()
+        private void TryToRemoveInsuringBlock()
         {
-            if (Count!= 0 && this[0].Count == 0)
+            if (InsuringBlock != null)
             {
-                RemoveAt(0);
+                if (InsuringBlock.Count != 0)
+                {
+                    _blocks.Insert(0, InsuringBlock); //We cant use Insert method of BlockCollection
+                    //because there is eternal recursion
+                }
+                InsuringBlock = null;
             }
         }
         /// <summary>

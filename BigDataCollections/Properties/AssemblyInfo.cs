@@ -10,7 +10,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("UnitTest.DistributedArray")] //Make it visible for unit tests
+
+[assembly: InternalsVisibleTo("UnitTests")] //Make it visible for unit tests
 
 [assembly: ComVisible(false)]
 
