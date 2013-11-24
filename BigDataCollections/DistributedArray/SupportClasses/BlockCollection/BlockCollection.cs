@@ -2,13 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using BigDataCollections.DistributedArray.Managers;
 
-namespace BigDataCollections.DistributedArray.SupportClasses
+namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
 {
     /// <summary>
     /// BlockCollection is collection of blocks which abstracts you from internal work with block 
@@ -16,7 +12,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses
     /// that called "insuring block".
     /// </summary>
     /// <typeparam name="T">Type of block elements.</typeparam>
-    class BlockCollection<T> : ICollection<List<T>>
+    partial class BlockCollection<T> : ICollection<List<T>>
     {
         //API
         /// <summary>
@@ -227,14 +223,13 @@ namespace BigDataCollections.DistributedArray.SupportClasses
             }
             TryToAddInsuringBlock();
         }
-
         /// <summary>
         /// Returns an enumerator that iterates through the collection of blocks.
         /// </summary>
         /// <returns></returns>
         public IEnumerator<List<T>> GetEnumerator()
         {
-            return _blocks.GetEnumerator();
+            return new BlockCollectionEnumerator(this);
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -305,7 +300,6 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 }
             }
         }
-
         /// <summary>
         /// Gets or sets the block at the specified index.
         /// </summary>

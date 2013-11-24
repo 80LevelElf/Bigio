@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.SupportClasses;
+using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
 
 namespace BigDataCollections
 {
@@ -232,6 +233,10 @@ namespace BigDataCollections
         ///  The Array must have zero-based indexing.</param>
         public void CopyTo(T[] array)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException();
+            }
             CopyTo(0, array, 0, array.Length);
         }
         /// <summary>
@@ -243,7 +248,7 @@ namespace BigDataCollections
         /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            CopyTo(0, array, arrayIndex, array.Length - arrayIndex);
+            CopyTo(0, array, arrayIndex, Count);
         }
         /// <summary>
         /// Copies a range of elements from the DistributedArray(T) to a compatible one-dimensional array,
@@ -265,6 +270,11 @@ namespace BigDataCollections
             if (!IsValidIndex(index) || !ValidationManager.IsValidRange(array, arrayIndex, count))
             {
                 throw new ArgumentOutOfRangeException();
+            }
+
+            if (array == null)
+            {
+                throw new ArgumentNullException("array");
             }
 
             var enumerator = GetEnumerator();

@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System;
 using BigDataCollections;
 using NUnit.Framework;
+using UnitTests.Managers;
 
-namespace UnitTests
+namespace UnitTests.DistributedArrayTests
 {
     [TestFixture]
     public static class DistributedArrayTest
@@ -19,18 +20,22 @@ namespace UnitTests
             {
                 distributedArray.Add(i);
             }
+            Assert.AreEqual(distributedArray.Count, count/4);
             for (int i = 0; i < count/4; i++)
             {
                 distributedArray.Insert(i, i);
             }
+            Assert.AreEqual(distributedArray.Count, count / 2);
             for (int i = count/2; i < count*3/4; i++)
             {
                 distributedArray.Add(i);
             }
+            Assert.AreEqual(distributedArray.Count, count * 3 / 4);
             for (int i = count*3/4; i < count; i++)
             {
                 distributedArray.Insert(i, i);
             }
+            Assert.AreEqual(distributedArray.Count, count);
 
             //DA must be : 0,1,2,3...,n-1,n
             for (int i = 0; i < distributedArray.Count - 1; i++)
@@ -55,24 +60,28 @@ namespace UnitTests
                 array1[i - count/4] = i;
             }
             distributedArray.AddRange(array1);
+            Assert.AreEqual(distributedArray.Count, count / 4);
             //2
             for (int i = 0; i < count/4; i++)
             {
                 array2[i] = i;
             }
             distributedArray.InsertRange(0, array2);
+            Assert.AreEqual(distributedArray.Count, count / 2);
             //3
             for (int i = count/2; i < count*3/4; i++)
             {
                 array3[i - count/2] = i;
             }
             distributedArray.AddRange(array3);
+            Assert.AreEqual(distributedArray.Count, count *3 / 4);
             //4
             for (int i = count*3/4; i < count; i++)
             {
                 array4[i - count*3/4] = i;
             }
             distributedArray.InsertRange(distributedArray.Count, array4);
+            Assert.AreEqual(distributedArray.Count, count);
 
             //DA must be : 0,1,2,3...,n-1,n
             for (int i = 0; i < distributedArray.Count - 1; i++)
@@ -126,6 +135,16 @@ namespace UnitTests
 
             //Arr must be equal resultArray
             Assert.IsFalse(array.Where((t, i) => t != resultArray[i]).Any());
+
+            //Exceptions
+            distibutedArray = new DistributedArray<int> {1,2,3};
+            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentNullException, int[]>
+                (distibutedArray.CopyTo, null));
+            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int[], int>
+                (distibutedArray.CopyTo, array, array.Length - distibutedArray.Count + 1));
+            Assert.IsTrue(
+                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, int[], int, int>
+                (distibutedArray.CopyTo, 0, array, array.Length - distibutedArray.Count + 1, 3));
         }
         [Test]
         public static void FindIndex()
@@ -308,16 +327,20 @@ namespace UnitTests
             //Remove last element of first block
             Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize - 1));
             list.Remove(distributedArray.MaxBlockSize - 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             //Remove first element of second block
             Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize));
             list.Remove(distributedArray.MaxBlockSize);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             Assert.IsTrue(distributedArray.Remove(0));
             list.Remove(0);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             Assert.IsTrue(distributedArray.Remove(distributedArray.Count-1));
             list.Remove(list.Count - 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             //Try to remove nonexistent elements
             Assert.IsFalse(distributedArray.Remove(0));
@@ -344,16 +367,20 @@ namespace UnitTests
             //Remove last element of first block
             distributedArray.RemoveAt(distributedArray.MaxBlockSize - 1);
             list.RemoveAt(distributedArray.MaxBlockSize - 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             //Remove first element of second block
             distributedArray.RemoveAt(distributedArray.MaxBlockSize + 1);
             list.RemoveAt(distributedArray.MaxBlockSize + 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             distributedArray.RemoveAt(0);
             list.RemoveAt(0);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             distributedArray.RemoveAt(distributedArray.Count - 1);
             list.RemoveAt(list.Count - 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             //Try to remove nonexistent elements
             //1
@@ -395,12 +422,15 @@ namespace UnitTests
             //Remove elements from different blocks
             distributedArray.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
             list.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             distributedArray.RemoveRange(0, 1);
             list.RemoveRange(0, 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             distributedArray.RemoveRange(distributedArray.Count - 1, 1);
             list.RemoveRange(list.Count - 1, 1);
+            Assert.AreEqual(distributedArray.Count, list.Count);
 
             //Try to remove nonexistent elements
             //1

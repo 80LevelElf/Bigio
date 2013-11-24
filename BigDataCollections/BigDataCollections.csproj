@@ -44,7 +44,8 @@
     <Compile Include="DistributedArray\DistributedArray.cs" />
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />
-    <Compile Include="DistributedArray\SupportClasses\BlockCollection.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockCollection\BlockCollection.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockCollection\BlockCollectionEnumerator.cs" />
     <Compile Include="DistributedArray\SupportClasses\MultyblockRange.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockInformation.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
