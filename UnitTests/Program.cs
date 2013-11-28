@@ -7,7 +7,7 @@ namespace UnitTests
     {
         static void Main(string[] args)
         {
-            DistributedArrayTest.CopyTo();
+            DistributedArrayTest.LastIndexOf();
             Console.ReadKey();
         }
     }

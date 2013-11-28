@@ -429,7 +429,7 @@ namespace BigDataCollections
         /// </summary>
         /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the last occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
-        public int FindLastIndex(Predicate<T> match)
+         public int FindLastIndex(Predicate<T> match)
         {
             int index = (Count == 0) ? 0 : Count - 1;
             return FindLastIndex(index, Count, match);
@@ -457,7 +457,7 @@ namespace BigDataCollections
         {
             if (match == null)
             {
-                throw new ArgumentOutOfRangeException("match");
+                throw new ArgumentNullException("match");
             }
 
             var range = ReverseMultyblockRange(index, count);
@@ -656,7 +656,8 @@ namespace BigDataCollections
         /// <returns>The zero-based index of the last occurrence of item within the entire the DistributedArray(T), if found; otherwise, –1.</returns>
         public int LastIndexOf(T item)
         {
-            return LastIndexOf(item, Count - 1, Count);
+            int index = (Count == 0) ? 0 : Count - 1;
+            return LastIndexOf(item, index, Count);
         }
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the last occurrence
@@ -703,7 +704,7 @@ namespace BigDataCollections
         /// Removes the first occurrence of a specific object from the DistributedArray(T).
         /// </summary>
         /// <param name="item">The object to remove from the DistributedArray(T).
-        /// The value can benull for reference types.</param>
+        /// The value can be null for reference types.</param>
         /// <returns>True if item is successfully removed; otherwise, false.
         ///  This method also returns false if item was not found in the DistributedArray(T).</returns>
         public bool Remove(T item)
@@ -957,7 +958,6 @@ namespace BigDataCollections
                 throw new ArgumentOutOfRangeException();
             }
 
-            //Find needed block
             int blockStartIndex = 0;
             int indexOfBlock = 0;
             for (int i = 0; i < _blockCollection.Count; i++)
@@ -1071,6 +1071,11 @@ namespace BigDataCollections
         /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
         private MultyblockRange ReverseMultyblockRange(int index, int count)
         {
+            if (index < 0 || count < 0) //Other checks are in the MultyblockRange() 
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             int normalIndex = (index == 0 && count == 0) ? 0 : index - count + 1;
             var range = MultyblockRange(normalIndex, count);
 

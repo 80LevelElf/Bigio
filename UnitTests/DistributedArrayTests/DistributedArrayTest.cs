@@ -137,14 +137,23 @@ namespace UnitTests.DistributedArrayTests
             Assert.IsFalse(array.Where((t, i) => t != resultArray[i]).Any());
 
             //Exceptions
-            distibutedArray = new DistributedArray<int> {1,2,3};
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentNullException, int[]>
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentNullException, int[]>
                 (distibutedArray.CopyTo, null));
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int[], int>
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int[], int>
                 (distibutedArray.CopyTo, array, array.Length - distibutedArray.Count + 1));
-            Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, int[], int, int>
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int[], int>
+                (distibutedArray.CopyTo, array, -1));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int[], int, int>
                 (distibutedArray.CopyTo, 0, array, array.Length - distibutedArray.Count + 1, 3));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int[], int, int>
+                (distibutedArray.CopyTo, 0, array, 0, -1));
         }
         [Test]
         public static void FindIndex()
@@ -166,9 +175,31 @@ namespace UnitTests.DistributedArrayTests
             Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
             Assert.AreEqual(distributedArray.FindIndex(IsEqual128000), -1);
             Assert.AreEqual(distributedArray.FindIndex(5001, 1000, IsEqual5000), -1);
-
+            
             var emptyArray = new DistributedArray<int>();
             Assert.AreEqual(emptyArray.FindIndex(IsEqual0), -1);
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentNullException, Predicate<int>, int>
+                (distributedArray.FindIndex, null));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, Predicate<int>, int>
+                (distributedArray.FindIndex, distributedArray.Count, IsEqual0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, Predicate<int>, int>
+                (distributedArray.FindIndex, -1, IsEqual0));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
+                (distributedArray.FindIndex, distributedArray.Count - 1, 2, IsEqual0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
+                (distributedArray.FindIndex, -1, 1, IsEqual0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
+                (distributedArray.FindIndex, 1, -1, IsEqual0));
         }
         [Test]
         public static void FindLastIndex()
@@ -193,16 +224,44 @@ namespace UnitTests.DistributedArrayTests
 
             var emptyArray = new DistributedArray<int>();
             Assert.AreEqual(emptyArray.FindLastIndex(IsEqual0), -1);
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentNullException, Predicate<int>, int>
+                (distributedArray.FindLastIndex, null));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, Predicate<int>, int>
+                (distributedArray.FindLastIndex, distributedArray.Count, IsEqual0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, Predicate<int>, int>
+                (distributedArray.FindLastIndex, -1, IsEqual0));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
+                (distributedArray.FindLastIndex, distributedArray.Count - 1
+                , distributedArray.Count + 1, IsEqual0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
+                (distributedArray.FindLastIndex, distributedArray.Count + 1
+                , 1, IsEqual0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
+                (distributedArray.FindLastIndex, 1, -1, IsEqual0));
         }
         [Test]
         public static void Find()
         {
-            var distributeArray = new DistributedArray<int> {1, 2, 3, 4};
-            Assert.AreEqual(distributeArray.Find(IsEqual0), 0);
-            Assert.AreEqual(distributeArray.Find(IsEqual2), 2);
+            var distributedArray = new DistributedArray<int> {1, 2, 3, 4};
+            Assert.AreEqual(distributedArray.Find(IsEqual0), 0);
+            Assert.AreEqual(distributedArray.Find(IsEqual2), 2);
 
             var emptyArray = new DistributedArray<int>();
             Assert.AreEqual(emptyArray.Find(IsEqual0), 0);
+
+            //Exceptions
+            ExceptionManager.IsThrowException<ArgumentNullException, Predicate<int>, int>
+                (distributedArray.Find, null);
         }
         [Test]
         public static void FindAll()
@@ -216,6 +275,11 @@ namespace UnitTests.DistributedArrayTests
 
             var emptyArray = new DistributedArray<int>();
             Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2));
+
+            //Exceptions
+            ExceptionManager.IsThrowException
+                <ArgumentNullException, Predicate<int>, DistributedArray<int>>
+                (distributedArray.FindAll, null);
         }
         [Test]
         public static void IndexOf()
@@ -240,6 +304,24 @@ namespace UnitTests.DistributedArrayTests
 
             var emptyArray = new DistributedArray<int>();
             Assert.AreEqual(emptyArray.IndexOf(0), -1);
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int>
+                (distributedArray.IndexOf, 0, distributedArray.Count));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int>
+                (distributedArray.IndexOf, 0, -1));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int, int>
+                (distributedArray.IndexOf, 0, -1, 1));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int, int>
+                (distributedArray.IndexOf, 0, distributedArray.Count - 1, 2));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int, int>
+                (distributedArray.IndexOf, 0, 1, -1));
         }
         [Test]
         public static void LastIndexOf()
@@ -264,6 +346,24 @@ namespace UnitTests.DistributedArrayTests
 
             var emptyArray = new DistributedArray<int>();
             Assert.AreEqual(emptyArray.LastIndexOf(0), -1);
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int>
+                (distributedArray.LastIndexOf, 0, distributedArray.Count));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int>
+                (distributedArray.LastIndexOf, 0, -1));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int, int>
+                (distributedArray.LastIndexOf, 0, 0, 2));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int, int>
+                (distributedArray.LastIndexOf, 0, distributedArray.Count, 1));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, int, int>
+                (distributedArray.LastIndexOf, 0, 2, -1));
         }
         [Test]
         public static void GetEnumerator()
@@ -310,6 +410,14 @@ namespace UnitTests.DistributedArrayTests
 
             var emptyArray = new DistributedArray<int>();
             Assert.IsEmpty(emptyArray.GetRange(0, 0));
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
+                (array.GetRange, -1, 1));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
+                (array.GetRange, 0, array.Count + 1));
         }
         [Test]
         public static void Remove()
@@ -382,29 +490,16 @@ namespace UnitTests.DistributedArrayTests
             list.RemoveAt(list.Count - 1);
             Assert.AreEqual(distributedArray.Count, list.Count);
 
-            //Try to remove nonexistent elements
-            //1
-            try
-            {
-                distributedArray.RemoveAt(distributedArray.Count);
-                Assert.IsTrue(false);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-            }
-
-            //2
-            try
-            {
-                distributedArray.RemoveAt(-1);
-                Assert.IsTrue(false);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-            }
-
             //distributedArray must be equal list
             Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int>
+                (distributedArray.RemoveAt, -1));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int>
+                (distributedArray.RemoveAt, distributedArray.Count));
         }
         [Test]
         public static void RemoveRange()
@@ -432,27 +527,6 @@ namespace UnitTests.DistributedArrayTests
             list.RemoveRange(list.Count - 1, 1);
             Assert.AreEqual(distributedArray.Count, list.Count);
 
-            //Try to remove nonexistent elements
-            //1
-            try
-            {
-                distributedArray.RemoveRange(-1, 1);
-                Assert.IsTrue(false);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-            }
-
-            //2
-            try
-            {
-                distributedArray.RemoveRange(distributedArray.Count, 1);
-                Assert.IsTrue(false);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-            }
-
             //distributedArray must be equal list
             Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
 
@@ -463,6 +537,14 @@ namespace UnitTests.DistributedArrayTests
             var emptyArray = new DistributedArray<int>();
             emptyArray.RemoveRange(0, 0);
             Assert.IsEmpty(emptyArray);
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int>
+                (distributedArray.RemoveRange, -1, 1));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int>
+                (distributedArray.RemoveRange, distributedArray.Count - 1, 2));
         }
 
         //Support functions
