@@ -49,6 +49,20 @@ namespace BigDataCollections
                 //If everithing is ok
                 return true;
             }
+            /// <summary>
+            /// Move enumerator to the specified index of the DistributedArray(T).
+            /// </summary>
+            /// <param name="index">he zero-based index of the element to point to.</param>
+            public void MoveToIndex(int index)
+            {
+                var blockInfo = Array.BlockInformation(index);
+
+                _subenumerator = Array._blockCollection[blockInfo.IndexOfBlock].GetEnumerator();
+                for (int i = blockInfo.BlockStartIndex; i <= index; i++)
+                {
+                    _subenumerator.MoveNext();
+                }
+            }
             public void Reset()
             {
                 if (Array.Count != 0)
@@ -68,28 +82,22 @@ namespace BigDataCollections
             {
                 get { return Current; }
             }
-            /// <summary>
-            /// Move enumerator to the specified index of the DistributedArray(T).
-            /// </summary>
-            /// <param name="index">he zero-based index of the element to point to.</param>
-            public void MoveToIndex(int index)
-            {
-                var blockInfo = Array.BlockInformation(index);
-
-                _subenumerator = Array._blockCollection[blockInfo.IndexOfBlock].GetEnumerator();
-                for (int i = blockInfo.BlockStartIndex; i <= index; i++)
-                {
-                    _subenumerator.MoveNext();
-                }
-            }
 
             //Data
             /// <summary>
             /// Parent DistributedArray(T) of enumerator.
             /// </summary>
             public DistributedArray<T> Array;
-            private IEnumerator<T> _subenumerator;
+            /// <summary>
+            /// Index of parent block of current _subenumerator.
+            /// </summary>
             private int _indexOfCurrentBlock;
+            /// <summary>
+            /// Enumerator of current block. When we cross current block
+            /// _subenumerator will be enumerator of block after current,
+            /// if there is next block.
+            /// </summary>
+            private IEnumerator<T> _subenumerator;
         }
     }
 }

@@ -98,19 +98,19 @@ namespace BigDataCollections
             _array.Add(item);
         }
         /// <summary>
+        /// Rebalance DistributedStack(T) to every block have DefaultBlockSize elements.
+        /// </summary>
+        public void Rebalance()
+        {
+            _array.Rebalance();
+        }
+        /// <summary>
         /// Copies the DistributedStack(T) to a new array.
         /// </summary>
         /// <returns>A new array containing copies of the elements of the DistributedStack(T).</returns>
         public T[] ToArray()
         {
             return _array.ToArray();
-        }
-        /// <summary>
-        /// Rebalance DistributedStack(T) to every block have DefaultBlockSize elements.
-        /// </summary>
-        public void Rebalance()
-        {
-            _array.Rebalance();
         }
 
         //Data
@@ -124,7 +124,6 @@ namespace BigDataCollections
                 return _array.Count;
             }
         }
-
         private readonly DistributedArray<T> _array;
     }
 }

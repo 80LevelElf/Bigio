@@ -137,7 +137,7 @@ namespace BigDataCollections
         /// <returns></returns>
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
-            if (!IsValidRange(index, count))
+            if (!this.IsValidRange(index, count))
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -267,7 +267,7 @@ namespace BigDataCollections
                 return;
             }
 
-            if (!IsValidIndex(index) || !ValidationManager.IsValidRange(array, arrayIndex, count))
+            if (!this.IsValidIndex(index) || !array.IsValidRange(arrayIndex, count))
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -484,10 +484,6 @@ namespace BigDataCollections
         {
             return new DistributedArrayEnumerator(this);
         }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return new DistributedArrayEnumerator(this);
-        }
         /// <summary>
         /// Creates a shallow copy of a range of elements in the source DistributedArray(T).
         /// </summary>
@@ -517,6 +513,10 @@ namespace BigDataCollections
             }
 
             return newArray;
+        }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new DistributedArrayEnumerator(this);
         }
         /// <summary>
         /// If value conatins in DistributedArray(T) returns index of this value, otherwise return -1.
@@ -644,7 +644,8 @@ namespace BigDataCollections
                 blockInfo = BlockInformation(index); // Default case
             }
             //Insert
-            _blockCollection[blockInfo.IndexOfBlock].InsertRange(index - blockInfo.BlockStartIndex, collection);
+            _blockCollection[blockInfo.IndexOfBlock].InsertRange(
+                index - blockInfo.BlockStartIndex, collection);
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
@@ -699,6 +700,16 @@ namespace BigDataCollections
             }
             //If there is no needed value
             return -1;
+        }
+        /// <summary>
+        /// Rebalance DistributedArray(T) to every block have DefaultBlockSize elements.
+        /// </summary>
+        public void Rebalance()
+        {
+            var divideBlocks = new BlockCollection<T>(this);
+
+            _blockCollection.Clear();
+            _blockCollection.AddRange(divideBlocks);
         }
         /// <summary>
         /// Removes the first occurrence of a specific object from the DistributedArray(T).
@@ -804,156 +815,15 @@ namespace BigDataCollections
             }
             return array;
         }
-        /// <summary>
-        /// Rebalance DistributedArray(T) to every block have DefaultBlockSize elements.
-        /// </summary>
-        public void Rebalance()
-        {
-            var divideBlocks = new BlockCollection<T>(this);
-
-            _blockCollection.Clear();
-            _blockCollection.AddRange(divideBlocks);
-        }
-        /// <summary>
-        /// Gets or sets the element at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index of the element to get or set. </param>
-        public T this[int index]
-        {
-            get
-            {
-                //Check for exceptions in BlockInformation()
-                var blockInfo = BlockInformation(index);
-                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex];
-            }
-            set
-            {
-                //Check for exceptions in BlockInformation()
-                var blockInfo = BlockInformation(index);
-                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
-            }
-        }
-        /// <summary>
-        /// Get the number of elements actually contained in the DistributedArray(T).
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _count;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value", "Count cant be less then 0!");
-                }
-                _count = value;
-            }
-        }
-        /// <summary>
-        /// Gets a value indicating whether the DistributedArray(T) is read-only.
-        /// </summary>
-        public bool IsReadOnly { get; private set; }
-        /// <summary>
-        /// Default size of one DistributedArray(T) block. 
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int DefaultBlockSize
-        {
-            get
-            {
-                return _blockCollection.DefaultBlockSize;
-            }
-            set
-            {
-                _blockCollection.DefaultBlockSize = value;
-            }
-        }
-        /// <summary>
-        /// The size of any block never will be more than this number.
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int MaxBlockSize
-        {
-            get
-            {
-                return _blockCollection.MaxBlockSize;
-            }
-            set
-            {
-                _blockCollection.MaxBlockSize = value;
-            }
-        }
-        //Debug functions
-#if DEBUG
-        public void Display()
-        {
-            foreach (var item in this)
-            {
-                Console.WriteLine(item.ToString());
-            }
-        }
-        public void DisplayByBlocks()
-        {
-            foreach (var block in _blocks)
-            {
-                foreach (var item in block)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-                Console.WriteLine();
-            }
-        }
-#endif
-
-        //Data
-        /// <summary>
-        /// It is main data container where we save information.
-        /// It is cant be null. There is always one block even it is empty.
-        /// </summary>
-        private int _count;
-        /// <summary>
-        /// The blocks object provides API for easy work with blocks.
-        /// </summary>
-        private readonly BlockCollection<T> _blockCollection; 
 
         //Support functions
-        /// <summary>
-        /// Check range of the the current DistributedArray(T) to valid.
-        /// </summary>
-        /// <param name="index">The zero-based starting index of range of the DistributedArray(T) to check.</param>
-        /// <param name="count">The number of elements of the range to check.</param>
-        /// <returns>Return true of range is valid, otherwise return false.</returns>
-        public bool IsValidRange(int index, int count)
-        {
-            return ValidationManager.IsValidRange(this, index, count);
-        }
-        /// <summary>
-        /// Check index to valid in the current DistributedArray(T).
-        /// </summary>
-        /// <param name="index">The zero-based starting index of the DistributedArray(T) element.</param>
-        /// <returns>True if index is valid, otherwise return false.</returns>
-        public bool IsValidIndex(int index)
-        {
-            return ValidationManager.IsValidIndex(this, index);
-        }
-        /// <summary>
-        /// Check count to valid in the current DistributedArray(T).
-        /// </summary>
-        /// <param name="count">Count to check.</param>
-        /// <returns>True if count is valid, otherwise return false.</returns>
-        public bool IsValidCount(int count)
-        {
-            return ValidationManager.IsValidCount(this, count);
-        }
         /// <summary>
         /// Calculate indexOfBlock and blockStartIndex by index. 
         /// </summary>
         /// <param name="index">Common index of element in DistributedArray(T). index = [0; Count).</param>
         private BlockInformation BlockInformation(int index)
         {
-            if (!IsValidIndex(index))
+            if (!this.IsValidIndex(index))
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -1009,7 +879,7 @@ namespace BigDataCollections
         /// <returns>Return MultyblockRange object provides information about overlapping of specified range and block.</returns>
         private MultyblockRange MultyblockRange(int index, int count)
         {
-            if (!IsValidRange(index, count))
+            if (!this.IsValidRange(index, count))
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -1024,8 +894,8 @@ namespace BigDataCollections
             //If user want to select empty block
             if (count == 0)
             {
-                return (index == 0) 
-                    ? new MultyblockRange(0, new BlockRange[0]) 
+                return (index == 0)
+                    ? new MultyblockRange(0, new BlockRange[0])
                     : new MultyblockRange(BlockStartIndex(IndexOfBlock(index)), new BlockRange[0]);
             }
 
@@ -1098,5 +968,109 @@ namespace BigDataCollections
 
             return reverseRange;
         }
+
+        //Data
+        /// <summary>
+        /// Gets or sets the element at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the element to get or set. </param>
+        public T this[int index]
+        {
+            get
+            {
+                //Check for exceptions in BlockInformation()
+                var blockInfo = BlockInformation(index);
+                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex];
+            }
+            set
+            {
+                //Check for exceptions in BlockInformation()
+                var blockInfo = BlockInformation(index);
+                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
+            }
+        }
+        /// <summary>
+        /// Get the number of elements actually contained in the DistributedArray(T).
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return _count;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value", "Count cant be less then 0!");
+                }
+                _count = value;
+            }
+        }
+        /// <summary>
+        /// Default size of one DistributedArray(T) block. 
+        /// Because of the way memory allocation is most effective that it is a power of 2.
+        /// </summary>
+        public int DefaultBlockSize
+        {
+            get
+            {
+                return _blockCollection.DefaultBlockSize;
+            }
+            set
+            {
+                _blockCollection.DefaultBlockSize = value;
+            }
+        }
+        /// <summary>
+        /// Gets a value indicating whether the DistributedArray(T) is read-only.
+        /// </summary>
+        public bool IsReadOnly { get; private set; }
+        /// <summary>
+        /// The size of any block never will be more than this number.
+        /// Because of the way memory allocation is most effective that it is a power of 2.
+        /// </summary>
+        public int MaxBlockSize
+        {
+            get
+            {
+                return _blockCollection.MaxBlockSize;
+            }
+            set
+            {
+                _blockCollection.MaxBlockSize = value;
+            }
+        }
+        /// <summary>
+        /// The blocks object provides API for easy work with blocks.
+        /// </summary>
+        private readonly BlockCollection<T> _blockCollection;
+        /// <summary>
+        /// It is main data container where we save information.
+        /// It is cant be null. There is always one block even it is empty.
+        /// </summary>
+        private int _count;
+
+        //Debug functions
+#if DEBUG
+        public void Display()
+        {
+            foreach (var item in this)
+            {
+                Console.WriteLine(item.ToString());
+            }
+        }
+        public void DisplayByBlocks()
+        {
+            foreach (var block in _blocks)
+            {
+                foreach (var item in block)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+                Console.WriteLine();
+            }
+        }
+#endif
     }
 }

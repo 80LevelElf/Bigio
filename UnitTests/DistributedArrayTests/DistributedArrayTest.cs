@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using BigDataCollections;
 using NUnit.Framework;
@@ -42,6 +43,14 @@ namespace UnitTests.DistributedArrayTests
             {
                 Assert.IsTrue(distributedArray[i] + 1 == distributedArray[i + 1]);
             }
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int>
+                (distributedArray.Insert, -1, 0));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int>
+                (distributedArray.Insert, distributedArray.Count + 1, 0));
         }
         [Test]
         public static void AddRangeAndInsertRange()
@@ -88,6 +97,18 @@ namespace UnitTests.DistributedArrayTests
             {
                 Assert.IsTrue(distributedArray[i] + 1 == distributedArray[i + 1]);
             }
+
+            //Exceptions
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentNullException, int, ICollection<int>>
+                (distributedArray.InsertRange, 0, null));
+
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, ICollection<int>>
+                (distributedArray.InsertRange, -1, new Collection<int>()));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, ICollection<int>>
+                (distributedArray.InsertRange, distributedArray.Count + 1, new Collection<int>()));
         }
         [Test]
         public static void BinarySearch()
@@ -154,6 +175,38 @@ namespace UnitTests.DistributedArrayTests
             Assert.IsTrue(ExceptionManager.IsThrowException
                 <ArgumentOutOfRangeException, int, int[], int, int>
                 (distibutedArray.CopyTo, 0, array, 0, -1));
+        }
+        [Test]
+        public static void Find()
+        {
+            var distributedArray = new DistributedArray<int> { 1, 2, 3, 4 };
+            Assert.AreEqual(distributedArray.Find(IsEqual0), 0);
+            Assert.AreEqual(distributedArray.Find(IsEqual2), 2);
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.AreEqual(emptyArray.Find(IsEqual0), 0);
+
+            //Exceptions
+            ExceptionManager.IsThrowException<ArgumentNullException, Predicate<int>, int>
+                (distributedArray.Find, null);
+        }
+        [Test]
+        public static void FindAll()
+        {
+            var distributedArray = new DistributedArray<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            distributedArray = distributedArray.FindAll(IsMultipleOf2);
+            var resultArray = new DistributedArray<int> { 2, 4, 6, 8, 10 };
+
+            //distributedArray must be equal resultArray
+            Assert.IsFalse(distributedArray.Where((t, i) => t != resultArray[i]).Any());
+
+            var emptyArray = new DistributedArray<int>();
+            Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2));
+
+            //Exceptions
+            ExceptionManager.IsThrowException
+                <ArgumentNullException, Predicate<int>, DistributedArray<int>>
+                (distributedArray.FindAll, null);
         }
         [Test]
         public static void FindIndex()
@@ -250,36 +303,73 @@ namespace UnitTests.DistributedArrayTests
                 (distributedArray.FindLastIndex, 1, -1, IsEqual0));
         }
         [Test]
-        public static void Find()
+        public static void GetEnumerator()
         {
-            var distributedArray = new DistributedArray<int> {1, 2, 3, 4};
-            Assert.AreEqual(distributedArray.Find(IsEqual0), 0);
-            Assert.AreEqual(distributedArray.Find(IsEqual2), 2);
+            var array = new DistributedArray<int>();
+            int size = 4 * array.MaxBlockSize;
+            for (int i = 0; i < size; i++)
+            {
+                array.Add(i);
+            }
 
-            var emptyArray = new DistributedArray<int>();
-            Assert.AreEqual(emptyArray.Find(IsEqual0), 0);
+            var newArray = new DistributedArray<int>();
+            foreach (var i in array)
+            {
+                newArray.Add(i);
+            }
 
-            //Exceptions
-            ExceptionManager.IsThrowException<ArgumentNullException, Predicate<int>, int>
-                (distributedArray.Find, null);
+            Assert.IsTrue(array.Count == newArray.Count);
+
+            //array must be equal newArray
+            Assert.IsFalse(array.Where((t, i) => t != newArray[i]).Any());
         }
         [Test]
-        public static void FindAll()
+        public static void GetRange()
         {
-            var distributedArray = new DistributedArray<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-            distributedArray = distributedArray.FindAll(IsMultipleOf2);
-            var resultArray = new DistributedArray<int> {2, 4, 6, 8, 10};
+            var array = new DistributedArray<int>();
+            int size = 4 * array.MaxBlockSize;
+            int rangeCount = array.DefaultBlockSize;
 
-            //distributedArray must be equal resultArray
-            Assert.IsFalse(distributedArray.Where((t, i) => t != resultArray[i]).Any());
+            //Fill array
+            for (int i = 0; i < size; i++)
+            {
+                array.Add(i);
+            }
+
+            for (int i = 0; i < size / rangeCount; i++)
+            {
+                var range = array.GetRange(i * rangeCount, rangeCount);
+                for (int j = 0; j < rangeCount; j++)
+                {
+                    Assert.IsTrue(range[j] == i * rangeCount + j);
+                }
+            }
 
             var emptyArray = new DistributedArray<int>();
-            Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2));
+            Assert.IsEmpty(emptyArray.GetRange(0, 0));
 
             //Exceptions
-            ExceptionManager.IsThrowException
-                <ArgumentNullException, Predicate<int>, DistributedArray<int>>
-                (distributedArray.FindAll, null);
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
+                (array.GetRange, -1, 1));
+            Assert.IsTrue(ExceptionManager.IsThrowException
+                <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
+                (array.GetRange, 0, array.Count + 1));
+        }
+        [Test]
+        public static void Indexer()
+        {
+            var distributedArray = new DistributedArray<int>();
+            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++)
+            {
+                distributedArray.Add(i);
+            }
+
+            for (int i = 0; i < distributedArray.Count; i++)
+            {
+                Assert.AreEqual(distributedArray[i], i);
+            }
+
         }
         [Test]
         public static void IndexOf()
@@ -364,60 +454,6 @@ namespace UnitTests.DistributedArrayTests
             Assert.IsTrue(ExceptionManager.IsThrowException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.LastIndexOf, 0, 2, -1));
-        }
-        [Test]
-        public static void GetEnumerator()
-        {
-            var array = new DistributedArray<int>();
-            int size = 4 * array.MaxBlockSize;
-            for (int i = 0; i < size; i++)
-            {
-                array.Add(i);
-            }
-
-            var newArray = new DistributedArray<int>();
-            foreach (var i in array)
-            {
-                newArray.Add(i);
-            }
-
-            Assert.IsTrue(array.Count == newArray.Count);
-
-            //array must be equal newArray
-            Assert.IsFalse(array.Where((t, i) => t != newArray[i]).Any());
-        }
-        [Test]
-        public static void GetRange()
-        {
-            var array = new DistributedArray<int>();
-            int size = 4 * array.MaxBlockSize;
-            int rangeCount = array.DefaultBlockSize;
-
-            //Fill array
-            for (int i = 0; i < size; i++)
-            {
-                array.Add(i);
-            }
-
-            for (int i = 0; i < size/rangeCount; i++)
-            {
-                var range = array.GetRange(i*rangeCount, rangeCount);
-                for (int j = 0; j < rangeCount; j++)
-                {
-                    Assert.IsTrue(range[j] == i*rangeCount + j);
-                }
-            }
-
-            var emptyArray = new DistributedArray<int>();
-            Assert.IsEmpty(emptyArray.GetRange(0, 0));
-
-            //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
-                <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
-                (array.GetRange, -1, 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
-                <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
-                (array.GetRange, 0, array.Count + 1));
         }
         [Test]
         public static void Remove()
@@ -546,23 +582,67 @@ namespace UnitTests.DistributedArrayTests
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.RemoveRange, distributedArray.Count - 1, 2));
         }
+        [Test]
+        public static void Reverse()
+        {
+            var distributedArray = new DistributedArray<int>();
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            {
+                distributedArray.Add(i);
+            }
+            distributedArray.Reverse();
+
+            //Check
+            int count = distributedArray.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Assert.AreEqual(i, distributedArray[count - 1 - i]);
+            }
+
+            //Empty array
+            var newArray = new DistributedArray<int>();
+            newArray.Reverse();
+
+            newArray.Add(0); // This items are in the
+            newArray.Add(1); // insuring block
+
+            newArray.Reverse();
+
+            Assert.AreEqual(newArray[0], 1);
+            Assert.AreEqual(newArray[1], 0);
+        }
+        [Test]
+        public static void ToArray()
+        {
+            var distributedArray = new DistributedArray<int>();
+            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            {
+                distributedArray.Add(i);
+            }
+
+            var array = distributedArray.ToArray();
+            for (int i = 0; i < distributedArray.Count; i++)
+            {
+                Assert.AreEqual(distributedArray[i], array[i]);
+            }
+        }
 
         //Support functions
-        private static bool IsEqual5000(int number)
+        private static bool IsEqual0(int number)
         {
-            return number == 5000;
+            return number == 0;
         }
         private static bool IsEqual128000(int number)
         {
             return number == 128000;
         }
-        private static bool IsEqual0(int number)
-        {
-            return number == 0;
-        }
         private static bool IsEqual2(int number)
         {
             return number == 2;
+        }
+        private static bool IsEqual5000(int number)
+        {
+            return number == 5000;
         }
         private static bool IsMultipleOf2(int number)
         {

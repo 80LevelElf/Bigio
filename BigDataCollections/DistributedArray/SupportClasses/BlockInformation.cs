@@ -16,14 +16,13 @@
             IndexOfBlock = indexOfBlock;
             BlockStartIndex = blockStartIndex;
         }
-
-        /// <summary>
-        /// Zero-based index of block in the BlockCollection.
-        /// </summary>
-        public int IndexOfBlock;
         /// <summary>
         /// Zero-based start common index(not subindex) of block.
         /// </summary>
         public int BlockStartIndex;
+        /// <summary>
+        /// Zero-based index of block in the BlockCollection.
+        /// </summary>
+        public int IndexOfBlock;
     }
 }

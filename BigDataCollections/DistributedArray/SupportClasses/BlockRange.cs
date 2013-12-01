@@ -19,11 +19,6 @@
             CommonBlockStartIndex = commonBlockStartIndex;
             Count = count;
         }
-
-        /// <summary>
-        /// Subindex(internal block index) of starting of range.
-        /// </summary>
-        public int Subindex;
         /// <summary>
         /// Count of elements of the block.
         /// </summary>
@@ -32,5 +27,9 @@
         /// Common start index(ot subindex) of the block.
         /// </summary>
         public int Count;
+        /// <summary>
+        /// Subindex(internal block index) of starting of range.
+        /// </summary>
+        public int Subindex;
     }
 }

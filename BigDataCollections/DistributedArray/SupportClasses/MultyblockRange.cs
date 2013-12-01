@@ -19,6 +19,34 @@ namespace BigDataCollections.DistributedArray.SupportClasses
             IndexOfStartBlock = indexOfStartBlock;
             _ranges = ranges;
         }
+
+        //Data
+        /// <summary>
+        /// Indexator allowes you get and set BlockRange at specified index.
+        /// </summary>
+        /// <param name="index">Zero-based index of specified BlockRange to set and get it.</param>
+        /// <returns>BlockRange object at specified index.</returns>
+        public BlockRange this[int index]
+        {
+            get
+            {
+                return Ranges[index];
+            }
+            set
+            {
+                Ranges[index] = value;
+            }
+        }
+        /// <summary>
+        /// Count of BlockRanges containing in MultyblockRange.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return Ranges.Length;
+            }
+        }
         /// <summary>
         /// Zero-based index of the start block in BlockCollection.
         /// </summary>
@@ -36,16 +64,6 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 }
 
                 _indexOfStartBlock = value;
-            }
-        }
-        /// <summary>
-        /// Count of BlockRanges containing in MultyblockRange.
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                return Ranges.Length;
             }
         }
         /// <summary>
@@ -67,24 +85,6 @@ namespace BigDataCollections.DistributedArray.SupportClasses
                 _ranges = value;
             }
         }
-        /// <summary>
-        /// Indexator allowes you get and set BlockRange at specified index.
-        /// </summary>
-        /// <param name="index">Zero-based index of specified BlockRange to set and get it.</param>
-        /// <returns>BlockRange object at specified index.</returns>
-        public BlockRange this[int index]
-        {
-            get
-            {
-                return Ranges[index];
-            }
-            set
-            {
-                Ranges[index] = value;
-            }
-        }
-
-        //Data
         /// <summary>
         /// Internal value of IndexOfStartBlock field. Dont use it out of IndexOfStartBlock
         /// set and get functions.

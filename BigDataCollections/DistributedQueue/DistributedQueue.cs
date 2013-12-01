@@ -103,14 +103,6 @@ namespace BigDataCollections
             return _array[0];
         }
         /// <summary>
-        /// Copies the elements of the DistributedQueue(T) to a new array.
-        /// </summary>
-        /// <returns>An array containing copies of the elements of the DistributedQueue(T).</returns>
-        public T[] ToArray()
-        {
-            return _array.ToArray();
-        }
-        /// <summary>
         /// Rebalance DistributedQueue(T) to every block have DefaultBlockSize elements.
         /// </summary>
         public void Rebalance()
@@ -119,6 +111,24 @@ namespace BigDataCollections
         }
 
         //Data
+        /// <summary>
+        /// Copies the elements of the DistributedQueue(T) to a new array.
+        /// </summary>
+        /// <returns>An array containing copies of the elements of the DistributedQueue(T).</returns>
+        public T[] ToArray()
+        {
+            return _array.ToArray();
+        }
+        /// <summary>
+        /// Get the number of elements actually contained in the DistributedQueue(T).
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return _array.Count;
+            }
+        }
         /// <summary>
         /// Default size of one DistributedQueue(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -132,6 +142,16 @@ namespace BigDataCollections
             set
             {
                 _array.DefaultBlockSize = value;
+            }
+        }
+        /// <summary>
+        /// Gets a value indicating whether the DistributedQueue(T) is read-only.
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get
+            {
+                return _array.IsReadOnly;
             }
         }
         /// <summary>
@@ -149,27 +169,6 @@ namespace BigDataCollections
                 _array.MaxBlockSize = value;
             }
         }
-        /// <summary>
-        /// Get the number of elements actually contained in the DistributedQueue(T).
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _array.Count;
-            }
-        }
-        /// <summary>
-        /// Gets a value indicating whether the DistributedQueue(T) is read-only.
-        /// </summary>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return _array.IsReadOnly;
-            }
-        }
-
         private readonly DistributedArray<T> _array;
     }
 }
