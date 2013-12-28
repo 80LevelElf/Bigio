@@ -186,6 +186,15 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
         public void CopyTo(List<T>[] array, int arrayIndex)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException("array");
+            }
+            if (!array.IsValidIndex(arrayIndex))
+            {
+                throw new ArgumentOutOfRangeException("arrayIndex");
+            }
+
             if (_insuringBlock != null)
             {
                 array[arrayIndex] = _insuringBlock;

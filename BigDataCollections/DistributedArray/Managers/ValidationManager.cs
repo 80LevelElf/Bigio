@@ -16,7 +16,11 @@ namespace BigDataCollections.DistributedArray.Managers
         /// <returns>True if count is valid, otherwise return false.</returns>
         public static bool IsValidCount<T>(this ICollection<T> collection, int count)
         {
-            return !(count < 0 || count > collection.Count);
+            return IsValidCount(collection.Count, count);
+        }
+        public static bool IsValidCount(int collectionCount, int count)
+        {
+            return !(count < 0 || count > collectionCount);
         }
         /// <summary>
         /// Check index to valid in current DistributedArray(T).
@@ -26,7 +30,11 @@ namespace BigDataCollections.DistributedArray.Managers
         /// <returns>True if index is valid, otherwise return false.</returns>
         public static bool IsValidIndex<T>(this ICollection<T> collection, int index)
         {
-            return !(index < 0 || index >= collection.Count);
+            return IsValidIndex(collection.Count, index);
+        }
+        public static bool IsValidIndex(int collectionCount, int index)
+        {
+            return !(index < 0 || index >= collectionCount);
         }
         /// <summary>
         /// Check range of the specified collection to valid.
@@ -37,7 +45,11 @@ namespace BigDataCollections.DistributedArray.Managers
         /// <returns>Return true of range is valid, otherwise return false.</returns>
         public static bool IsValidRange<T>(this ICollection<T> collection, int index, int count)
         {
-            return !(index < 0 || count < 0 || index + count > collection.Count);
+            return IsValidRange(collection.Count, index, count);
+        }
+        public static bool IsValidRange(int collectionCount, int index, int count)
+        {
+            return !(index < 0 || count < 0 || index + count > collectionCount);
         }
     }
 }

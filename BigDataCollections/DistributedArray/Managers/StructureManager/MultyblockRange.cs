@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigDataCollections.DistributedArray.SupportClasses
+namespace BigDataCollections.DistributedArray.Managers.StructureManager
 {
     /// <summary>
     /// Object of MultyblockRange contain information of range that can overlap many blocks. 

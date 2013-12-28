@@ -55,7 +55,7 @@ namespace BigDataCollections
             /// <param name="index">he zero-based index of the element to point to.</param>
             public void MoveToIndex(int index)
             {
-                var blockInfo = Array.BlockInformation(index);
+                var blockInfo = Array._structureManager.BlockInformation(index);
 
                 _subenumerator = Array._blockCollection[blockInfo.IndexOfBlock].GetEnumerator();
                 for (int i = blockInfo.BlockStartIndex; i <= index; i++)
