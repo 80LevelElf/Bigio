@@ -58,7 +58,9 @@ namespace BigDataCollections
                 var blockInfo = Array._structureManager.BlockInformation(index);
 
                 _subenumerator = Array._blockCollection[blockInfo.IndexOfBlock].GetEnumerator();
-                for (int i = blockInfo.BlockStartIndex; i <= index; i++)
+
+                //It is always executed at least once
+                for (int i = blockInfo.StartIndex; i <= index; i++)
                 {
                     _subenumerator.MoveNext();
                 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using BigDataCollections.DistributedArray.SupportClasses;
 
 namespace BigDataCollections.DistributedArray.Managers
 {
@@ -47,9 +48,17 @@ namespace BigDataCollections.DistributedArray.Managers
         {
             return IsValidRange(collection.Count, index, count);
         }
+        public static bool IsValidRange<T>(this ICollection<T> collection, Range range)
+        {
+            return IsValidRange(collection.Count, range.Index, range.Count);
+        }
         public static bool IsValidRange(int collectionCount, int index, int count)
         {
             return !(index < 0 || count < 0 || index + count > collectionCount);
+        }
+        public static bool IsValidRange(int collectionCount, Range range)
+        {
+            return IsValidRange(collectionCount, range.Index, range.Count);
         }
     }
 }

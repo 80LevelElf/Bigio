@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BigDataCollections.DistributedArray.Managers.StructureManager
 {
@@ -13,29 +14,13 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
         /// </summary>
         /// <param name="indexOfStartBlock">Zero-based index of the start block in 
         /// BlockCollection.</param>
+        /// <param name="count"></param>
         /// <param name="ranges">Block ranges of blocks from the start block.</param>
-        public MultyblockRange(int indexOfStartBlock, BlockRange[] ranges)
+        public MultyblockRange(int indexOfStartBlock, int count, IEnumerable<BlockRange> ranges)
         {
             IndexOfStartBlock = indexOfStartBlock;
-            _ranges = ranges;
-        }
-
-        //Data
-        /// <summary>
-        /// Indexator allowes you get and set BlockRange at specified index.
-        /// </summary>
-        /// <param name="index">Zero-based index of specified BlockRange to set and get it.</param>
-        /// <returns>BlockRange object at specified index.</returns>
-        public BlockRange this[int index]
-        {
-            get
-            {
-                return Ranges[index];
-            }
-            set
-            {
-                Ranges[index] = value;
-            }
+            Ranges = ranges;
+            Count = count;
         }
         /// <summary>
         /// Count of BlockRanges containing in MultyblockRange.
@@ -44,7 +29,16 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
         {
             get
             {
-                return Ranges.Length;
+                return _count;
+            }
+            private set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                _count = value;
             }
         }
         /// <summary>
@@ -56,7 +50,7 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
             {
                 return _indexOfStartBlock;
             }
-            set
+            private set
             {
                 if (value < 0)
                 {
@@ -69,13 +63,13 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
         /// <summary>
         /// Block ranges of blocks from the start block.
         /// </summary>
-        public BlockRange[] Ranges
+        public IEnumerable<BlockRange> Ranges
         {
             get
             {
                 return _ranges;
             }
-            set
+            private set
             {
                 if (value == null)
                 {
@@ -85,6 +79,8 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
                 _ranges = value;
             }
         }
+
+        //Data
         /// <summary>
         /// Internal value of IndexOfStartBlock field. Dont use it out of IndexOfStartBlock
         /// set and get functions.
@@ -94,6 +90,7 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
         /// Internal value of Ranges field. Dont use it out of Ranges
         /// set and get functions.
         /// </summary>
-        private BlockRange[] _ranges;
+        private IEnumerable<BlockRange> _ranges;
+        private int _count;
     }
 }

@@ -1,29 +1,32 @@
-﻿namespace BigDataCollections.DistributedArray.Managers.StructureManager
+﻿using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
+
+namespace BigDataCollections.DistributedArray.Managers.StructureManager
 {
     /// <summary>
     /// Object of this class contain information of position of block in BlockCollection.
     /// </summary>
-    struct BlockInformation
+    struct BlockInformation<T>
     {
         //API
-        /// <summary>
-        /// Create new istance of BlockIformation.
-        /// </summary>
-        /// <param name="indexOfBlock">Zero-based index of block in the BlockCollection.</param>
-        /// <param name="blockStartIndex">Zero-based start common index(not subindex) of block.</param>
-        public BlockInformation(int indexOfBlock, int blockStartIndex, int count)
+        public BlockInformation(Block<T> block)
         {
+            IndexOfBlock = block.IndexOfBlock;
+            StartIndex = block.StartIndex;
+            Count = block.Count;
+        }
+        public BlockInformation(int indexOfBlock, int startIndex, int count)
+        {
+            StartIndex = startIndex;
             IndexOfBlock = indexOfBlock;
-            BlockStartIndex = blockStartIndex;
             Count = count;
         }
         public int Compare(int index)
         {
-            if (index < BlockStartIndex)
+            if (index < StartIndex)
             {
                 return -1;
             }
-            if (index >= BlockStartIndex + Count)
+            if (index >= StartIndex + Count)
             {
                 return 1;
             }
@@ -32,7 +35,7 @@
         /// <summary>
         /// Zero-based start common index(not subindex) of block.
         /// </summary>
-        public int BlockStartIndex;
+        public int StartIndex;
         /// <summary>
         /// Zero-based index of block in the BlockCollection.
         /// </summary>

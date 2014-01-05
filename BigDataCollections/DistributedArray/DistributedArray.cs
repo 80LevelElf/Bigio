@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using BigDataCollections.DistributedArray.Interfaces;
 using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.Managers.StructureManager;
 using BigDataCollections.DistributedArray.SupportClasses;
@@ -19,7 +20,7 @@ namespace BigDataCollections
     /// most operations will be more efficient.
     /// </summary>
     /// <typeparam name="T">Type of array elements.</typeparam>
-    public partial class DistributedArray<T> : IList<T>
+    public partial class DistributedArray<T> : IArrayList<T>
     {
         //API
         /// <summary>
@@ -29,17 +30,23 @@ namespace BigDataCollections
         public DistributedArray() : this(new Collection<T>())
         {
         }
+        public DistributedArray(ICollection<T> collection)
+        {
+            Initialize(collection);
+
+            _blockCollection = new BlockCollection<T>(collection);
+            _structureManager = new StructureManager<T>(_blockCollection);
+        }
         /// <summary>
         /// Create a new instance of the DistributedArray(T) class using elements from specified collection.
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
         /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
-        public DistributedArray(ICollection<T> collection)
+        public DistributedArray(ICollection<T> collection, IArrayList<Block<T>> blockCollection)
         {
-            IsReadOnly = false;
-            Count = collection.Count;
+            Initialize(collection);
 
-            _blockCollection = new BlockCollection<T>(collection);
+            _blockCollection = new BlockCollection<T>(blockCollection, collection);
             _structureManager = new StructureManager<T>(_blockCollection);
         }
         /// <summary>
@@ -390,18 +397,20 @@ namespace BigDataCollections
                 throw new ArgumentNullException("match");
             }
 
-            var range = _structureManager.MultyblockRange(index, count);
+            var multyblockRange = _structureManager.MultyblockRange(new Range(index, count));
 
-            for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
+            int indexOfBlock = multyblockRange.IndexOfStartBlock;
+            foreach (var blockRange in multyblockRange.Ranges)
             {
-                var blockRange = range[i - range.IndexOfStartBlock];
-                int findIndexResult = _blockCollection[i].FindIndex(blockRange.Subindex, blockRange.Count, match);
+                int findIndexResult = _blockCollection[indexOfBlock++]
+                    .FindIndex(blockRange.Subindex, blockRange.Count, match);
 
                 if (findIndexResult != -1)
                 {
-                    return blockRange.CommonBlockStartIndex + findIndexResult;
+                    return blockRange.CommonStartIndex + findIndexResult;
                 }
             }
+ 
             //If there is no needed value
             return -1;
         }
@@ -464,20 +473,20 @@ namespace BigDataCollections
                 throw new ArgumentNullException("match");
             }
 
-            var range = _structureManager.ReverseMultyblockRange(index, count);
+            var range = _structureManager.ReverseMultyblockRange(new Range(index, count));
 
             //Find it
-            for (int i = range.IndexOfStartBlock; i >= range.IndexOfStartBlock - range.Count + 1; i--)
+            int indexOfBlock = range.IndexOfStartBlock;
+            foreach (var blockRange in range.Ranges)
             {
-                var blockRange = range[i];
-
-                //Try to find it in current block
-                int findLastIndexResult = _blockCollection[i].FindLastIndex(blockRange.Subindex, blockRange.Count, match);
+                int findLastIndexResult = _blockCollection[indexOfBlock--]
+                    .FindLastIndex(blockRange.Subindex, blockRange.Count, match);
                 if (findLastIndexResult != -1)
                 {
-                    return blockRange.CommonBlockStartIndex + findLastIndexResult;
+                    return blockRange.CommonStartIndex + findLastIndexResult;
                 }
             }
+
             //If there is no needed value
             return -1;
         }
@@ -496,24 +505,28 @@ namespace BigDataCollections
         /// <returns></returns>
         public DistributedArray<T> GetRange(int index, int count)
         {
-            var range = _structureManager.MultyblockRange(index, count);
-            var newArray = new DistributedArray<T>();
-            for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
+            if (!this.IsValidRange(index, count))
             {
-                var blockRange = range[i - range.IndexOfStartBlock];
-                var block = _blockCollection[i];
+                throw new ArgumentOutOfRangeException();
+            }
 
-                if (blockRange.Count != 0)
-                {
-                    if (block.Count == blockRange.Count)
-                    {
-                        newArray._blockCollection.Add(block);
-                    }
-                    else
-                    {
-                        newArray.AddRange(block.GetRange(blockRange.Subindex, blockRange.Count));
-                    }
-                }
+            var newArray = new DistributedArray<T>();
+
+            if (count == 0)
+            {
+                return newArray;
+            }
+
+            var enumerator = GetEnumerator();
+            ((DistributedArrayEnumerator)enumerator).MoveToIndex(index);
+            bool isContinue = true;
+
+            while (isContinue && count != 0)
+            {
+                newArray.Add(enumerator.Current);
+
+                count--;
+                isContinue = enumerator.MoveNext();
             }
 
             return newArray;
@@ -556,18 +569,20 @@ namespace BigDataCollections
         ///  in the DistributedArray(T) that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
         public int IndexOf(T item, int index, int count)
         {
-            var range = _structureManager.MultyblockRange(index, count);
+            var multyblockRange = _structureManager.MultyblockRange(new Range(index, count));
 
-            for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
+            int indexOfBlock = multyblockRange.IndexOfStartBlock;
+            foreach (var blockRange in multyblockRange.Ranges)
             {
-                var blockRange = range[i - range.IndexOfStartBlock];
-                int indexOfResult = _blockCollection[i].IndexOf(item, blockRange.Subindex, blockRange.Count);
+                int indexOfResult = _blockCollection[indexOfBlock++]
+                    .IndexOf(item, blockRange.Subindex, blockRange.Count);
 
                 if (indexOfResult != -1)
                 {
-                    return blockRange.CommonBlockStartIndex + indexOfResult;
+                    return blockRange.CommonStartIndex + indexOfResult;
                 }
             }
+
             //If there is no needed value
             return -1;
         }
@@ -586,7 +601,7 @@ namespace BigDataCollections
 
             var blockInfo = _structureManager.BlockInformation(index);
 
-            int blockSubindex = index - blockInfo.BlockStartIndex;
+            int blockSubindex = index - blockInfo.StartIndex;
             var block = _blockCollection[blockInfo.IndexOfBlock];
 
             bool isMaxSize = (block.Count == MaxBlockSize);
@@ -638,18 +653,18 @@ namespace BigDataCollections
         public void InsertRange(int index, ICollection<T> collection)
         {
             //Validity of index and count check in BlockInformation
-            var blockInfo = new BlockInformation();
+            var blockInfo = new BlockInformation<T>();
 
             //Determine indexOfBlock and blockStartIndex
             if (index == Count)
             {
                 blockInfo.IndexOfBlock = _blockCollection.Count - 1;
-                blockInfo.BlockStartIndex = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
+                blockInfo.StartIndex = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
             }
             else if (Count == 0 && index == 0) // If there is insertion in empty DistributedArray
             {
                 blockInfo.IndexOfBlock = 0;
-                blockInfo.BlockStartIndex = 0;
+                blockInfo.StartIndex = 0;
             }
             else
             {
@@ -657,7 +672,7 @@ namespace BigDataCollections
             }
             //Insert
             _blockCollection[blockInfo.IndexOfBlock].InsertRange(
-                index - blockInfo.BlockStartIndex, collection);
+                index - blockInfo.StartIndex, collection);
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
@@ -697,20 +712,20 @@ namespace BigDataCollections
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
-            var range = _structureManager.ReverseMultyblockRange(index, count);
+            var reverseMultyblockRange = _structureManager.ReverseMultyblockRange(new Range(index, count));
 
             //Find it
-            for (int i = range.IndexOfStartBlock; i >= range.IndexOfStartBlock - range.Count + 1; i--)
+            int indexOfBlock = reverseMultyblockRange.IndexOfStartBlock;
+            foreach (var blockRange in reverseMultyblockRange.Ranges)
             {
-                var blockRange = range[i];
-
-                //Try to find it in current block
-                int lastIndexOfResult = _blockCollection[i].LastIndexOf(item, blockRange.Subindex, blockRange.Count);
+                int lastIndexOfResult = _blockCollection[indexOfBlock--]
+                    .LastIndexOf(item, blockRange.Subindex, blockRange.Count);
                 if (lastIndexOfResult != -1)
                 {
-                    return blockRange.CommonBlockStartIndex + lastIndexOfResult;
-                }
+                    return blockRange.CommonStartIndex + lastIndexOfResult;
+                } 
             }
+
             //If there is no needed value
             return -1;
         }
@@ -766,10 +781,10 @@ namespace BigDataCollections
         public void RemoveAt(int index)
         {
             //Validity of index check in BlockInformation
-            var blockInfo = _structureManager.BlockInformation(index);
+            var blockInfo = _structureManager.BlockInformation(index, SearchMod.LinearSearch);
 
             //Remove
-            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.BlockStartIndex);
+            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.StartIndex);
 
             //If there is empty block, we will remove it
             if (_blockCollection[blockInfo.IndexOfBlock].Count == 0)
@@ -787,18 +802,30 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to remove.</param>
         public void RemoveRange(int index, int count)
         {
-            var range = _structureManager.MultyblockRange(index, count);
+            var multyblockRange = _structureManager.MultyblockRange(new Range(index, count), SearchMod.LinearSearch);
+
             int shift = 0;
-            for (int i = range.IndexOfStartBlock; i < range.IndexOfStartBlock + range.Count; i++)
+            int indexOfBlock = multyblockRange.IndexOfStartBlock;
+
+            // There is need to get all ranges before we start to remove,
+            // otherwise we get invalid data.
+            var blockRanges = new BlockRange[multyblockRange.Count];
+            int i = 0;
+            foreach (var blockRange in multyblockRange.Ranges)
             {
-                var blockRange = range[i - range.IndexOfStartBlock];
-                var block = _blockCollection[i - shift];
+                blockRanges[i++] = blockRange;
+            }
+
+            //Calc
+            foreach (var blockRange in blockRanges)
+            {
+                var block = _blockCollection[indexOfBlock - shift];
 
                 if (blockRange.Count != 0)
                 {
                     if (block.Count == blockRange.Count)
                     {
-                        _blockCollection.RemoveAt(i - shift);
+                        _blockCollection.RemoveAt(indexOfBlock - shift);
                         shift++;
                     }
                     else
@@ -806,6 +833,8 @@ namespace BigDataCollections
                         block.RemoveRange(blockRange.Subindex, blockRange.Count);
                     }
                 }
+
+                indexOfBlock++;
             }
 
             _structureManager.DataChanged();
@@ -847,13 +876,13 @@ namespace BigDataCollections
             {
                 //Check for exceptions in BlockInformation()
                 var blockInfo = _structureManager.BlockInformation(index);
-                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex];
+                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex];
             }
             set
             {
                 //Check for exceptions in BlockInformation()
                 var blockInfo = _structureManager.BlockInformation(index);
-                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.BlockStartIndex] = value;
+                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex] = value;
             }
         }
         /// <summary>
@@ -908,6 +937,13 @@ namespace BigDataCollections
         /// Gets a value indicating whether the DistributedArray(T) is read-only.
         /// </summary>
         public bool IsReadOnly { get; private set; }
+
+        //Support functions
+        private void Initialize(ICollection<T> collection)
+        {
+            IsReadOnly = false;
+            Count = collection.Count;
+        }
 
         //Data
         private readonly StructureManager<T> _structureManager; 

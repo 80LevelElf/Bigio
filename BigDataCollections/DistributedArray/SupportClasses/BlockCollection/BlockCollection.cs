@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using BigDataCollections.DistributedArray.Interfaces;
+using BigDataCollections.DistributedArray.InternalBlockCollections;
 using BigDataCollections.DistributedArray.Managers;
 
 namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
@@ -12,7 +14,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
     /// that called "insuring block".
     /// </summary>
     /// <typeparam name="T">Type of block elements.</typeparam>
-    partial class BlockCollection<T> : ICollection<List<T>>
+    public partial class BlockCollection<T> : ICollection<Block<T>>
     {
         //API
         /// <summary>
@@ -20,8 +22,13 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// Blocks(T) is a shell of blocks collection, which use for more
         /// simple usage of it.
         /// </summary>
-        public BlockCollection():this(new Collection<T>())
+        public BlockCollection(): this(new Collection<T>())
         {
+        }
+        public BlockCollection(IArrayList<Block<T>> blockCollection)
+            : this(blockCollection, new Collection<T>())
+        {
+            
         }
         /// <summary>
         /// Create a new instance of Blocks(T) class.
@@ -33,20 +40,13 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// , if type T is a reference type. </param>
         public BlockCollection(ICollection<T> collection)
         {
-            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
-            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
-            IsReadOnly = false;
-            _blocks = new List<List<T>>();
-
-            var blocks = DivideIntoBlocks(collection);
-            if (blocks.Count != 0)
-            {
-                AddRange(blocks);
-            }
-            else
-            {
-                TryToAddInsuringBlock();
-            }
+            _blocks = new InternalBlockList<Block<T>>();
+            Initialize(collection);
+        }
+        public BlockCollection(IArrayList<Block<T>> blockCollection, ICollection<T> collection)
+        {
+            _blocks = blockCollection;
+            Initialize(collection);
         }
         /// <summary>
         /// Add new block to the end of collection of blocks of the BlockCollection(T).
@@ -56,7 +56,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// If block is too big, it will be divide into several blocks.
         /// </summary>
         /// <param name="block">Block to add. Block cant be null.</param>
-        public void Add(List<T> block)
+        public void Add(Block<T> block)
         {
             if (block == null)
             {
@@ -121,7 +121,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         public void AddNewBlock()
         {
             TryToRemoveInsuringBlock();
-            _blocks.Add(new List<T>(DefaultBlockSize));
+            _blocks.Add(new Block<T>(this));
         }
         /// <summary>
         /// Adds the blocks of the specified collection to the end of the BlockCollection.
@@ -132,14 +132,14 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="range">The collection of blocks whose elements should be added 
         /// to the end of the BlockCollection(T).
         /// The collection itself cannot benull and cant contain null elements.</param>
-        public void AddRange(ICollection<List<T>> range)
+        public void AddRange(ICollection<Block<T>> range)
         {
             if (range == null)
             {
                 throw new ArgumentNullException("range");
             }
 
-            var blocksToAdd = new List<List<T>>(range.Count);
+            var blocksToAdd = new List<Block<T>>(range.Count);
             //Divide each block
             foreach (var block in range)
             {
@@ -166,7 +166,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// Remove true if BlockCollection(T) contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Block to be checked.</param>
-        public bool Contains(List<T> item)
+        public bool Contains(Block<T> item)
         {
             var result = _blocks.Contains(item);
 
@@ -184,7 +184,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="array">The one-dimensional Array that is the destination of the blocks copied from BlockCollection(T).
         ///  The Array must have zero-based indexing. </param>
         /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
-        public void CopyTo(List<T>[] array, int arrayIndex)
+        public void CopyTo(Block<T>[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -207,7 +207,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// Returns an enumerator that iterates through the collection of blocks.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<List<T>> GetEnumerator()
+        public IEnumerator<Block<T>> GetEnumerator()
         {
             return new BlockCollectionEnumerator(this);
         }
@@ -223,7 +223,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// </summary>
         /// <param name="index">Index of collection of block where the new block will be.</param>
         /// <param name="block">Block to insert.</param>
-        public void Insert(int index, List<T> block)
+        public void Insert(int index, Block<T> block)
         {
             InsertRange(index, DivideIntoBlocks(block));
         }
@@ -236,7 +236,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         public void InsertNewBlock(int index)
         {
             TryToRemoveInsuringBlock();
-            _blocks.Insert(index, new List<T>(DefaultBlockSize));
+            _blocks.Insert(index, new Block<T>(this));
         }
         /// <summary>
         /// Inserts the elements of a block range into the block collection at the specified index.
@@ -247,7 +247,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="range">The range whose elements should be inserted into the block collection.
         ///  The range it self cannot be null, and cant contain null blocks.</param>
-        public void InsertRange(int index, ICollection<List<T>> range)
+        public void InsertRange(int index, ICollection<Block<T>> range)
         {
             if (range == null)
             {
@@ -259,7 +259,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
                 throw new ArgumentOutOfRangeException("index");
             }
 
-            var blocksToInsert = new List<List<T>>(range.Count);
+            var blocksToInsert = new List<Block<T>>(range.Count);
             //Divide each block
             foreach (var block in range)
             {
@@ -269,6 +269,8 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             if (blocksToInsert.Count != 0)
             {
                 TryToRemoveInsuringBlock();
+
+                //Insert
                 _blocks.InsertRange(index, blocksToInsert);
             }
         }
@@ -278,7 +280,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="block">The object to remove from the DistributedArray(T).</param>
         /// <returns>True if item is successfully removed; otherwise, false.
         ///  This method also returns false if item was not found in the BlockCollection(T).</returns>
-        public bool Remove(List<T> block)
+        public bool Remove(Block<T> block)
         {
             bool result;
             if (_insuringBlock != null && block.Equals(_insuringBlock))
@@ -331,7 +333,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             // If there is only insuring block, it will reverse empty _blocks collection,
             // otherwise we reverse _blocks collection and we dont have insuring block
             // to think about it.
-            _blocks.Reverse();
+           
         }
         /// <summary>
         /// If count of elements of block at specified index more or equal to MaxBlockSize,
@@ -376,7 +378,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
         /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks(ICollection<T> collection)
+        private ICollection<Block<T>> DivideIntoBlocks(ICollection<T> collection)
         {
             if (collection == null)
             {
@@ -391,7 +393,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="collection">Collection, which must be divided.</param>
         /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>
         /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks
+        private ICollection<Block<T>> DivideIntoBlocks
             (ICollection<T> collection, int collectionIndex)
         {
             if (collection == null)
@@ -408,7 +410,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>
         /// <param name="countToDivide">The number of elements of the collection to divide.</param>
         /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<List<T>> DivideIntoBlocks
+        private ICollection<Block<T>> DivideIntoBlocks
             (ICollection<T> collection, int collectionIndex, int countToDivide)
         {
             if (collection == null)
@@ -428,7 +430,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
                 countOfBlocks++;
             }
 
-            var blocks = new List<T>[countOfBlocks];
+            var blocks = new Block<T>[countOfBlocks];
             //Transfer data from list to new blocks
             var item = collection.GetEnumerator();
             for (int i = 0; i < collectionIndex; i++) //Move item to the index position
@@ -449,7 +451,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
                     currentBlockSize = countToDivide - (i * DefaultBlockSize);
                 }
                 //Declare new block
-                blocks[i] = new List<T>(currentBlockSize);
+                blocks[i] = new Block<T>(this);
                 //Transfer data
                 for (int j = 0; j < currentBlockSize; j++)
                 {
@@ -471,7 +473,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         {
             if (_blocks.Count == 0 && _insuringBlock == null)
             {
-                _insuringBlock = new List<T>(DefaultBlockSize);
+                _insuringBlock = new Block<T>(this);
             }
         }
         /// <summary>
@@ -490,13 +492,29 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
                 _insuringBlock = null;
             }
         }
+        private void Initialize(ICollection<T> collection)
+        {
+            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
+            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
+            IsReadOnly = false;
+
+            var blocks = DivideIntoBlocks(collection);
+            if (blocks.Count != 0)
+            {
+                AddRange(blocks);
+            }
+            else
+            {
+                TryToAddInsuringBlock();
+            }
+        }
 
         //Data
         /// <summary>
         /// Gets or sets the block at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index of the block to get or set.</param>
-        public List<T> this[int index]
+        public Block<T> this[int index]
         {
             get
             {
@@ -570,7 +588,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// Collection with blocks provides the main data object in the Blocks class.
         /// It contain at least one block(this block can be empty).
         /// </summary>
-        private readonly List<List<T>> _blocks;
+        private readonly IArrayList<Block<T>> _blocks;
         /// <summary>
         /// Internal value of DefaultBlockSize. Never used it out of DefaultBlockSize set and get method.
         /// </summary>
@@ -580,7 +598,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         /// to collect and work with data, because BlockCollection must have
         /// at least one block.
         /// </summary>
-        private List<T> _insuringBlock;
+        private Block<T> _insuringBlock;
         /// <summary>
         /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
         /// </summary>

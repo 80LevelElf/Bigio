@@ -11,24 +11,24 @@
         /// </summary>
         /// <param name="subindex">Subindex(internal block index) of starting of range.</param>
         /// <param name="count">Count of elements of the block.</param>
-        /// <param name="commonBlockStartIndex">Common start index(ot subindex)
+        /// <param name="commonStartIndex">Common start index(ot subindex)
         /// of the block.</param>
-        public BlockRange(int subindex, int count, int commonBlockStartIndex)
+        public BlockRange(int subindex, int count, int commonStartIndex)
         {
             Subindex = subindex;
-            CommonBlockStartIndex = commonBlockStartIndex;
+            CommonStartIndex = commonStartIndex;
             Count = count;
         }
         /// <summary>
-        /// Count of elements of the block.
+        /// Common start index(not subindex) of the block.
         /// </summary>
-        public int CommonBlockStartIndex;
+        public int CommonStartIndex;
         /// <summary>
-        /// Common start index(ot subindex) of the block.
+        /// Count of elements of the block.
         /// </summary>
         public int Count;
         /// <summary>
-        /// Subindex(internal block index) of starting of range.
+        /// Subindex(internal block index) of start of range.
         /// </summary>
         public int Subindex;
     }

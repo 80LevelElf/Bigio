@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
 {
-    partial class BlockCollection<T>
+    public partial class BlockCollection<T>
     {
         /// <summary>
         /// Enumerates the elements of a BlockCollection(T).
         /// </summary>
-        class BlockCollectionEnumerator : IEnumerator<List<T>>
+        class BlockCollectionEnumerator : IEnumerator<Block<T>>
         {
             /// <summary>
             /// Supports a iteration over a BlockCollection(T).
@@ -42,7 +39,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             }
 
             //Data
-            public List<T> Current { get; private set; }
+            public Block<T> Current { get; private set; }
             object IEnumerator.Current
             {
                 get { return Current; }

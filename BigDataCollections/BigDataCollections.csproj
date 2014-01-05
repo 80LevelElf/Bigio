@@ -43,13 +43,16 @@
   <ItemGroup>
     <Compile Include="DistributedArray\DistributedArray.cs" />
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\StructureInfo.cs" />
+    <Compile Include="DistributedArray\Interfaces\IArrayList.cs" />
+    <Compile Include="DistributedArray\InternalBlockCollections\InternalBlockList.cs" />
+    <Compile Include="DistributedArray\Managers\StructureManager\BlockInformation.cs" />
     <Compile Include="DistributedArray\Managers\StructureManager\StructureManager.cs" />
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockCollection\Block.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockCollection\BlockCollection.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockCollection\BlockCollectionEnumerator.cs" />
     <Compile Include="DistributedArray\Managers\StructureManager\MultyblockRange.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\BlockInformation.cs" />
+    <Compile Include="DistributedArray\SupportClasses\Range.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
     <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
     <Compile Include="DistributedStack\DistributedStack.cs" />
