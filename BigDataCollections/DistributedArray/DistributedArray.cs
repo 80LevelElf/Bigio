@@ -332,6 +332,7 @@ namespace BigDataCollections
                     return item;
                 }
             }
+
             //If there is not needed item
             return default(T);
         }

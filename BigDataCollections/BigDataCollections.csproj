@@ -45,6 +45,7 @@
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
     <Compile Include="DistributedArray\Interfaces\IArrayList.cs" />
     <Compile Include="DistributedArray\InternalBlockCollections\InternalBlockList.cs" />
+    <Compile Include="DistributedArray\Managers\StructureManager\BlockInfo.cs" />
     <Compile Include="DistributedArray\Managers\StructureManager\BlockInformation.cs" />
     <Compile Include="DistributedArray\Managers\StructureManager\StructureManager.cs" />
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />

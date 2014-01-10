@@ -8,11 +8,11 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
     struct BlockInformation<T>
     {
         //API
-        public BlockInformation(Block<T> block)
+        public BlockInformation(BlockInfo info)
         {
-            IndexOfBlock = block.IndexOfBlock;
-            StartIndex = block.StartIndex;
-            Count = block.Count;
+            IndexOfBlock = info.IndexOfBlock;
+            StartIndex = info.StartIndex;
+            Count = info.Count;
         }
         public BlockInformation(int indexOfBlock, int startIndex, int count)
         {

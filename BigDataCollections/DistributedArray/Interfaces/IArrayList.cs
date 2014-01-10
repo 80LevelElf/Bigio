@@ -6,5 +6,6 @@ namespace BigDataCollections.DistributedArray.Interfaces
     {
         void AddRange(ICollection<T> collection);
         void InsertRange(int index, ICollection<T> collection);
+        void Reverse();
     }
 }

@@ -190,7 +190,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             {
                 throw new ArgumentNullException("array");
             }
-            if (!array.IsValidIndex(arrayIndex))
+            if (!array.IsValidRange(arrayIndex, Count))
             {
                 throw new ArgumentOutOfRangeException("arrayIndex");
             }
@@ -333,7 +333,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             // If there is only insuring block, it will reverse empty _blocks collection,
             // otherwise we reverse _blocks collection and we dont have insuring block
             // to think about it.
-           
+           _blocks.Reverse();
         }
         /// <summary>
         /// If count of elements of block at specified index more or equal to MaxBlockSize,

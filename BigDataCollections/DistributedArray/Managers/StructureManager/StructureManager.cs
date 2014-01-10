@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using BigDataCollections.DistributedArray.Managers.StructureManager;
 using BigDataCollections.DistributedArray.SupportClasses;
 using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
 
-namespace BigDataCollections.DistributedArray.Managers
+namespace BigDataCollections.DistributedArray.Managers.StructureManager
 {
     public enum SearchMod
     {
@@ -17,6 +16,8 @@ namespace BigDataCollections.DistributedArray.Managers
         public StructureManager(BlockCollection<T> blockCollection)
         {
             BlockCollection = blockCollection;
+
+            _blocksInfo = new BlockInfo[blockCollection.Count];
             TryToUpdateStructureInfo();
         }
         /// <summary>
@@ -37,6 +38,11 @@ namespace BigDataCollections.DistributedArray.Managers
         public BlockInformation<T> BlockInformation
             (int index, Range searchBlockRange, SearchMod searchMod = SearchMod.BinarySearch)
         {
+            if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
+            {
+                throw new ArgumentOutOfRangeException("searchBlockRange");
+            }
+
             switch (searchMod)
             {
                 case SearchMod.BinarySearch:
@@ -56,7 +62,7 @@ namespace BigDataCollections.DistributedArray.Managers
         {
             TryToUpdateStructureInfo();
 
-            return _blockCollection[indexOfBlock].StartIndex;
+            return _blocksInfo[indexOfBlock].StartIndex;
         }
         /// <summary>
         /// Calculate index of block witch containt element with specified zero-base index.
@@ -179,20 +185,26 @@ namespace BigDataCollections.DistributedArray.Managers
                 return;
             }
 
+            int count = _blockCollection.Count;
+            if (_blocksInfo.Length != count)
+            {
+                _blocksInfo = new BlockInfo[count];
+            }
+
             int blockStartIndex = 0;
             _countOfElements = 0;
 
-            for (int i = 0; i < _blockCollection.Count; i++)
+            for (int i = 0; i < count; i++)
             {
-                var block = _blockCollection[i];
-                var count = block.Count;
+                var blockCount = _blockCollection[i].Count;
 
                 //Get information
-                block.StartIndex = blockStartIndex;
-                block.IndexOfBlock = i;
+                _blocksInfo[i].StartIndex = blockStartIndex;
+                _blocksInfo[i].IndexOfBlock = i;
+                _blocksInfo[i].Count = blockCount;
 
-                blockStartIndex += count;
-                _countOfElements += count;
+                blockStartIndex += blockCount;
+                _countOfElements += blockCount;
             }
 
             _isDataChanged = false;
@@ -200,7 +212,7 @@ namespace BigDataCollections.DistributedArray.Managers
         private IEnumerable<BlockRange> CalculateBlockRanges
             (Range calcRange, int indexOfStartBlock, int indexOfEndBlock)
         {
-            var infoOfStartBlock = _blockCollection[indexOfStartBlock];
+            var infoOfStartBlock = _blocksInfo[indexOfStartBlock];
             var currentStartIndex = infoOfStartBlock.StartIndex;
             var currentEndIndex = infoOfStartBlock.StartIndex;
             var endIndex = calcRange.Index + calcRange.Count - 1;
@@ -237,15 +249,14 @@ namespace BigDataCollections.DistributedArray.Managers
         {
             TryToUpdateStructureInfo();
 
+            if (index == 8191)
+            {
+                int a = 1;
+            }
             //Check for validity
             if (!ValidationManager.IsValidIndex(_countOfElements, index))
             {
                 throw new ArgumentOutOfRangeException("index");
-            }
-
-            if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
-            {
-                throw new ArgumentOutOfRangeException("searchBlockRange");
             }
 
             if (searchBlockRange.Count == 0)
@@ -259,20 +270,38 @@ namespace BigDataCollections.DistributedArray.Managers
 
             while (indexOfStartBlock <= indexOfEndBlock)
             {
-                int middlePosition = (indexOfStartBlock + indexOfEndBlock) / 2;
+                //Calc middle position
+                var startBlockInfo = _blocksInfo[indexOfStartBlock];
+                var endBlockInfo = _blocksInfo[indexOfEndBlock];
+
+                double startIndex = startBlockInfo.StartIndex;
+                double endIndex = endBlockInfo.StartIndex + endBlockInfo.Count - 1;
+                double countOfBlocks = endBlockInfo.IndexOfBlock - startBlockInfo.IndexOfBlock + 1;
+
+                double suggestingPosition;
+                if (index == startBlockInfo.StartIndex)
+                {
+                    suggestingPosition = startBlockInfo.IndexOfBlock;
+                }
+                else
+                {
+                    suggestingPosition = indexOfStartBlock
+                        + (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
+                }
 
                 //Compare
-                var middleBlock = _blockCollection[middlePosition];
+                var newPosition = (int) suggestingPosition;
+                var middleBlock = _blocksInfo[newPosition];
                 int result = middleBlock.Compare(index);
                 switch (result)
                 {
                     case -1:
-                        indexOfEndBlock = middlePosition - 1;
+                        indexOfEndBlock = newPosition - 1;
                         break;
                     case 0:
                         return new BlockInformation<T>(middleBlock);
                     case 1:
-                        indexOfStartBlock = middlePosition + 1;
+                        indexOfStartBlock = newPosition + 1;
                         break;
                 }
             }
@@ -285,6 +314,7 @@ namespace BigDataCollections.DistributedArray.Managers
             int indexOfBlock = 0;
             int blockStartIndex = 0;
             int blockCount = 0;
+            bool isFind = false;
 
             //Move to start
             for (int i = 0; i < searchBlockRange.Index; i++)
@@ -302,10 +332,16 @@ namespace BigDataCollections.DistributedArray.Managers
                 if (index >= blockStartIndex && index < blockStartIndex + blockCount)
                 {
                     indexOfBlock = i;
+                    isFind = true;
                     break;
                 }
 
                 blockStartIndex += blockCount;
+            }
+
+            if (!isFind)
+            {
+                throw new ArgumentOutOfRangeException("index");
             }
 
             return new BlockInformation<T>(indexOfBlock, blockStartIndex, blockCount);
@@ -313,6 +349,7 @@ namespace BigDataCollections.DistributedArray.Managers
 
         //Data
         private BlockCollection<T> _blockCollection;
+        private BlockInfo[] _blocksInfo;
         private bool _isDataChanged = true;
         private int _countOfElements;
     }
