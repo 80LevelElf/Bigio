@@ -19,21 +19,22 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         //API
         /// <summary>
         /// Create a new instance of Blocks(T) class.
-        /// Blocks(T) is a shell of blocks collection, which use for more
-        /// simple usage of it.
         /// </summary>
         public BlockCollection(): this(new Collection<T>())
         {
         }
+        /// <summary>
+        /// Create a new instance of Blocks(T) class.
+        /// </summary>
+        /// <param name="blockCollection">Collection to set it as internal block collection
+        /// for controll of it. It can't be null.</param>
         public BlockCollection(IArrayList<Block<T>> blockCollection)
             : this(blockCollection, new Collection<T>())
         {
             
         }
         /// <summary>
-        /// Create a new instance of Blocks(T) class.
-        /// Blocks(T) is a shell of blocks collection, which use for more
-        /// simple usage of it. 
+        /// Create a new instance of Blocks(T) class.t. 
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
         /// The collection it self cannot be null and cant contain null blocks
@@ -43,8 +44,20 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             _blocks = new InternalBlockList<Block<T>>();
             Initialize(collection);
         }
+        /// <summary>
+        /// Create a new instance of Blocks(T) class.
+        /// </summary>
+        /// <param name="blockCollection">Collection to set it as internal block collection
+        /// for controll of it. It can't be null.</param>
+        /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
+        /// The collection it self cannot be null and cant contain null blocks
+        /// , if type T is a reference type.</param>
         public BlockCollection(IArrayList<Block<T>> blockCollection, ICollection<T> collection)
         {
+            if (blockCollection == null)
+            {
+                throw new ArgumentOutOfRangeException("blockCollection");
+            }
             _blocks = blockCollection;
             Initialize(collection);
         }
@@ -121,7 +134,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         public void AddNewBlock()
         {
             TryToRemoveInsuringBlock();
-            _blocks.Add(new Block<T>(this));
+            _blocks.Add(new Block<T>());
         }
         /// <summary>
         /// Adds the blocks of the specified collection to the end of the BlockCollection.
@@ -236,7 +249,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         public void InsertNewBlock(int index)
         {
             TryToRemoveInsuringBlock();
-            _blocks.Insert(index, new Block<T>(this));
+            _blocks.Insert(index, new Block<T>());
         }
         /// <summary>
         /// Inserts the elements of a block range into the block collection at the specified index.
@@ -451,7 +464,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
                     currentBlockSize = countToDivide - (i * DefaultBlockSize);
                 }
                 //Declare new block
-                blocks[i] = new Block<T>(this);
+                blocks[i] = new Block<T>();
                 //Transfer data
                 for (int j = 0; j < currentBlockSize; j++)
                 {
@@ -473,7 +486,7 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
         {
             if (_blocks.Count == 0 && _insuringBlock == null)
             {
-                _insuringBlock = new Block<T>(this);
+                _insuringBlock = new Block<T>();
             }
         }
         /// <summary>
@@ -492,8 +505,17 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
                 _insuringBlock = null;
             }
         }
+        /// <summary>
+        /// Execute preliminary initialization of BlockCollection's internal data.
+        /// </summary>
+        /// <param name="collection">Collection to initialize BlockCollection with it.</param>
         private void Initialize(ICollection<T> collection)
         {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
+
             MaxBlockSize = DefaultValuesManager.MaxBlockSize;
             DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
             IsReadOnly = false;

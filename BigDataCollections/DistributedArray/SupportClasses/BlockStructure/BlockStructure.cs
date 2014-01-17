@@ -1,19 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using BigDataCollections.DistributedArray.SupportClasses;
+using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
 
-namespace BigDataCollections.DistributedArray.Managers.StructureManager
+namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
 {
-    public enum SearchMod
+    /// <summary>
+    /// SearchMod is way to find needed data.
+    /// </summary>
+    enum SearchMod
     {
+        /// <summary>
+        /// This way to find block with specified index have log(2,n) performance,
+        /// where n is count of blocks. But this way use information of blocks 
+        /// and if we want to use this way, we'll must to calculate structure information before.
+        /// It is good way to get BlockInfo if you won't change data in DistributedArray(T)
+        /// after getting BlockInfo
+        /// (For example if you want to get element in DistributedArray(T) with specified index).
+        /// </summary>
         BinarySearch,
+        /// <summary>
+        /// This way to find block with specified index have n performance,
+        /// where n is count of blocks. This way don't need any information about
+        /// structure as BinarySearch and you must use it, if you will change data in DistributedArray(T)
+        /// for example if you wany to find info about block to delete element inside this block.
+        /// </summary>
         LinearSearch
     }
-    class StructureManager<T>
+    /// <summary>
+    /// This class used for get information about BlockCollection(T) structure,
+    /// for example for searching block with specified index.
+    /// </summary>
+    class BlockStructure<T>
     {
         //API
-        public StructureManager(BlockCollection<T> blockCollection)
+        public BlockStructure(BlockCollection<T> blockCollection)
         {
             BlockCollection = blockCollection;
 
@@ -21,21 +42,41 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
             TryToUpdateStructureInfo();
         }
         /// <summary>
-        /// Calculate indexOfBlock and blockStartIndex by index. 
+        /// Calculate information about block and location of block inside BlockCollection(T).
         /// </summary>
-        /// <param name="index">Common index of element in DistributedArray(T). index = [0; Count).</param>
-        public BlockInformation<T> BlockInformation
+        /// <param name="index">Common zero-based index of element in DistributedArray(T).
+        ///  It's to find parent block.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
+        public BlockInfo BlockInfo
             (int index, SearchMod searchMod = SearchMod.BinarySearch)
         {
-            return BlockInformation(index, 0, searchMod);
+            return BlockInfo(index, 0, searchMod);
         }
-        public BlockInformation<T> BlockInformation
+        /// <summary>
+        /// Calculate information about block and location of block inside BlockCollection(T).
+        /// </summary>
+        /// <param name="index">Common zero-based index of element in DistributedArray(T). 
+        /// It's to find parent block.</param>
+        /// <param name="statBlock">Function will try to find block, which containes
+        /// specified index from statBlock to last block of BlockCollection(T).
+        /// It use to get better performance.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
+        public BlockInfo BlockInfo
             (int index, int statBlock, SearchMod searchMod = SearchMod.BinarySearch)
         {
-            return BlockInformation
+            return BlockInfo
                 (index, new Range(statBlock, _blockCollection.Count - statBlock), searchMod);
         }
-        public BlockInformation<T> BlockInformation
+        /// <summary>
+        /// Calculate information about block and location of block inside BlockCollection(T).
+        /// </summary>
+        /// <param name="index">Common zero-based index of element in DistributedArray(T).
+        ///  It's to find parent block.</param>
+        /// <param name="searchBlockRange">Function will try to find block, which containes
+        /// specified index in this range of BlockCollection(T).
+        /// It use to get better performance.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
+        public BlockInfo BlockInfo
             (int index, Range searchBlockRange, SearchMod searchMod = SearchMod.BinarySearch)
         {
             if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
@@ -46,9 +87,9 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
             switch (searchMod)
             {
                 case SearchMod.BinarySearch:
-                    return BinaryBlockInformation(index, searchBlockRange);
+                    return BinaryBlockInfo(index, searchBlockRange);
                 case SearchMod.LinearSearch:
-                    return LinearBlockInformation(index, searchBlockRange);
+                    return LinearBlockInfo(index, searchBlockRange);
                 default:
                     throw new ArgumentOutOfRangeException("searchMod");
             }
@@ -56,8 +97,8 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
         /// <summary>
         /// Calculate start zero-based common index of specified block.
         /// </summary>
-        /// <param name="indexOfBlock">Index of block we want to get start index.</param>
-        /// <returns>Start zero-based common index</returns>
+        /// <param name="indexOfBlock">Index of block to get it's start index.</param>
+        /// <returns>Start zero-based common index.</returns>
         public int BlockStartIndex(int indexOfBlock)
         {
             TryToUpdateStructureInfo();
@@ -65,29 +106,47 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
             return _blocksInfo[indexOfBlock].StartIndex;
         }
         /// <summary>
-        /// Calculate index of block witch containt element with specified zero-base index.
+        /// Calculate index of block, witch containt element with specified zero-base index.
         /// </summary>
-        /// <param name="index">Zero-base index of element situated in the block to find.</param>
+        /// <param name="index">Zero-base index of element to find parent block.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Index of block witch containt element with specified zero-base index.</returns>
         public int IndexOfBlock(int index, SearchMod searchMod = SearchMod.BinarySearch)
         {
-            return BlockInformation(index, searchMod).IndexOfBlock;
+            return BlockInfo(index, searchMod).IndexOfBlock;
         }
+        /// <summary>
+        /// Calculate index of block, witch containt element with specified zero-base index.
+        /// Function try to find it from startBlock block to last block of BlockCollection(T). 
+        /// </summary>
+        /// <param name="index">Zero-base index of element to find parent block.</param>
+        /// <param name="startBlock">Start block of range to find block in it.
+        /// It use to ger better performance.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
+        /// <returns>Index of block witch containt element with specified zero-base index.</returns>
         public int IndexOfBlock(int index, int startBlock, SearchMod searchMod = SearchMod.BinarySearch)
         {
-            return BlockInformation(index, startBlock, searchMod).IndexOfBlock;
+            return BlockInfo(index, startBlock, searchMod).IndexOfBlock;
         }
+        /// <summary>
+        /// Calculate index of block witch containt element with specified zero-base index.
+        /// Function try to find it in searchBlockRange range of BlockCollection(T). 
+        /// </summary>
+        /// <param name="index">Zero-base index of element to find parent block.</param>
+        /// <param name="searchBlockRange">Range to find in it.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
+        /// <returns>Index of block witch containt element with specified zero-base index.</returns>
         public int IndexOfBlock
             (int index, Range searchBlockRange, SearchMod searchMod = SearchMod.BinarySearch)
         {
-            return BlockInformation(index, searchBlockRange, searchMod).IndexOfBlock;
+            return BlockInfo(index, searchBlockRange, searchMod).IndexOfBlock;
         }
         /// <summary>
         /// Calculate a block range for all blocks that overlap with specified range.
         /// Block range provide information about overlapping specified range and block.
         /// </summary>
-        /// <param name="index">The zero-based starting index of range of the DistributedArray(T) to check.</param>
-        /// <param name="count">The number of elements of the range to check.</param>
+        /// <param name="calcRange">Range to get multyblock range.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Return MultyblockRange object provides information about overlapping of specified range and block.</returns>
         public MultyblockRange MultyblockRange
             (Range calcRange, SearchMod searchMod = SearchMod.BinarySearch)
@@ -114,15 +173,15 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
             int countOfBlocks = indexOfEndBlock - indexOfStartBlock + 1;
 
             return new MultyblockRange(indexOfStartBlock, countOfBlocks
-                , CalculateBlockRanges(calcRange, indexOfStartBlock, indexOfEndBlock));
+                , CalculateMultyblockRanges(calcRange, indexOfStartBlock, indexOfEndBlock));
         }
         /// <summary>
         /// Calculate a reverse block range for all blocks that overlap with specified range.
         /// Block range provide information about overlapping specified range and block.
         /// Reverse MultyblockRange start with last BlockRange(IndexOfStartBlock is index of last overlap block).
         /// </summary>
-        /// <param name="index">The zero-based starting index of the backward calculation of overlapping.</param>
-        /// <param name="count">The number of elements to overlapping calculate.</param>
+        /// <param name="calcRange">Range to get multyblock range.</param>
+        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
         public MultyblockRange ReverseMultyblockRange
             (Range calcRange, SearchMod searchMod = SearchMod.BinarySearch)
@@ -156,6 +215,9 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
 
             return new MultyblockRange(indexOfStartBlock, range.Count, reverseBlockRanges);
         }
+        /// <summary>
+        /// Parent collection of blocks, which structure is BlockStructure.
+        /// </summary>
         public BlockCollection<T> BlockCollection
         {
             private set
@@ -172,12 +234,19 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
                 return _blockCollection;
             }
         }
+        /// <summary>
+        /// You need to call this function after you changed data in DistributedArray
+        /// to update structure of BlockStructure when it will be need to do.
+        /// </summary>
         public void DataChanged()
         {
             _isDataChanged = true;
         }
 
         //Support classes
+        /// <summary>
+        /// Updates information about structure to use BinaryBlockInfo.
+        /// </summary>
         private void TryToUpdateStructureInfo()
         {
             if (!_isDataChanged)
@@ -209,7 +278,14 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
 
             _isDataChanged = false;
         }
-        private IEnumerable<BlockRange> CalculateBlockRanges
+        /// <summary>
+        /// Performs lazy calculations to get blocks of MultyblockRange.
+        /// </summary>
+        /// <param name="calcRange">Range to get multyblock range.</param>
+        /// <param name="indexOfStartBlock">Index of start block of range, which contain calcRange.</param>
+        /// <param name="indexOfEndBlock">Index of end block of range, which contain calcRange.</param>
+        /// <returns></returns>
+        private IEnumerable<BlockRange> CalculateMultyblockRanges
             (Range calcRange, int indexOfStartBlock, int indexOfEndBlock)
         {
             var infoOfStartBlock = _blocksInfo[indexOfStartBlock];
@@ -245,14 +321,21 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
                 currentStartIndex += block.Count;
             }
         }
-        private BlockInformation<T> BinaryBlockInformation(int index, Range searchBlockRange)
+        /// <summary>
+        /// This way to find block with specified index have log(2,n) performance,
+        /// where n is count of blocks. But this way use information of blocks 
+        /// and if we want to use this way, we'll must to calculate structure information before.
+        /// It is good way to get BlockInfo if you won't change data in DistributedArray(T)
+        /// after getting BlockInfo
+        /// (For example if you want to get element in DistributedArray(T) with specified index).
+        /// </summary>
+        /// <param name="index">Index to find information about block, which containes it.</param>
+        /// <param name="searchBlockRange">Range to find index in it. It use to get better performance.</param>
+        /// <returns>Information about block, which contain specified index.</returns>
+        private BlockInfo BinaryBlockInfo(int index, Range searchBlockRange)
         {
             TryToUpdateStructureInfo();
 
-            if (index == 8191)
-            {
-                int a = 1;
-            }
             //Check for validity
             if (!ValidationManager.IsValidIndex(_countOfElements, index))
             {
@@ -261,7 +344,7 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
 
             if (searchBlockRange.Count == 0)
             {
-                return new BlockInformation<T>();
+                return new BlockInfo();
             }
 
             //We use some kind if binary search to find block with specified idex
@@ -290,16 +373,16 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
                 }
 
                 //Compare
-                var newPosition = (int) suggestingPosition;
-                var middleBlock = _blocksInfo[newPosition];
-                int result = middleBlock.Compare(index);
+                var newPosition = (int)suggestingPosition;
+                var blockInfo = _blocksInfo[newPosition];
+                int result = blockInfo.Compare(index);
                 switch (result)
                 {
                     case -1:
                         indexOfEndBlock = newPosition - 1;
                         break;
                     case 0:
-                        return new BlockInformation<T>(middleBlock);
+                        return blockInfo;
                     case 1:
                         indexOfStartBlock = newPosition + 1;
                         break;
@@ -309,7 +392,16 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
             //We should not reach this string!
             throw new InvalidOperationException("There is no such index in specified range!");
         }
-        private BlockInformation<T> LinearBlockInformation(int index, Range searchBlockRange)
+        /// <summary>
+        /// This way to find block with specified index have n performance,
+        /// where n is count of blocks. This way don't need any information about
+        /// structure as BinarySearch and you must use it, if you will change data in DistributedArray(T)
+        /// for example if you wany to find info about block to delete element inside this block.
+        /// </summary>
+        /// <param name="index">Index to find information about block, which containes it.</param>
+        /// <param name="searchBlockRange">Range to find index in it. It use to get better performance.</param>
+        /// <returns>Information about block, which contain specified index.</returns>
+        private BlockInfo LinearBlockInfo(int index, Range searchBlockRange)
         {
             int indexOfBlock = 0;
             int blockStartIndex = 0;
@@ -344,13 +436,27 @@ namespace BigDataCollections.DistributedArray.Managers.StructureManager
                 throw new ArgumentOutOfRangeException("index");
             }
 
-            return new BlockInformation<T>(indexOfBlock, blockStartIndex, blockCount);
+            return new BlockInfo(indexOfBlock, blockStartIndex, blockCount);
         }
 
         //Data
+        /// <summary>
+        /// Parent _blockCollection to define structure of it.
+        /// </summary>
         private BlockCollection<T> _blockCollection;
+        /// <summary>
+        /// Information about each block, which contain in _blockCollection.
+        /// It can be defferent from real information if data changed and user don't update information.
+        /// </summary>
         private BlockInfo[] _blocksInfo;
+        /// <summary>
+        /// If information changed and it is need to be update flag will be true, otherwise false.
+        /// </summary>
         private bool _isDataChanged = true;
+        /// <summary>
+        /// It is a cache information of count of elements in DistributedArray(T).
+        /// If data changed, it can be different from real count.
+        /// </summary>
         private int _countOfElements;
     }
 }

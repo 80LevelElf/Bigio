@@ -1,4 +1,4 @@
-﻿namespace BigDataCollections.DistributedArray.Managers.StructureManager
+﻿namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
 {
     /// <summary>
     /// Object of BlockRange class contain information of some range inside the block.

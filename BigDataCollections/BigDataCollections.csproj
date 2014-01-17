@@ -45,14 +45,13 @@
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
     <Compile Include="DistributedArray\Interfaces\IArrayList.cs" />
     <Compile Include="DistributedArray\InternalBlockCollections\InternalBlockList.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\BlockInfo.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\BlockInformation.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\StructureManager.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockInfo.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockStructure.cs" />
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockCollection\Block.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockCollection\BlockCollection.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockCollection\BlockCollectionEnumerator.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\MultyblockRange.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockStructure\MultyblockRange.cs" />
     <Compile Include="DistributedArray\SupportClasses\Range.cs" />
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
     <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
@@ -62,7 +61,7 @@
     <Compile Include="LevelSparseArray\SupportClasses\Level.cs" />
     <Compile Include="LevelSparseArray\SupportClasses\Index.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DistributedArray\Managers\StructureManager\BlockRange.cs" />
+    <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockRange.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

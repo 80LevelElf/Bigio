@@ -5,9 +5,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using BigDataCollections.DistributedArray.Interfaces;
 using BigDataCollections.DistributedArray.Managers;
-using BigDataCollections.DistributedArray.Managers.StructureManager;
 using BigDataCollections.DistributedArray.SupportClasses;
 using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
+using BigDataCollections.DistributedArray.SupportClasses.BlockStructure;
 
 namespace BigDataCollections
 {
@@ -27,33 +27,44 @@ namespace BigDataCollections
         /// Create a new instance of the DistributedArray(T) class that is empty 
         /// and has one empty block with DefaultBlockSize capacity.
         /// </summary>
-        public DistributedArray() : this(new Collection<T>())
+        public DistributedArray()
+            : this(new Collection<T>())
         {
         }
+        /// <summary>
+        /// Create a new instance of the DistributedArray(T) class using elements from specified collection
+        /// and use InternalBlockList as internal block collection for storage blocks.
+        /// </summary>
+        /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
+        /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
         public DistributedArray(ICollection<T> collection)
         {
             Initialize(collection);
 
             _blockCollection = new BlockCollection<T>(collection);
-            _structureManager = new StructureManager<T>(_blockCollection);
+            _blockStructure = new BlockStructure<T>(_blockCollection);
         }
         /// <summary>
-        /// Create a new instance of the DistributedArray(T) class using elements from specified collection.
+        /// Create a new instance of the DistributedArray(T) class using elements from specified collection
+        /// and blockCollection as internal collection for storage blocks.
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new DistributedArray(T).
         /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
+        /// <param name="blockCollection">Collection for storage blocks of DistributedArray(T). You can
+        /// defint you own collection for it to controll it. For example you can send DistributedArray(Block(T))
+        /// and have second level distribution.</param>
         public DistributedArray(ICollection<T> collection, IArrayList<Block<T>> blockCollection)
         {
             Initialize(collection);
 
             _blockCollection = new BlockCollection<T>(blockCollection, collection);
-            _structureManager = new StructureManager<T>(_blockCollection);
+            _blockStructure = new BlockStructure<T>(_blockCollection);
         }
         /// <summary>
         /// Add an object to the end of last block of the DistributedArray(T).
         /// </summary>
         public void Add(T value)
-        {            
+        {
             int indexOfBlock = _blockCollection.Count - 1;
             if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
             {
@@ -64,11 +75,10 @@ namespace BigDataCollections
             _blockCollection[indexOfBlock].Add(value);
 
             Count++;
-            _structureManager.DataChanged();
+            _blockStructure.DataChanged();
         }
         /// <summary>
-        /// Adds the elements of the specified collection to the end of the last block of DistributedArray(T)
-        /// or if there is needed - create another block.
+        /// Adds the elements of the specified collection to the end of DistributedArray(T).
         /// </summary>
         /// <param name="collection">The collection whose elements should be added to the end of the DistributedArray(T).
         ///  The collection it self cannot benull, but it can contain elements that are null, if type T is a reference type. </param>
@@ -101,7 +111,7 @@ namespace BigDataCollections
             _blockCollection.Add(collection, sizeToFill);
 
             Count += collection.Count;
-            _structureManager.DataChanged();
+            _blockStructure.DataChanged();
         }
         /// <summary>
         /// Returns a read-only wrapper based on current DistributedArray(T).
@@ -167,7 +177,7 @@ namespace BigDataCollections
 
             while (startIndex <= endIndex)
             {
-                int middlePosition = (startIndex + endIndex)/2;
+                int middlePosition = (startIndex + endIndex) / 2;
                 T middleValue = this[middlePosition];
                 //Compare
                 int compareResult = comparer.Compare(item, middleValue);
@@ -398,7 +408,7 @@ namespace BigDataCollections
                 throw new ArgumentNullException("match");
             }
 
-            var multyblockRange = _structureManager.MultyblockRange(new Range(index, count));
+            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
 
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
             foreach (var blockRange in multyblockRange.Ranges)
@@ -411,7 +421,7 @@ namespace BigDataCollections
                     return blockRange.CommonStartIndex + findIndexResult;
                 }
             }
- 
+
             //If there is no needed value
             return -1;
         }
@@ -443,7 +453,7 @@ namespace BigDataCollections
         /// </summary>
         /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the last occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
-         public int FindLastIndex(Predicate<T> match)
+        public int FindLastIndex(Predicate<T> match)
         {
             int index = (Count == 0) ? 0 : Count - 1;
             return FindLastIndex(index, Count, match);
@@ -474,7 +484,7 @@ namespace BigDataCollections
                 throw new ArgumentNullException("match");
             }
 
-            var range = _structureManager.ReverseMultyblockRange(new Range(index, count));
+            var range = _blockStructure.ReverseMultyblockRange(new Range(index, count));
 
             //Find it
             int indexOfBlock = range.IndexOfStartBlock;
@@ -570,7 +580,7 @@ namespace BigDataCollections
         ///  in the DistributedArray(T) that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
         public int IndexOf(T item, int index, int count)
         {
-            var multyblockRange = _structureManager.MultyblockRange(new Range(index, count));
+            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
 
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
             foreach (var blockRange in multyblockRange.Ranges)
@@ -600,7 +610,7 @@ namespace BigDataCollections
                 return;
             }
 
-            var blockInfo = _structureManager.BlockInformation(index);
+            var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
             int blockSubindex = index - blockInfo.StartIndex;
             var block = _blockCollection[blockInfo.IndexOfBlock];
@@ -614,14 +624,14 @@ namespace BigDataCollections
                 Insert(index, item);
                 return;
             }
-            
+
             //Insertion
             if (!isStartSubindex)
             {
                 _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
             }
-                //Try to add to the previous block
+            //Try to add to the previous block
             else
             {
                 //If there is need - add new block
@@ -643,7 +653,7 @@ namespace BigDataCollections
             }
 
             Count++;
-            _structureManager.DataChanged();
+            _blockStructure.DataChanged();
         }
         /// <summary>
         /// Inserts the elements of a collection into the DistributedArray(T) at the specified index.
@@ -653,8 +663,8 @@ namespace BigDataCollections
         ///  The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
         public void InsertRange(int index, ICollection<T> collection)
         {
-            //Validity of index and count check in BlockInformation
-            var blockInfo = new BlockInformation<T>();
+            //Validity of index and count check in BlockInfo
+            var blockInfo = new BlockInfo();
 
             //Determine indexOfBlock and blockStartIndex
             if (index == Count)
@@ -669,7 +679,7 @@ namespace BigDataCollections
             }
             else
             {
-                blockInfo = _structureManager.BlockInformation(index); // Default case
+                blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch); // Default case
             }
             //Insert
             _blockCollection[blockInfo.IndexOfBlock].InsertRange(
@@ -677,7 +687,7 @@ namespace BigDataCollections
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
-            _structureManager.DataChanged();
+            _blockStructure.DataChanged();
         }
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the last occurrence within the entire DistributedArray(T).
@@ -713,7 +723,7 @@ namespace BigDataCollections
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
-            var reverseMultyblockRange = _structureManager.ReverseMultyblockRange(new Range(index, count));
+            var reverseMultyblockRange = _blockStructure.ReverseMultyblockRange(new Range(index, count));
 
             //Find it
             int indexOfBlock = reverseMultyblockRange.IndexOfStartBlock;
@@ -724,7 +734,7 @@ namespace BigDataCollections
                 if (lastIndexOfResult != -1)
                 {
                     return blockRange.CommonStartIndex + lastIndexOfResult;
-                } 
+                }
             }
 
             //If there is no needed value
@@ -741,7 +751,7 @@ namespace BigDataCollections
             _blockCollection.AddRange(divideBlocks);
 
             //We must do it because we have changed count of elements in blocks
-            _structureManager.DataChanged(); 
+            _blockStructure.DataChanged();
         }
         /// <summary>
         /// Removes the first occurrence of a specific object from the DistributedArray(T).
@@ -767,7 +777,7 @@ namespace BigDataCollections
                     }
 
                     Count--;
-                    _structureManager.DataChanged();
+                    _blockStructure.DataChanged();
 
                     return true;
                 }
@@ -781,8 +791,14 @@ namespace BigDataCollections
         /// <param name="index">The zero-based index of the element to remove.</param>
         public void RemoveAt(int index)
         {
-            //Validity of index check in BlockInformation
-            var blockInfo = _structureManager.BlockInformation(index, SearchMod.LinearSearch);
+            if (index == Count - 1)
+            {
+                RemoveLast();
+                return;
+            }
+
+            //Validity of index check in BlockInfo
+            var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
             //Remove
             _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.StartIndex);
@@ -794,7 +810,29 @@ namespace BigDataCollections
             }
 
             Count--;
-            _structureManager.DataChanged();
+            _blockStructure.DataChanged();
+        }
+        /// <summary>
+        /// Remove last element of array.
+        /// </summary>
+        public void RemoveLast()
+        {
+            if (Count == 0)
+            {
+                throw new InvalidOperationException("Can't remove element from empty collectioin!");
+            }
+
+            int indexOfLastBlock = _blockCollection.Count - 1;
+            var lastBlock = _blockCollection[indexOfLastBlock];
+
+            lastBlock.RemoveAt(lastBlock.Count - 1);
+
+            if (lastBlock.Count == 0)
+            {
+                _blockCollection.RemoveAt(indexOfLastBlock);
+            }
+
+            _blockStructure.DataChanged();
         }
         /// <summary>
         /// Removes a range of elements from the DistributedArray(T).
@@ -803,7 +841,7 @@ namespace BigDataCollections
         /// <param name="count">The number of elements to remove.</param>
         public void RemoveRange(int index, int count)
         {
-            var multyblockRange = _structureManager.MultyblockRange(new Range(index, count), SearchMod.LinearSearch);
+            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count), SearchMod.LinearSearch);
 
             int shift = 0;
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
@@ -838,7 +876,7 @@ namespace BigDataCollections
                 indexOfBlock++;
             }
 
-            _structureManager.DataChanged();
+            _blockStructure.DataChanged();
             Count -= count;
         }
         /// <summary>
@@ -875,14 +913,14 @@ namespace BigDataCollections
         {
             get
             {
-                //Check for exceptions in BlockInformation()
-                var blockInfo = _structureManager.BlockInformation(index);
+                //Check for exceptions in BlockInfo()
+                var blockInfo = _blockStructure.BlockInfo(index);
                 return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex];
             }
             set
             {
-                //Check for exceptions in BlockInformation()
-                var blockInfo = _structureManager.BlockInformation(index);
+                //Check for exceptions in BlockInfo()
+                var blockInfo = _blockStructure.BlockInfo(index);
                 _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex] = value;
             }
         }
@@ -940,6 +978,10 @@ namespace BigDataCollections
         public bool IsReadOnly { get; private set; }
 
         //Support functions
+        /// <summary>
+        /// Execute preliminary initialization of DistributedArray's internal data.
+        /// </summary>
+        /// <param name="collection">Collection to initialize DistributedArray with it.</param>
         private void Initialize(ICollection<T> collection)
         {
             IsReadOnly = false;
@@ -947,7 +989,7 @@ namespace BigDataCollections
         }
 
         //Data
-        private readonly StructureManager<T> _structureManager; 
+        private readonly BlockStructure<T> _blockStructure;
         /// <summary>
         /// The blocks object provides API for easy work with blocks.
         /// </summary>
