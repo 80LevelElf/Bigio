@@ -89,6 +89,10 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
                 case SearchMod.BinarySearch:
                     return BinaryBlockInfo(index, searchBlockRange);
                 case SearchMod.LinearSearch:
+                    if (!_isDataChanged)
+                    {
+                        return BinaryBlockInfo(index, searchBlockRange);
+                    }
                     return LinearBlockInfo(index, searchBlockRange);
                 default:
                     throw new ArgumentOutOfRangeException("searchMod");

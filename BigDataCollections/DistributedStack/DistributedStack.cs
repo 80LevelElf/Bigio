@@ -73,7 +73,7 @@ namespace BigDataCollections
         /// <returns>The object at the top of the DistributedStack(T).</returns>
         public T Peek()
         {
-            T item = _array[_array.Count - 1];
+            T item = _array[Count - 1];
 
             return item;
         }
@@ -83,8 +83,8 @@ namespace BigDataCollections
         /// <returns>The object removed from the top of the DistributedStack(T).</returns>
         public T Pop()
         {
-            T item = _array[_array.Count - 1];
-            _array.RemoveAt(_array.Count - 1);
+            T item = _array[Count - 1];
+            _array.RemoveLast();
 
             return item;
         }

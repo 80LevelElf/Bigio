@@ -832,6 +832,7 @@ namespace BigDataCollections
                 _blockCollection.RemoveAt(indexOfLastBlock);
             }
 
+            Count--;
             _blockStructure.DataChanged();
         }
         /// <summary>
