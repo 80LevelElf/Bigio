@@ -8,6 +8,5 @@ namespace BigDataCollections.LevelSparseArray.SupportClasses
     public struct Index
     {
         public int[] LevelIndexes;
-        public bool IsPlus;
     }
 }

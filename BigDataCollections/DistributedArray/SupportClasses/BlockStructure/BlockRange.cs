@@ -19,6 +19,12 @@
             CommonStartIndex = commonStartIndex;
             Count = count;
         }
+        public bool Equals(BlockRange other)
+        {
+            return (CommonStartIndex == other.CommonStartIndex
+                    && Count == other.Count
+                    && Subindex == other.Subindex);
+        }
         /// <summary>
         /// Common start index(not subindex) of the block.
         /// </summary>

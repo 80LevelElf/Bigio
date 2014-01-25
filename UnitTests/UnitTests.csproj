@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DistributedArrayTests\BlockCollectionTest.cs" />
+    <Compile Include="DistributedArrayTests\BlockStructureTests.cs" />
     <Compile Include="DistributedArrayTests\DistributedArrayTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

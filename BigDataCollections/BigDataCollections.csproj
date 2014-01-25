@@ -58,8 +58,9 @@
     <Compile Include="DistributedStack\DistributedStack.cs" />
     <Compile Include="LevelSparseArray\LevelSparseArray.cs" />
     <Compile Include="LevelSparseArray\Managers\IndexManager.cs" />
-    <Compile Include="LevelSparseArray\SupportClasses\Level.cs" />
     <Compile Include="LevelSparseArray\SupportClasses\Index.cs" />
+    <Compile Include="LevelSparseArray\SupportClasses\Level\DataLevel.cs" />
+    <Compile Include="LevelSparseArray\SupportClasses\Level\Level.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockRange.cs" />
   </ItemGroup>

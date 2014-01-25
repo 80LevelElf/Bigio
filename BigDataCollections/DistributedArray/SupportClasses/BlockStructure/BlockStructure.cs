@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
+using NUnit.Framework;
 
 namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
 {
@@ -182,9 +184,15 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
         /// <summary>
         /// Calculate a reverse block range for all blocks that overlap with specified range.
         /// Block range provide information about overlapping specified range and block.
-        /// Reverse MultyblockRange start with last BlockRange(IndexOfStartBlock is index of last overlap block).
+        /// ReverseMultyblockRange start with last BlockRange(IndexOfStartBlock is index of last overlap block)
+        /// so first element in ReverseMultyblockRange is information about last overlapping block.
+        /// Every blockInformation object also contain REVERSE data(for example: blockInfo object of
+        /// full overlapping of block with 100 element has Subindex as 99(index of last overlapping element).
         /// </summary>
-        /// <param name="calcRange">Range to get multyblock range.</param>
+        /// <param name="calcRange">REVERSE range to get multyblock range.
+        /// For example: if you want to get ReverseMultyblockRange of array with one block with 100 element,
+        /// you will must write this: structureObject.ReverseMultyblockRange(99, 100);
+        /// </param>
         /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
         public MultyblockRange ReverseMultyblockRange
@@ -348,12 +356,22 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
 
             if (searchBlockRange.Count == 0)
             {
+                if (!_blocksInfo.IsValidIndex(searchBlockRange.Index))
+                {
+                    throw new ArgumentOutOfRangeException("searchBlockRange");
+                }
+
                 return new BlockInfo();
             }
 
             //We use some kind if binary search to find block with specified idex
+
             int indexOfStartBlock = searchBlockRange.Index;
             int indexOfEndBlock = indexOfStartBlock + searchBlockRange.Count - 1;
+            // In code below we check is index in range. We don't do it before cycle 
+            // to get better performance(suggestingPosition often is right and in this way we get
+            // very bad performance)
+            bool isIndexInRangeCheck = false;
 
             while (indexOfStartBlock <= indexOfEndBlock)
             {
@@ -364,6 +382,17 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
                 double startIndex = startBlockInfo.StartIndex;
                 double endIndex = endBlockInfo.StartIndex + endBlockInfo.Count - 1;
                 double countOfBlocks = endBlockInfo.IndexOfBlock - startBlockInfo.IndexOfBlock + 1;
+
+                //We do it to check it only once 
+                if (!isIndexInRangeCheck)
+                {
+                    if (index < startIndex || index > endIndex)
+                    {
+                        throw new ArgumentOutOfRangeException("searchBlockRange");
+                    }
+
+                    isIndexInRangeCheck = true;
+                }
 
                 double suggestingPosition;
                 if (index == startBlockInfo.StartIndex)

@@ -15,17 +15,17 @@ namespace UnitTests.DistributedArrayTests
         public static void AddAndInsert()
         {
             var blockCollection = new BlockCollection<int>();
-            blockCollection.Add(new Block<int>(blockCollection) { 1 });
-            blockCollection.Insert(0, new Block<int>(blockCollection) { 0 });
-            blockCollection.Insert(2, new Block<int>(blockCollection) { 2 });
-            blockCollection.Add(new Block<int>(blockCollection) { 3 });
+            blockCollection.Add(new Block<int> { 1 });
+            blockCollection.Insert(0, new Block<int> { 0 });
+            blockCollection.Insert(2, new Block<int> { 2 });
+            blockCollection.Add(new Block<int> { 3 });
 
-            var arrayToCheck = new[] { 0, 1, 2, 3 };
-            Assert.AreEqual(blockCollection.Count, arrayToCheck.Length);
+            var checkArray = new[] { 0, 1, 2, 3 };
+            Assert.AreEqual(blockCollection.Count, checkArray.Length);
 
-            for (int i = 0; i < arrayToCheck.Length; i++)
+            for (int i = 0; i < checkArray.Length; i++)
             {
-                Assert.AreEqual(blockCollection[i][0], arrayToCheck[i]);
+                Assert.AreEqual(blockCollection[i][0], checkArray[i]);
             }
 
             //Exceptions
@@ -35,9 +35,9 @@ namespace UnitTests.DistributedArrayTests
                 (blockCollection.Insert, 0, null));
 
             Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Block<int>>
-                (blockCollection.Insert, -1, new Block<int>(blockCollection)));
+                (blockCollection.Insert, -1, new Block<int>()));
             Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Block<int>>
-                (blockCollection.Insert, blockCollection.Count + 1, new Block<int>(blockCollection)));
+                (blockCollection.Insert, blockCollection.Count + 1, new Block<int>()));
         }
         [Test]
         public static void AddNewBlockAndInsertNewBlock()
@@ -60,29 +60,29 @@ namespace UnitTests.DistributedArrayTests
             var blockCollection = new BlockCollection<int>();
             blockCollection.AddRange(new List<Block<int>>
             {
-                new Block<int>(blockCollection) {1},
-                new Block<int>(blockCollection) {2}
+                new Block<int> {1},
+                new Block<int> {2}
             });
             blockCollection.InsertRange(0, new List<Block<int>>
             {
-                new Block<int>(blockCollection) {0}
+                new Block<int> {0}
             });
             blockCollection.AddRange(new List<Block<int>>
             {
-                new Block<int>(blockCollection) {3}
+                new Block<int> {3}
             });
             blockCollection.InsertRange(4, new List<Block<int>>
             {
-                new Block<int>(blockCollection) {4},
-                new Block<int>(blockCollection) {5}
+                new Block<int> {4},
+                new Block<int> {5}
             });
 
-            var arrayToCheck = new[] { 0, 1, 2, 3, 4, 5 };
-            Assert.AreEqual(blockCollection.Count, arrayToCheck.Length);
+            var checkArray = new[] { 0, 1, 2, 3, 4, 5 };
+            Assert.AreEqual(blockCollection.Count, checkArray.Length);
 
-            for (int i = 0; i < arrayToCheck.Length; i++)
+            for (int i = 0; i < checkArray.Length; i++)
             {
-                Assert.AreEqual(blockCollection[i][0], arrayToCheck[i]);
+                Assert.AreEqual(blockCollection[i][0], checkArray[i]);
             }
 
             //Exceptions
@@ -116,31 +116,31 @@ namespace UnitTests.DistributedArrayTests
             Assert.IsTrue(blockCollection.Contains(blockCollection[0]));
             Assert.IsTrue(blockCollection.Contains(blockCollection[blockCollection.Count - 1]));
 
-            Assert.IsFalse(blockCollection.Contains(new Block<int>(blockCollection)));
+            Assert.IsFalse(blockCollection.Contains(new Block<int>()));
         }
         [Test]
         public static void CopyTo()
         {
             var blockCollection = new BlockCollection<int>();
-            blockCollection.Add(new Block<int>(blockCollection) {0, 1, 2});
-            blockCollection.Add(new Block<int>(blockCollection) {3, 4, 5});
-            blockCollection.Add(new Block<int>(blockCollection) {6, 7, 8});
+            blockCollection.Add(new Block<int> {0, 1, 2});
+            blockCollection.Add(new Block<int> {3, 4, 5});
+            blockCollection.Add(new Block<int> {6, 7, 8});
             
 
             //Without shift
-            var list1 = new Block<int>[3];
-            blockCollection.CopyTo(list1, 0);
+            var array1 = new Block<int>[3];
+            blockCollection.CopyTo(array1, 0);
             for (int i = 0; i < blockCollection.Count; i++)
             {
-                Assert.AreEqual(blockCollection[i], list1[i]);
+                Assert.AreEqual(blockCollection[i], array1[i]);
             }
 
             //With shift
-            var list2 = new Block<int>[4];
-            blockCollection.CopyTo(list2, 1);
+            var array2 = new Block<int>[4];
+            blockCollection.CopyTo(array2, 1);
             for (int i = 0; i < blockCollection.Count; i++)
             {
-                Assert.AreEqual(blockCollection[i], list2[i + 1]);
+                Assert.AreEqual(blockCollection[i], array2[i + 1]);
             }
 
             //Exceptions
@@ -150,32 +150,32 @@ namespace UnitTests.DistributedArrayTests
 
             Assert.IsTrue(ExceptionManager.IsThrowException
                 <ArgumentOutOfRangeException, Block<int>[], int>
-                (blockCollection.CopyTo, list1, list1.Length - blockCollection.Count + 1));
+                (blockCollection.CopyTo, array1, array1.Length - blockCollection.Count + 1));
             Assert.IsTrue(ExceptionManager.IsThrowException
                 <ArgumentOutOfRangeException, Block<int>[], int>
-                (blockCollection.CopyTo, list1, -1));
+                (blockCollection.CopyTo, array1, -1));
         }
         [Test]
         public static void GetEnumerator()
         {
             var blockCollection = CreateNewCollection();
-            var array = blockCollection.ToArray();
+            var blockCollectionArray = blockCollection.ToArray();
 
             int counter = 0;
             foreach (var block in blockCollection)
             {
-                Assert.AreEqual(block, array[counter++]);
+                Assert.AreEqual(block, blockCollectionArray[counter++]);
             }
         }
         [Test]
         public static void Indexer()
         {
             var blockCollection = CreateNewCollection();
-            var array = blockCollection.ToArray();
+            var blockCollectionArray = blockCollection.ToArray();
 
             for (int i = 0; i < blockCollection.Count; i++)
             {
-                Assert.AreEqual(blockCollection[i], array[i]);
+                Assert.AreEqual(blockCollection[i], blockCollectionArray[i]);
             }
         }
         [Test]
@@ -185,7 +185,7 @@ namespace UnitTests.DistributedArrayTests
 
             Assert.IsTrue(blockCollection.Remove(blockCollection[0]));
             Assert.IsTrue(blockCollection.Remove(blockCollection[blockCollection.Count - 1]));
-            Assert.IsFalse(blockCollection.Remove(new Block<int>(blockCollection)));
+            Assert.IsFalse(blockCollection.Remove(new Block<int>()));
         }
         [Test]
         public static void RemoveAt()
@@ -236,7 +236,7 @@ namespace UnitTests.DistributedArrayTests
             var blockCollection = new BlockCollection<int>();
             for (int i = 0; i < countOfBlocks; i++)
             {
-                blockCollection.Add(new Block<int>(blockCollection) { i });
+                blockCollection.Add(new Block<int> { i });
             }
 
             return blockCollection;

@@ -15,28 +15,28 @@ namespace UnitTests.DistributedArrayTests
         public static void AddAndIsert()
         {
             var distributedArray = new DistributedArray<int>();
-            var count = distributedArray.MaxBlockSize*2;
+            var size = distributedArray.MaxBlockSize*2;
 
-            for (int i = count/4; i < count/2; i++)
+            for (int i = size/4; i < size/2; i++)
             {
                 distributedArray.Add(i);
             }
-            Assert.AreEqual(distributedArray.Count, count/4);
-            for (int i = 0; i < count/4; i++)
+            Assert.AreEqual(distributedArray.Count, size/4);
+            for (int i = 0; i < size/4; i++)
             {
                 distributedArray.Insert(i, i);
             }
-            Assert.AreEqual(distributedArray.Count, count / 2);
-            for (int i = count/2; i < count*3/4; i++)
+            Assert.AreEqual(distributedArray.Count, size / 2);
+            for (int i = size/2; i < size*3/4; i++)
             {
                 distributedArray.Add(i);
             }
-            Assert.AreEqual(distributedArray.Count, count * 3 / 4);
-            for (int i = count*3/4; i < count; i++)
+            Assert.AreEqual(distributedArray.Count, size * 3 / 4);
+            for (int i = size*3/4; i < size; i++)
             {
                 distributedArray.Insert(i, i);
             }
-            Assert.AreEqual(distributedArray.Count, count);
+            Assert.AreEqual(distributedArray.Count, size);
 
             //DA must be : 0,1,2,3...,n-1,n
             for (int i = 0; i < distributedArray.Count - 1; i++)
@@ -56,41 +56,41 @@ namespace UnitTests.DistributedArrayTests
         public static void AddRangeAndInsertRange()
         {
             var distributedArray = new DistributedArray<int>();
-            var count = distributedArray.MaxBlockSize * 2;
+            var size = distributedArray.MaxBlockSize * 2;
 
-            var array1 = new int[count / 4];
-            var array2 = new int[count / 4];
-            var array3 = new int[count / 4];
-            var array4 = new int[count / 4];
+            var array1 = new int[size / 4];
+            var array2 = new int[size / 4];
+            var array3 = new int[size / 4];
+            var array4 = new int[size / 4];
 
             //1
-            for (int i = count/4; i < count/2; i++)
+            for (int i = size/4; i < size/2; i++)
             {
-                array1[i - count/4] = i;
+                array1[i - size/4] = i;
             }
             distributedArray.AddRange(array1);
-            Assert.AreEqual(distributedArray.Count, count / 4);
+            Assert.AreEqual(distributedArray.Count, size / 4);
             //2
-            for (int i = 0; i < count/4; i++)
+            for (int i = 0; i < size/4; i++)
             {
                 array2[i] = i;
             }
             distributedArray.InsertRange(0, array2);
-            Assert.AreEqual(distributedArray.Count, count / 2);
+            Assert.AreEqual(distributedArray.Count, size / 2);
             //3
-            for (int i = count/2; i < count*3/4; i++)
+            for (int i = size/2; i < size*3/4; i++)
             {
-                array3[i - count/2] = i;
+                array3[i - size/2] = i;
             }
             distributedArray.AddRange(array3);
-            Assert.AreEqual(distributedArray.Count, count *3 / 4);
+            Assert.AreEqual(distributedArray.Count, size *3 / 4);
             //4
-            for (int i = count*3/4; i < count; i++)
+            for (int i = size*3/4; i < size; i++)
             {
-                array4[i - count*3/4] = i;
+                array4[i - size*3/4] = i;
             }
             distributedArray.InsertRange(distributedArray.Count, array4);
-            Assert.AreEqual(distributedArray.Count, count);
+            Assert.AreEqual(distributedArray.Count, size);
 
             //DA must be : 0,1,2,3...,n-1,n
             for (int i = 0; i < distributedArray.Count - 1; i++)
@@ -305,40 +305,41 @@ namespace UnitTests.DistributedArrayTests
         [Test]
         public static void GetEnumerator()
         {
-            var array = new DistributedArray<int>();
-            int size = 4 * array.MaxBlockSize;
+            var distributedArray = new DistributedArray<int>();
+            int size = 4 * distributedArray.MaxBlockSize;
+
             for (int i = 0; i < size; i++)
             {
-                array.Add(i);
+                distributedArray.Add(i);
             }
 
             var newArray = new DistributedArray<int>();
-            foreach (var i in array)
+            foreach (var i in distributedArray)
             {
                 newArray.Add(i);
             }
 
-            Assert.IsTrue(array.Count == newArray.Count);
+            Assert.IsTrue(distributedArray.Count == newArray.Count);
 
             //array must be equal newArray
-            Assert.IsFalse(array.Where((t, i) => t != newArray[i]).Any());
+            Assert.IsFalse(distributedArray.Where((t, i) => t != newArray[i]).Any());
         }
         [Test]
         public static void GetRange()
         {
-            var array = new DistributedArray<int>();
-            int size = 4 * array.MaxBlockSize;
-            int rangeCount = array.DefaultBlockSize;
+            var distributedArray = new DistributedArray<int>();
+            int size = 4 * distributedArray.MaxBlockSize;
+            int rangeCount = distributedArray.DefaultBlockSize;
 
             //Fill array
             for (int i = 0; i < size; i++)
             {
-                array.Add(i);
+                distributedArray.Add(i);
             }
 
             for (int i = 0; i < size / rangeCount; i++)
             {
-                var range = array.GetRange(i * rangeCount, rangeCount);
+                var range = distributedArray.GetRange(i * rangeCount, rangeCount);
                 for (int j = 0; j < rangeCount; j++)
                 {
                     Assert.IsTrue(range[j] == i * rangeCount + j);
@@ -351,10 +352,10 @@ namespace UnitTests.DistributedArrayTests
             //Exceptions
             Assert.IsTrue(ExceptionManager.IsThrowException
                 <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
-                (array.GetRange, -1, 1));
+                (distributedArray.GetRange, -1, 1));
             Assert.IsTrue(ExceptionManager.IsThrowException
                 <ArgumentOutOfRangeException, int, int, DistributedArray<int>>
-                (array.GetRange, 0, array.Count + 1));
+                (distributedArray.GetRange, 0, distributedArray.Count + 1));
         }
         [Test]
         public static void Indexer()
@@ -461,30 +462,30 @@ namespace UnitTests.DistributedArrayTests
             var distributedArray = new DistributedArray<int>();
 
             int size = 4 * distributedArray.MaxBlockSize;
-            var list = new List<int>(size);
+            var checkList = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
                 distributedArray.Add(i);
-                list.Add(i);
+                checkList.Add(i);
             }
 
             //Remove last element of first block
             Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize - 1));
-            list.Remove(distributedArray.MaxBlockSize - 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.Remove(distributedArray.MaxBlockSize - 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //Remove first element of second block
             Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize));
-            list.Remove(distributedArray.MaxBlockSize);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.Remove(distributedArray.MaxBlockSize);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             Assert.IsTrue(distributedArray.Remove(0));
-            list.Remove(0);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.Remove(0);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             Assert.IsTrue(distributedArray.Remove(distributedArray.Count-1));
-            list.Remove(list.Count - 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.Remove(checkList.Count - 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //Try to remove nonexistent elements
             Assert.IsFalse(distributedArray.Remove(0));
@@ -493,7 +494,7 @@ namespace UnitTests.DistributedArrayTests
             Assert.IsFalse(distributedArray.Remove(-1));
 
             //distributedArray must be equal list
-            Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
         }
         [Test]
         public static void RemoveAt()
@@ -501,33 +502,33 @@ namespace UnitTests.DistributedArrayTests
             var distributedArray = new DistributedArray<int>();
 
             int size = 4 * distributedArray.MaxBlockSize;
-            var list = new List<int>(size);
+            var checkList = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
                 distributedArray.Add(i);
-                list.Add(i);
+                checkList.Add(i);
             }
 
             //Remove last element of first block
             distributedArray.RemoveAt(distributedArray.MaxBlockSize - 1);
-            list.RemoveAt(distributedArray.MaxBlockSize - 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveAt(distributedArray.MaxBlockSize - 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //Remove first element of second block
             distributedArray.RemoveAt(distributedArray.MaxBlockSize + 1);
-            list.RemoveAt(distributedArray.MaxBlockSize + 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveAt(distributedArray.MaxBlockSize + 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             distributedArray.RemoveAt(0);
-            list.RemoveAt(0);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveAt(0);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             distributedArray.RemoveAt(distributedArray.Count - 1);
-            list.RemoveAt(list.Count - 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveAt(checkList.Count - 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //distributedArray must be equal list
-            Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
 
             //Exceptions
             Assert.IsTrue(ExceptionManager.IsThrowException
@@ -538,33 +539,59 @@ namespace UnitTests.DistributedArrayTests
                 (distributedArray.RemoveAt, distributedArray.Count));
         }
         [Test]
+        public static void RemoveLast()
+        {
+            var distributedArray = new DistributedArray<int>();
+            int size = 4*distributedArray.MaxBlockSize;
+
+            var checkList = new List<int>(size);
+            //Add
+            for (int i = 0; i < size; i++)
+            {
+                distributedArray.Add(i);
+                checkList.Add(i);
+            }
+
+            //Remove
+            for (int i = 0; i < size; i++)
+            {
+                distributedArray.RemoveLast();
+                checkList.RemoveAt(checkList.Count - 1);
+
+                Assert.AreEqual(distributedArray.Count, checkList.Count);
+            }
+
+            //array must be equal checkList
+            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
+        }
+        [Test]
         public static void RemoveRange()
         {
             var distributedArray = new DistributedArray<int>();
 
             int size = 4 * distributedArray.MaxBlockSize;
-            var list = new List<int>(size);
+            var checkList = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
                 distributedArray.Add(i);
-                list.Add(i);
+                checkList.Add(i);
             }
 
             //Remove elements from different blocks
             distributedArray.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
-            list.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             distributedArray.RemoveRange(0, 1);
-            list.RemoveRange(0, 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveRange(0, 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             distributedArray.RemoveRange(distributedArray.Count - 1, 1);
-            list.RemoveRange(list.Count - 1, 1);
-            Assert.AreEqual(distributedArray.Count, list.Count);
+            checkList.RemoveRange(checkList.Count - 1, 1);
+            Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //distributedArray must be equal list
-            Assert.IsFalse(distributedArray.Where((t, i) => t != list[i]).Any());
+            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
 
             //Clear distibutedArray
             distributedArray.RemoveRange(0, distributedArray.Count);

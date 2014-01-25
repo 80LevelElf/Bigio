@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using BigDataCollections.DistributedArray.Managers;
 
 namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
 {
@@ -8,6 +9,9 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
     /// </summary>
     public class Block<T> : List<T>
     {
-
+        public Block():base(DefaultValuesManager.DefaultBlockSize)
+        {
+            
+        }
     }
 }

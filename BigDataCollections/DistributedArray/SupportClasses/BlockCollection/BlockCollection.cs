@@ -401,7 +401,8 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             return DivideIntoBlocks(collection, 0, collection.Count);
         }
         /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// Divide specified range of collection(starts at the specified index)
+        /// into blocks with DefaultBlockSize size.
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
         /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>
@@ -417,7 +418,9 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
             return DivideIntoBlocks(collection, collectionIndex, collection.Count - collectionIndex);
         }
         /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size that starts at the specified index.
+        /// Divide specified range of collection
+        /// (starts at the specified index and contaies specified count of elements)
+        /// into blocks with DefaultBlockSize size.
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
         /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>

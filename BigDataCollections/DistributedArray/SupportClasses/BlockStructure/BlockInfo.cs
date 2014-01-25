@@ -37,6 +37,10 @@
             }
             return 0;
         }
+        public bool Equals(BlockInfo other)
+        {
+            return IndexOfBlock == other.IndexOfBlock && StartIndex == other.StartIndex && Count == other.Count;
+        }
         /// <summary>
         /// Index of block inside block collection.
         /// </summary>
