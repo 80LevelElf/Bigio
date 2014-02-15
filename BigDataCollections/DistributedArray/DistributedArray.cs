@@ -154,7 +154,9 @@ namespace BigDataCollections
         /// <param name="count">The length of the range to search.</param>
         /// <param name="item">The object to locate. The value can be null for reference types.</param>
         /// <param name="comparer">The IComparer(T) implementation to use when comparing elements, ornull to use the default comparer Comparer(T).Default.</param>
-        /// <returns></returns>
+        /// <returns>The zero-based index of item in the sorted DistributedArray(T), ifitem is found; otherwise,
+        ///  a negative number that is the bitwise complement of the index of the next element that is larger than item or,
+        ///  if there is no larger element, the bitwise complement of Count.</returns>
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
             if (!this.IsValidRange(index, count))
@@ -335,11 +337,17 @@ namespace BigDataCollections
                 throw new ArgumentNullException("match");
             }
 
-            foreach (var item in this)
+            var multyblockRange = _blockStructure.MultyblockRange(new Range(0, Count));
+
+            int indexOfBlock = multyblockRange.IndexOfStartBlock;
+            foreach (var blockRange in multyblockRange.Ranges)
             {
-                if (match.Invoke(item))
+                int findIndexResult = _blockCollection[indexOfBlock++]
+                    .FindIndex(blockRange.Subindex, blockRange.Count, match);
+
+                if (findIndexResult != -1)
                 {
-                    return item;
+                    return this[blockRange.CommonStartIndex + findIndexResult];
                 }
             }
 
@@ -433,17 +441,20 @@ namespace BigDataCollections
         /// <returns>The last element that matches the conditions defined by the specified predicate, if found; otherwise, the default value for type T.</returns>
         public T FindLast(Predicate<T> match)
         {
-            for (int i = _blockCollection.Count - 1; i != 0; i--)
+            var range = _blockStructure.ReverseMultyblockRange(new Range(Count - 1, Count));
+
+            //Find it
+            int indexOfBlock = range.IndexOfStartBlock;
+            foreach (var blockRange in range.Ranges)
             {
-                var block = _blockCollection[i];
-                for (int j = block.Count - 1; j != 0; j--)
+                int findLastIndexResult = _blockCollection[indexOfBlock--]
+                    .FindLastIndex(blockRange.Subindex, blockRange.Count, match);
+                if (findLastIndexResult != -1)
                 {
-                    if (match.Invoke(block[j]))
-                    {
-                        return block[j];
-                    }
+                    return this[blockRange.CommonStartIndex + findLastIndexResult];
                 }
             }
+
             //If there is no such item
             return default(T);
         }
