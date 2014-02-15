@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using BigDataCollections;
+using BigDataCollections.DistributedArray.SupportClasses;
 using BigDataCollections.LevelSparseArray;
 using BigDataCollections.LevelSparseArray.Managers;
 using BigDataCollections.LevelSparseArray.SupportClasses;
@@ -14,7 +16,18 @@ namespace UnitTests
     {
         static void Main()
         {
-            BlockStructureTests.ReverseMultyblockRange();
+            var array = new DistributedArray<int>();
+            for (int i = 0; i < 1000000; i++)
+            {
+                array.Add(i);
+            }
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                var a = array[i];
+            }
+
+            Console.WriteLine(1);
             Console.ReadKey();
         }
     }

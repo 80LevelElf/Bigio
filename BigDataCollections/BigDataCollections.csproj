@@ -30,8 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
-    <Reference Include="nunit.mocks, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,6 +43,7 @@
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
     <Compile Include="DistributedArray\Interfaces\IArrayList.cs" />
     <Compile Include="DistributedArray\InternalBlockCollections\InternalBlockList.cs" />
+    <Compile Include="DistributedArray\Managers\MultythreadManager.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockInfo.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockStructure.cs" />
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using BigDataCollections.DistributedArray.Managers;
 using BigDataCollections.DistributedArray.SupportClasses.BlockCollection;
-using NUnit.Framework;
 
 namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
 {

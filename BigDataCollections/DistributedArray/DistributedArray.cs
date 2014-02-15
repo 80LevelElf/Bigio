@@ -627,7 +627,7 @@ namespace BigDataCollections
             var block = _blockCollection[blockInfo.IndexOfBlock];
 
             bool isMaxSize = (block.Count == MaxBlockSize);
-            bool isStartSubindex = (blockSubindex == 0);
+            bool isNeedToAddPreviosBlock = (blockSubindex == 0 && blockInfo.Count >= DefaultBlockSize);
 
             if (isMaxSize)
             {
@@ -637,7 +637,7 @@ namespace BigDataCollections
             }
 
             //Insertion
-            if (!isStartSubindex)
+            if (!isNeedToAddPreviosBlock)
             {
                 _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using BigDataCollections.LevelSparseArray.Managers;
 using BigDataCollections.LevelSparseArray.SupportClasses;
 using BigDataCollections.LevelSparseArray.SupportClasses.Level;
-using NUnit.Framework.Constraints;
 
 namespace BigDataCollections.LevelSparseArray
 {
