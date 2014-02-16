@@ -37,6 +37,12 @@
             }
             return 0;
         }
+        /// <summary>
+        /// Check equal of current BlockInfo and other BlockIfo.
+        /// </summary>
+        /// <param name="other">Other BlockInfo to check.</param>
+        /// <returns>If BlockInfos are the same in all data members
+        /// (IndexOfBlock, StartIndex and Count) return true, otherwise return false.</returns>
         public bool Equals(BlockInfo other)
         {
             return IndexOfBlock == other.IndexOfBlock && StartIndex == other.StartIndex && Count == other.Count;

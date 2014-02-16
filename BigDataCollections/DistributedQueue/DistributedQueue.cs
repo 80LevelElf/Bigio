@@ -64,9 +64,8 @@ namespace BigDataCollections
                 throw new InvalidOperationException("There queue is empty!");
             }
 
-            int lastIndex = _array.Count - 1;
-            T item = _array[lastIndex];
-            _array.RemoveAt(lastIndex);
+            T item = _array[_array.Count - 1];
+            _array.RemoveLast();
 
             return item;
         }

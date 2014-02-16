@@ -23,10 +23,23 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
             Ranges = ranges;
             Count = count;
         }
+        /// <summary>
+        /// Check equal of current MultyblockRange and other MultyblockRange.
+        /// </summary>
+        /// <param name="other">Other MultyblockRange to check.</param>
+        /// <returns>If BlockRanges are the same in all data members
+        /// (IndexOfStartBlock and Count) and containes same ranges return true,
+        ///  otherwise return false.</returns>
         public bool Equals(MultyblockRange other)
         {
             var enumerator = GetEnumerator();
             var otherEnumerator = GetEnumerator();
+
+            if (IndexOfStartBlock != other.IndexOfStartBlock
+                || Count != other.Count)
+            {
+                return false;
+            }
 
             //Compare all elements
             while (enumerator.MoveNext() && otherEnumerator.MoveNext())
@@ -118,6 +131,9 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockStructure
         /// set and get functions.
         /// </summary>
         private IEnumerable<BlockRange> _ranges;
+        /// <summary>
+        /// Internal value of Count field. Don't use it from your code. Use Count instead.
+        /// </summary>
         private int _count;
     }
 }

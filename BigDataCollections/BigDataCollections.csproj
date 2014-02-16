@@ -43,7 +43,6 @@
     <Compile Include="DistributedArray\DistributedArrayEnumerator.cs" />
     <Compile Include="DistributedArray\Interfaces\IArrayList.cs" />
     <Compile Include="DistributedArray\InternalBlockCollections\InternalBlockList.cs" />
-    <Compile Include="DistributedArray\Managers\MultythreadManager.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockInfo.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockStructure.cs" />
     <Compile Include="DistributedArray\Managers\ValidationManager.cs" />
@@ -55,11 +54,6 @@
     <Compile Include="DistributedQueue\DistributedQueue.cs" />
     <Compile Include="DistributedArray\Managers\DefaultValuesManager.cs" />
     <Compile Include="DistributedStack\DistributedStack.cs" />
-    <Compile Include="LevelSparseArray\LevelSparseArray.cs" />
-    <Compile Include="LevelSparseArray\Managers\IndexManager.cs" />
-    <Compile Include="LevelSparseArray\SupportClasses\Index.cs" />
-    <Compile Include="LevelSparseArray\SupportClasses\Level\DataLevel.cs" />
-    <Compile Include="LevelSparseArray\SupportClasses\Level\Level.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DistributedArray\SupportClasses\BlockStructure\BlockRange.cs" />
   </ItemGroup>

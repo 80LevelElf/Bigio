@@ -9,6 +9,9 @@ namespace BigDataCollections.DistributedArray.SupportClasses.BlockCollection
     /// </summary>
     public class Block<T> : List<T>
     {
+        /// <summary>
+        /// Create new instance of Block. There is DefaultBlockSize as capacity of it.
+        /// </summary>
         public Block():base(DefaultValuesManager.DefaultBlockSize)
         {
             

@@ -19,6 +19,12 @@
             CommonStartIndex = commonStartIndex;
             Count = count;
         }
+        /// <summary>
+        /// Check equal of current BlockRange and other BlockRange.
+        /// </summary>
+        /// <param name="other">Other BlockRange to check.</param>
+        /// <returns>If BlockRanges are the same in all data members
+        /// (CommonStartIndex, Count and Subindex) return true, otherwise return false.</returns>
         public bool Equals(BlockRange other)
         {
             return (CommonStartIndex == other.CommonStartIndex

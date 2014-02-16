@@ -1,14 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
 using BigDataCollections;
-using BigDataCollections.DistributedArray.SupportClasses;
-using BigDataCollections.LevelSparseArray;
-using BigDataCollections.LevelSparseArray.Managers;
-using BigDataCollections.LevelSparseArray.SupportClasses;
-using UnitTests.DistributedArrayTests;
 
 namespace UnitTests
 {
@@ -17,17 +8,21 @@ namespace UnitTests
         static void Main()
         {
             var array = new DistributedArray<int>();
-            for (int i = 0; i < 1000000; i++)
+            const int size = 1000000;
+
+            for (int i = 0; i < size; i++)
             {
                 array.Add(i);
             }
 
-            for (int i = 0; i < 1000000; i++)
+            var oldTime = DateTime.Now;
+
+            for (int i = 0; i < size; i++)
             {
                 var a = array[i];
             }
 
-            Console.WriteLine(1);
+            Console.WriteLine((DateTime.Now - oldTime).TotalMilliseconds);
             Console.ReadKey();
         }
     }
