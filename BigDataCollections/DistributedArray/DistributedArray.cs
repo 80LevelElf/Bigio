@@ -367,15 +367,23 @@ namespace BigDataCollections
                 throw new ArgumentNullException("match");
             }
 
-            var result = new DistributedArray<T>();
-            foreach (var item in this)
+            var resultArray = new DistributedArray<T>();
+
+            var multyblockRange = _blockStructure.MultyblockRange(new Range(0, Count));
+            int indexOfBlock = multyblockRange.IndexOfStartBlock;
+
+            foreach (var blockRange in multyblockRange.Ranges)
             {
-                if (match.Invoke(item))
+                int findIndexResult = _blockCollection[indexOfBlock++]
+                    .FindIndex(blockRange.Subindex, blockRange.Count, match);
+
+                if (findIndexResult != -1)
                 {
-                    result.Add(item);
+                    resultArray.Add(this[blockRange.CommonStartIndex + findIndexResult]);
                 }
             }
-            return result;
+
+            return resultArray;
         }
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
