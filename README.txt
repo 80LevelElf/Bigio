@@ -1,8 +1,9 @@
-BigDataCollections is arraycollections specially designed for big data.
-Because of architecture, many actions in this collections work faster then in similar classes.
+BigDataCollection is a simple set of several collections for big data.
+Because of architecture this collections work faster with big data than system List or LinkedList.
+You can use it very easy – just add dll file (it is very small) of BigDataCollection to your project.
 
 This code distributed with BSD license:
-Copyright (c) 2013, Salakhutdinov Rustam
+Copyright (c) 2013-2014, Salakhutdinov Rustam
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

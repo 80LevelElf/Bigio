@@ -369,17 +369,13 @@ namespace BigDataCollections
 
             var resultArray = new DistributedArray<T>();
 
-            var multyblockRange = _blockStructure.MultyblockRange(new Range(0, Count));
-            int indexOfBlock = multyblockRange.IndexOfStartBlock;
-
-            foreach (var blockRange in multyblockRange.Ranges)
+            foreach (var block in _blockCollection)
             {
-                int findIndexResult = _blockCollection[indexOfBlock++]
-                    .FindIndex(blockRange.Subindex, blockRange.Count, match);
+                var findData = block.FindAll(match);
 
-                if (findIndexResult != -1)
+                if (findData.Count != 0)
                 {
-                    resultArray.Add(this[blockRange.CommonStartIndex + findIndexResult]);
+                    resultArray.AddRange(findData);
                 }
             }
 

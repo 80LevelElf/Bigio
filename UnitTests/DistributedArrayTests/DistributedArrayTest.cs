@@ -154,8 +154,7 @@ namespace UnitTests.DistributedArrayTests
             var emptyArray = new DistributedArray<int>();
             emptyArray.CopyTo(array);
 
-            //Arr must be equal resultArray
-            Assert.IsFalse(array.Where((t, i) => t != resultArray[i]).Any());
+            CheckEqual(array, resultArray);
 
             //Exceptions
             Assert.IsTrue(ExceptionManager.IsThrowException
@@ -197,8 +196,7 @@ namespace UnitTests.DistributedArrayTests
             distributedArray = distributedArray.FindAll(IsMultipleOf2);
             var resultArray = new DistributedArray<int> { 2, 4, 6, 8, 10 };
 
-            //distributedArray must be equal resultArray
-            Assert.IsFalse(distributedArray.Where((t, i) => t != resultArray[i]).Any());
+            CheckEqual(distributedArray, resultArray);
 
             var emptyArray = new DistributedArray<int>();
             Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2));
@@ -493,8 +491,7 @@ namespace UnitTests.DistributedArrayTests
             Assert.IsFalse(distributedArray.Remove(distributedArray.MaxBlockSize));
             Assert.IsFalse(distributedArray.Remove(-1));
 
-            //distributedArray must be equal list
-            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
+            CheckEqual(distributedArray, checkList);
         }
         [Test]
         public static void RemoveAt()
@@ -527,8 +524,7 @@ namespace UnitTests.DistributedArrayTests
             checkList.RemoveAt(checkList.Count - 1);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
-            //distributedArray must be equal list
-            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
+            CheckEqual(distributedArray, checkList);
 
             //Exceptions
             Assert.IsTrue(ExceptionManager.IsThrowException
@@ -561,8 +557,7 @@ namespace UnitTests.DistributedArrayTests
                 Assert.AreEqual(distributedArray.Count, checkList.Count);
             }
 
-            //array must be equal checkList
-            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
+            CheckEqual(distributedArray, checkList);
         }
         [Test]
         public static void RemoveRange()
@@ -590,8 +585,7 @@ namespace UnitTests.DistributedArrayTests
             checkList.RemoveRange(checkList.Count - 1, 1);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
-            //distributedArray must be equal list
-            Assert.IsFalse(distributedArray.Where((t, i) => t != checkList[i]).Any());
+            CheckEqual(distributedArray, checkList);
 
             //Clear distibutedArray
             distributedArray.RemoveRange(0, distributedArray.Count);
@@ -647,11 +641,7 @@ namespace UnitTests.DistributedArrayTests
                 distributedArray.Add(i);
             }
 
-            var array = distributedArray.ToArray();
-            for (int i = 0; i < distributedArray.Count; i++)
-            {
-                Assert.AreEqual(distributedArray[i], array[i]);
-            }
+            CheckEqual(distributedArray, distributedArray.ToArray());
         }
 
         //Support functions
@@ -674,6 +664,11 @@ namespace UnitTests.DistributedArrayTests
         private static bool IsMultipleOf2(int number)
         {
             return number%2 == 0;
+        }
+        private static void CheckEqual<T>(IList<T> first, IList<T> second)
+        {
+            Assert.AreEqual(first.Count, second.Count);
+            Assert.IsFalse(first.Where((t, i) => !Equals(t, second[i])).Any());
         }
     }
 }

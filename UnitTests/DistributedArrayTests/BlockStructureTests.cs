@@ -127,13 +127,14 @@ namespace UnitTests.DistributedArrayTests
         private static void ReverseMultyblockRange(SearchMod mod)
         {
             //Simple test
-            var reverseMultyblockRange = new MultyblockRange(0, 3,
+            var reverseMultyblockRange = new MultyblockRange(2, 3,
                 new[]
                 {
                     new BlockRange(BlockSize*5/2, BlockSize/2, 2*BlockSize), 
                     new BlockRange(2*BlockSize - 1, BlockSize, BlockSize),
                     new BlockRange(BlockSize -1, BlockSize, 0)
                 });
+
             Assert.IsTrue(
                 TestStructure.ReverseMultyblockRange(new Range(BlockSize * 5 / 2, BlockSize * 5 / 2 + 1), mod)
                 .Equals(reverseMultyblockRange));

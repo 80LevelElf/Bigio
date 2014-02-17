@@ -3,3 +3,4 @@
 *.dll
 *.DotSettings
 *.user
+!BigDataCollections.dll
