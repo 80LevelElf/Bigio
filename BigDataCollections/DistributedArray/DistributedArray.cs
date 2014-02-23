@@ -20,6 +20,7 @@ namespace BigDataCollections
     /// most operations will be more efficient.
     /// </summary>
     /// <typeparam name="T">Type of array elements.</typeparam>
+    [Serializable]
     public partial class DistributedArray<T> : IArrayList<T>
     {
         //API
@@ -1005,6 +1006,7 @@ namespace BigDataCollections
         }
 
         //Data
+        [NonSerialized]
         private readonly BlockStructure<T> _blockStructure;
         /// <summary>
         /// The blocks object provides API for easy work with blocks.
