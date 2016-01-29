@@ -45,17 +45,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DistributedArrayTests\BlockCollectionTest.cs" />
-    <Compile Include="DistributedArrayTests\BlockStructureTests.cs" />
-    <Compile Include="DistributedArrayTests\DistributedArrayTest.cs" />
+    <Compile Include="BigArrayTests\BlockCollectionTest.cs" />
+    <Compile Include="BigArrayTests\BlockStructureTests.cs" />
+    <Compile Include="BigArrayTests\BigArrayTest.cs" />
     <Compile Include="Managers\ExceptionManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BigDataCollections\BigDataCollections.csproj">
+    <ProjectReference Include="..\BigDataCollections\Bigio.csproj">
       <Project>{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}</Project>
-      <Name>BigDataCollections</Name>
+      <Name>Bigio</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

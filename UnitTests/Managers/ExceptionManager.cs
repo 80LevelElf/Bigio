@@ -1,5 +1,4 @@
 ﻿using System;
-using BigDataCollections.DistributedArray.SupportClasses.BlockStructure;
 
 namespace UnitTests.Managers
 {
