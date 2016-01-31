@@ -53,7 +53,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BigDataCollections\Bigio.csproj">
+    <ProjectReference Include="..\Bigio\Bigio.csproj">
       <Project>{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}</Project>
       <Name>Bigio</Name>
     </ProjectReference>
