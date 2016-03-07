@@ -6,7 +6,7 @@ using Bigio;
 using NUnit.Framework;
 using UnitTests.Managers;
 
-namespace UnitTests.BigArrayTests
+namespace UnitTests.Bigio_Tests.BigArray_Tests
 {
     [TestFixture]
     public static class BigArrayTest
@@ -52,6 +52,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.Insert, distributedArray.Count + 1, 0));
         }
+
         [Test]
         public static void AddRangeAndInsertRange()
         {
@@ -110,6 +111,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, ICollection<int>>
                 (distributedArray.InsertRange, distributedArray.Count + 1, new Collection<int>()));
         }
+
         [Test]
         public static void BinarySearch()
         {
@@ -127,6 +129,7 @@ namespace UnitTests.BigArrayTests
             var emptyArray = new BigArray<int>();
             Assert.AreEqual(~emptyArray.BinarySearch(1), 0);
         }
+
         [Test]
         public static void Contains()
         {
@@ -139,6 +142,7 @@ namespace UnitTests.BigArrayTests
             var emptyArray = new BigArray<int>();
             Assert.AreEqual(emptyArray.Contains(0), false);
         }
+
         [Test]
         public static void CopyTo()
         {
@@ -175,6 +179,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int[], int, int>
                 (distibutedArray.CopyTo, 0, array, 0, -1));
         }
+
         [Test]
         public static void Find()
         {
@@ -189,6 +194,7 @@ namespace UnitTests.BigArrayTests
             ExceptionManager.IsThrowException<ArgumentNullException, Predicate<int>, int>
                 (distributedArray.Find, null);
         }
+
         [Test]
         public static void FindAll()
         {
@@ -252,6 +258,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindIndex, 1, -1, IsEqual0));
         }
+
         [Test]
         public static void FindLastIndex()
         {
@@ -300,6 +307,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindLastIndex, 1, -1, IsEqual0));
         }
+
         [Test]
         public static void GetEnumerator()
         {
@@ -322,6 +330,7 @@ namespace UnitTests.BigArrayTests
             //array must be equal newArray
             Assert.IsFalse(distributedArray.Where((t, i) => t != newArray[i]).Any());
         }
+
         [Test]
         public static void GetRange()
         {
@@ -355,6 +364,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int, BigArray<int>>
                 (distributedArray.GetRange, 0, distributedArray.Count + 1));
         }
+
         [Test]
         public static void Indexer()
         {
@@ -370,6 +380,7 @@ namespace UnitTests.BigArrayTests
             }
 
         }
+
         [Test]
         public static void IndexOf()
         {
@@ -412,6 +423,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.IndexOf, 0, 1, -1));
         }
+
         [Test]
         public static void LastIndexOf()
         {
@@ -454,6 +466,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.LastIndexOf, 0, 2, -1));
         }
+
         [Test]
         public static void Remove()
         {
@@ -493,6 +506,7 @@ namespace UnitTests.BigArrayTests
 
             CheckEqual(distributedArray, checkList);
         }
+
         [Test]
         public static void RemoveAt()
         {
@@ -534,6 +548,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int>
                 (distributedArray.RemoveAt, distributedArray.Count));
         }
+
         [Test]
         public static void RemoveLast()
         {
@@ -559,6 +574,7 @@ namespace UnitTests.BigArrayTests
 
             CheckEqual(distributedArray, checkList);
         }
+
         [Test]
         public static void RemoveRange()
         {
@@ -603,6 +619,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.RemoveRange, distributedArray.Count - 1, 2));
         }
+
         [Test]
         public static void Reverse()
         {
@@ -632,6 +649,7 @@ namespace UnitTests.BigArrayTests
             Assert.AreEqual(newArray[0], 1);
             Assert.AreEqual(newArray[1], 0);
         }
+
         [Test]
         public static void ToArray()
         {
@@ -649,22 +667,27 @@ namespace UnitTests.BigArrayTests
         {
             return number == 0;
         }
+
         private static bool IsEqual128000(int number)
         {
             return number == 128000;
         }
+
         private static bool IsEqual2(int number)
         {
             return number == 2;
         }
+
         private static bool IsEqual5000(int number)
         {
             return number == 5000;
         }
+
         private static bool IsMultipleOf2(int number)
         {
             return number%2 == 0;
         }
+
         private static void CheckEqual<T>(IList<T> first, IList<T> second)
         {
             Assert.AreEqual(first.Count, second.Count);

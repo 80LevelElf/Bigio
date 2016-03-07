@@ -45,9 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigArrayTests\BlockCollectionTest.cs" />
-    <Compile Include="BigArrayTests\BlockStructureTests.cs" />
-    <Compile Include="BigArrayTests\BigArrayTest.cs" />
+    <Compile Include="Bigio Tests\BigArray Tests\Support Classes Tests\BlockCollectionTest.cs" />
+    <Compile Include="Bigio Tests\BigArray Tests\Support Classes Tests\BlockStructureTests.cs" />
+    <Compile Include="Bigio Tests\BigArray Tests\BigArrayTest.cs" />
+    <Compile Include="Bigio Tests\Common Tests\Managers Tests\ValidationManagerTest.cs" />
     <Compile Include="Managers\ExceptionManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

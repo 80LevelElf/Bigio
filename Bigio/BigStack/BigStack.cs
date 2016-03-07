@@ -11,6 +11,10 @@ namespace Bigio
     /// <typeparam name="T">Specifies the type of elements in the stack.</typeparam>
     class BigStack<T> : IEnumerable<T>
     {
+        //Data
+
+        private readonly BigArray<T> _array;
+
         //API
         /// <summary>
         /// Initializes a new instance of the BigStack(T)
@@ -20,6 +24,7 @@ namespace Bigio
         {
             
         }
+
         /// <summary>
         /// Initializes a new instance of the BigStack(T) class that contains
         ///  elements copied from the specified collection.
@@ -29,6 +34,7 @@ namespace Bigio
         {
             _array = new BigArray<T>(collection);
         }
+
         /// <summary>
         /// Removes all objects from the BigStack(T).
         /// </summary>
@@ -36,6 +42,7 @@ namespace Bigio
         {
             _array.Clear();
         }
+
         /// <summary>
         /// Determines whether an element is in the BigStack(T).
         /// </summary>
@@ -46,6 +53,7 @@ namespace Bigio
         {
             return _array.Contains(item);
         }
+
         /// <summary>
         /// Copies the BigStack(T) to an existing one-dimensional Array,
         ///  starting at the specified array index.
@@ -56,6 +64,7 @@ namespace Bigio
         {
             _array.CopyTo(array, arrayIndex);
         }
+
         /// <summary>
         /// Returns an enumerator for the BigStack(T).
         /// </summary>
@@ -63,10 +72,12 @@ namespace Bigio
         {
             return _array.GetEnumerator();
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
+
         /// <summary>
         /// Returns the object at the top of the BigStack(T) without removing it.
         /// </summary>
@@ -77,6 +88,7 @@ namespace Bigio
 
             return item;
         }
+
         /// <summary>
         /// Removes and returns the object at the top of the BigStack(T).
         /// </summary>
@@ -88,6 +100,7 @@ namespace Bigio
 
             return item;
         }
+
         /// <summary>
         /// Inserts an object at the top of the BigStack(T).
         /// </summary>
@@ -97,6 +110,7 @@ namespace Bigio
         {
             _array.Add(item);
         }
+
         /// <summary>
         /// Rebalance BigStack(T) to every block have DefaultBlockSize elements.
         /// </summary>
@@ -104,6 +118,7 @@ namespace Bigio
         {
             _array.Rebalance();
         }
+
         /// <summary>
         /// Copies the BigStack(T) to a new array.
         /// </summary>
@@ -113,7 +128,6 @@ namespace Bigio
             return _array.ToArray();
         }
 
-        //Data
         /// <summary>
         /// Gets the number of elements contained in the BigStack(T).
         /// </summary>
@@ -124,6 +138,5 @@ namespace Bigio
                 return _array.Count;
             }
         }
-        private readonly BigArray<T> _array;
     }
 }

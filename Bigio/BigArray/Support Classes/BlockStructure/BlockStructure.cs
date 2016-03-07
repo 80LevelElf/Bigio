@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bigio.BigArray.Managers;
+using Bigio.BigArray.Support_Classes.BlockCollection;
+using Bigio.Common.Classes;
+using Bigio.Common.Managers;
 
-namespace Bigio.BigArray.SupportClasses.BlockStructure
+namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
     /// <summary>
     /// SearchMod is way to find needed data.
@@ -26,6 +28,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
         /// </summary>
         LinearSearch
     }
+
     /// <summary>
     /// This class used for get information about BlockCollection(T) structure,
     /// for example for searching block with specified index.
@@ -33,13 +36,14 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
     class BlockStructure<T>
     {
         //API
-        public BlockStructure(Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T> blockCollection)
+        public BlockStructure(BlockCollection<T> blockCollection)
         {
             BlockCollection = blockCollection;
 
             _blocksInfo = new BlockInfo[blockCollection.Count];
             TryToUpdateStructureInfo();
         }
+
         /// <summary>
         /// Calculate information about block and location of block inside BlockCollection(T).
         /// </summary>
@@ -51,6 +55,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
         {
             return BlockInfo(index, 0, searchMod);
         }
+
         /// <summary>
         /// Calculate information about block and location of block inside BlockCollection(T).
         /// </summary>
@@ -66,6 +71,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
             return BlockInfo
                 (index, new Range(statBlock, _blockCollection.Count - statBlock), searchMod);
         }
+
         /// <summary>
         /// Calculate information about block and location of block inside BlockCollection(T).
         /// </summary>
@@ -97,6 +103,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
                     throw new ArgumentOutOfRangeException("searchMod");
             }
         }
+
         /// <summary>
         /// Calculate start zero-based common index of specified block.
         /// </summary>
@@ -108,6 +115,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
 
             return _blocksInfo[indexOfBlock].StartIndex;
         }
+
         /// <summary>
         /// Calculate index of block, witch containt element with specified zero-base index.
         /// </summary>
@@ -118,6 +126,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
         {
             return BlockInfo(index, searchMod).IndexOfBlock;
         }
+
         /// <summary>
         /// Calculate index of block, witch containt element with specified zero-base index.
         /// Function try to find it from startBlock block to last block of BlockCollection(T). 
@@ -131,6 +140,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
         {
             return BlockInfo(index, startBlock, searchMod).IndexOfBlock;
         }
+
         /// <summary>
         /// Calculate index of block witch containt element with specified zero-base index.
         /// Function try to find it in searchBlockRange range of BlockCollection(T). 
@@ -144,6 +154,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
         {
             return BlockInfo(index, searchBlockRange, searchMod).IndexOfBlock;
         }
+
         /// <summary>
         /// Calculate a block range for all blocks that overlap with specified range.
         /// Block range provide information about overlapping specified range and block.
@@ -178,6 +189,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
             return new MultyblockRange(indexOfStartBlock, countOfBlocks
                 , CalculateMultyblockRanges(calcRange, indexOfStartBlock, indexOfEndBlock));
         }
+
         /// <summary>
         /// Calculate a reverse block range for all blocks that overlap with specified range.
         /// Block range provide information about overlapping specified range and block.
@@ -224,10 +236,11 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
 
             return new MultyblockRange(indexOfStartBlock, range.Count, reverseBlockRanges);
         }
+
         /// <summary>
         /// Parent collection of blocks, which structure is BlockStructure.
         /// </summary>
-        public Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T> BlockCollection
+        public BlockCollection<T> BlockCollection
         {
             private set
             {
@@ -243,6 +256,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
                 return _blockCollection;
             }
         }
+
         /// <summary>
         /// You need to call this function after you changed data in BigArray
         /// to update structure of BlockStructure when it will be need to do.
@@ -287,6 +301,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
 
             _isDataChanged = false;
         }
+
         /// <summary>
         /// Performs lazy calculations to get blocks of MultyblockRange.
         /// </summary>
@@ -330,6 +345,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
                 currentStartIndex += block.Count;
             }
         }
+
         /// <summary>
         /// This way to find block with specified index have log(2,n) performance,
         /// where n is count of blocks. But this way use information of blocks 
@@ -422,6 +438,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
             //We should not reach this string!
             throw new InvalidOperationException("There is no such index in specified range!");
         }
+
         /// <summary>
         /// This way to find block with specified index have n performance,
         /// where n is count of blocks. This way don't need any information about
@@ -470,19 +487,23 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
         }
 
         //Data
+
         /// <summary>
         /// Parent _blockCollection to define structure of it.
         /// </summary>
-        private Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T> _blockCollection;
+        private BlockCollection<T> _blockCollection;
+
         /// <summary>
         /// Information about each block, which contain in _blockCollection.
         /// It can be defferent from real information if data changed and user don't update information.
         /// </summary>
         private BlockInfo[] _blocksInfo;
+
         /// <summary>
         /// If information changed and it is need to be update flag will be true, otherwise false.
         /// </summary>
         private bool _isDataChanged = true;
+
         /// <summary>
         /// It is a cache information of count of elements in BigArray(T).
         /// If data changed, it can be different from real count.

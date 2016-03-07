@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Bigio.BigArray.SupportClasses.BlockCollection;
+using Bigio.BigArray.Support_Classes.BlockCollection;
 using NUnit.Framework;
 using UnitTests.Managers;
 
-namespace UnitTests.BigArrayTests
+namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 {
     [TestFixture]
     public static class BlockCollectionTest
@@ -39,6 +39,7 @@ namespace UnitTests.BigArrayTests
             Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Block<int>>
                 (blockCollection.Insert, blockCollection.Count + 1, new Block<int>()));
         }
+
         [Test]
         public static void AddNewBlockAndInsertNewBlock()
         {
@@ -54,6 +55,7 @@ namespace UnitTests.BigArrayTests
             blockCollection.InsertNewBlock(1);
             Assert.AreEqual(blockCollection.Count, 3);
         }
+
         [Test]
         public static void AddRangeAndInsertRange()
         {
@@ -100,14 +102,16 @@ namespace UnitTests.BigArrayTests
                 <ArgumentNullException, int, ICollection<Block<int>>>
                 (blockCollection.InsertRange, blockCollection.Count + 1, new Collection<Block<int>>());
         }
+
         [Test]
         public static void Clear()
         {
             var blockCollection = CreateNewCollection();
 
             blockCollection.Clear();
-            Assert.AreEqual(blockCollection.Count, 1); //It must have 1 empty block
+            Assert.AreEqual(blockCollection.Count, 0); //It must have 0 empty blocks
         }
+
         [Test]
         public static void Contains()
         {
@@ -118,6 +122,7 @@ namespace UnitTests.BigArrayTests
 
             Assert.IsFalse(blockCollection.Contains(new Block<int>()));
         }
+
         [Test]
         public static void CopyTo()
         {
@@ -154,6 +159,7 @@ namespace UnitTests.BigArrayTests
                 <ArgumentOutOfRangeException, Block<int>[], int>
                 (blockCollection.CopyTo, array1, -1));
         }
+
         [Test]
         public static void GetEnumerator()
         {
@@ -166,6 +172,7 @@ namespace UnitTests.BigArrayTests
                 Assert.AreEqual(block, blockCollectionArray[counter++]);
             }
         }
+
         [Test]
         public static void Indexer()
         {
@@ -177,6 +184,7 @@ namespace UnitTests.BigArrayTests
                 Assert.AreEqual(blockCollection[i], blockCollectionArray[i]);
             }
         }
+
         [Test]
         public static void Remove()
         {
@@ -186,6 +194,7 @@ namespace UnitTests.BigArrayTests
             Assert.IsTrue(blockCollection.Remove(blockCollection[blockCollection.Count - 1]));
             Assert.IsFalse(blockCollection.Remove(new Block<int>()));
         }
+
         [Test]
         public static void RemoveAt()
         {
@@ -209,6 +218,7 @@ namespace UnitTests.BigArrayTests
             Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int>
                 (blockCollection.RemoveAt, blockCollection.Count));
         }
+
         [Test]
         public static void TryToDivideBlock()
         {

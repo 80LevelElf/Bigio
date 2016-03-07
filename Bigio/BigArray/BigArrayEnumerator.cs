@@ -10,6 +10,22 @@ namespace Bigio
         /// </summary>
         public class BigArrayEnumerator : IEnumerator<T>
         {
+            //Data
+
+            /// <summary>
+            /// Index of parent block of current _subenumerator.
+            /// </summary>
+            private int _indexOfCurrentBlock;
+
+            /// <summary>
+            /// Enumerator of current block. When we cross current block
+            /// _subenumerator will be enumerator of block after current,
+            /// if there is next block.
+            /// </summary>
+            private IEnumerator<T> _subenumerator;
+
+            //API
+
             /// <summary>
             /// Supports a iteration over a BigArray(T) collection.
             /// </summary>
@@ -85,21 +101,10 @@ namespace Bigio
                 get { return Current; }
             }
 
-            //Data
             /// <summary>
             /// Parent BigArray(T) of enumerator.
             /// </summary>
-            public BigArray<T> Array;
-            /// <summary>
-            /// Index of parent block of current _subenumerator.
-            /// </summary>
-            private int _indexOfCurrentBlock;
-            /// <summary>
-            /// Enumerator of current block. When we cross current block
-            /// _subenumerator will be enumerator of block after current,
-            /// if there is next block.
-            /// </summary>
-            private IEnumerator<T> _subenumerator;
+            public BigArray<T> Array { get; set; }
         }
     }
 }

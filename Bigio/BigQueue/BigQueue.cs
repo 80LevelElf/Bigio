@@ -11,7 +11,12 @@ namespace Bigio
     /// <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
     class BigQueue<T> : IEnumerable<T>
     {
+        //Data
+
+        private readonly BigArray<T> _array;
+
         //API
+
         /// <summary>
         /// Crerate new empty instance of BigQueue(T) based on BigArray(T).
         /// </summary>
@@ -19,6 +24,7 @@ namespace Bigio
         {
             
         }
+
         /// <summary>
         /// Crerate new instance of BigQueue(T) based on BigArray(T) using specified collection.
         /// </summary>
@@ -28,6 +34,7 @@ namespace Bigio
         {
             _array = new BigArray<T>(collection);
         }
+
         /// <summary>
         /// Removes all elements from the BigQueue(T). 
         /// </summary>
@@ -35,6 +42,7 @@ namespace Bigio
         {
             _array.Clear();
         }
+
         /// <summary>
         /// Remove true if BigQueue(T) contains value, otherwise return false.
         /// </summary>
@@ -43,6 +51,7 @@ namespace Bigio
         {
             return _array.Contains(item);
         }
+
         /// <summary>
         /// Copies the entire BigQueue(T) to a compatible one-dimensional array, starting at the specified index of the target array.
         /// </summary>
@@ -53,6 +62,7 @@ namespace Bigio
         {
             _array.CopyTo(array, arrayIndex);
         }
+
         /// <summary>
         /// Removes and returns the object at the beginning of the BigQueue(T).
         /// </summary>
@@ -69,6 +79,7 @@ namespace Bigio
 
             return item;
         }
+
         /// <summary>
         /// Adds an object to the end of the BigQueue(T).
         /// </summary>
@@ -77,6 +88,7 @@ namespace Bigio
         {
             _array.Add(item);
         }
+
         /// <summary>
         /// Returns an enumerator that iterates through the BigArray(T).
         /// </summary>
@@ -84,10 +96,12 @@ namespace Bigio
         {
             return _array.GetEnumerator();
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
+
         /// <summary>
         /// Returns the object at the beginning of the BigArray(T) without removing it.
         /// </summary>
@@ -101,6 +115,7 @@ namespace Bigio
 
             return _array[0];
         }
+
         /// <summary>
         /// Rebalance BigQueue(T) to every block have DefaultBlockSize elements.
         /// </summary>
@@ -118,6 +133,7 @@ namespace Bigio
         {
             return _array.ToArray();
         }
+
         /// <summary>
         /// Get the number of elements actually contained in the BigQueue(T).
         /// </summary>
@@ -128,6 +144,7 @@ namespace Bigio
                 return _array.Count;
             }
         }
+
         /// <summary>
         /// Default size of one BigQueue(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -143,6 +160,7 @@ namespace Bigio
                 _array.DefaultBlockSize = value;
             }
         }
+
         /// <summary>
         /// Gets a value indicating whether the BigQueue(T) is read-only.
         /// </summary>
@@ -153,6 +171,7 @@ namespace Bigio
                 return _array.IsReadOnly;
             }
         }
+
         /// <summary>
         /// The size of any block never will be more than this number.
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -168,6 +187,5 @@ namespace Bigio
                 _array.MaxBlockSize = value;
             }
         }
-        private readonly BigArray<T> _array;
     }
 }

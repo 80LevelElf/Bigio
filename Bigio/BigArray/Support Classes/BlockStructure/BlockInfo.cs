@@ -1,4 +1,4 @@
-﻿namespace Bigio.BigArray.SupportClasses.BlockStructure
+﻿namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
     /// <summary>
     /// BlockInfo is object with iformation about block and its location.
@@ -17,6 +17,7 @@
             StartIndex = startIndex;
             Count = count;
         }
+
         /// <summary>
         /// Defines location specified index relative the block.
         /// </summary>
@@ -37,6 +38,7 @@
             }
             return 0;
         }
+
         /// <summary>
         /// Check equal of current BlockInfo and other BlockIfo.
         /// </summary>
@@ -47,16 +49,19 @@
         {
             return IndexOfBlock == other.IndexOfBlock && StartIndex == other.StartIndex && Count == other.Count;
         }
+
         /// <summary>
         /// Index of block inside block collection.
         /// </summary>
         public int IndexOfBlock;
+
         /// <summary>
         /// Common start index of current block. For example:
         /// if there is 2 blocks(both of 100 elements), then StartIndex of first block is 0 and
         /// StartIndex of second block is 100(because it starts by 100 element).
         /// </summary>
         public int StartIndex;
+
         /// <summary>
         /// Count of elements inside current block.
         /// </summary>

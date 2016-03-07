@@ -1,12 +1,12 @@
 ﻿using System;
 using Bigio.BigArray.Managers;
-using Bigio.BigArray.SupportClasses;
-using Bigio.BigArray.SupportClasses.BlockCollection;
-using Bigio.BigArray.SupportClasses.BlockStructure;
+using Bigio.BigArray.Support_Classes.BlockCollection;
+using Bigio.BigArray.Support_Classes.BlockStructure;
+using Bigio.Common.Classes;
 using NUnit.Framework;
 using UnitTests.Managers;
 
-namespace UnitTests.BigArrayTests
+namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 {
     [TestFixture]
     static class BlockStructureTests
@@ -157,7 +157,7 @@ namespace UnitTests.BigArrayTests
         private static BlockStructure<int> CteareTestStructure()
         {
             //Prepare block collection
-            var blockCollection = new BlockCollection<int>();
+            var blockCollection = new Bigio.BigArray.Support_Classes.BlockCollection.BlockCollection<int>();
 
             for (int i = 0; i < CountOfBlocks; i++)
             {

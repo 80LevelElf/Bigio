@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Bigio.BigArray.SupportClasses.BlockCollection
+namespace Bigio.BigArray.Support_Classes.BlockCollection
 {
     public partial class BlockCollection<T>
     {
@@ -10,6 +10,21 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         /// </summary>
         class BlockCollectionEnumerator : IEnumerator<Block<T>>
         {
+
+            //Data
+
+            /// <summary>
+            /// Parent BlockCollection to enumerate.
+            /// </summary>
+            private readonly BlockCollection<T> _parent;
+
+            /// <summary>
+            /// Index of current block of parent collection.
+            /// </summary>
+            private int _currentIndex;
+
+            //API
+
             /// <summary>
             /// Supports a iteration over a BlockCollection(T).
             /// </summary>
@@ -19,10 +34,12 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 _parent = parent;
                 Reset();
             }
+
             public void Dispose()
             {
 
             }
+
             public bool MoveNext()
             {
                 if (_currentIndex + 1 < _parent.Count)
@@ -32,26 +49,19 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 }
                 return false;
             }
+
             public void Reset()
             {
                 _currentIndex = -1;
                 Current = null;
             }
 
-            //Data
             public Block<T> Current { get; private set; }
+
             object IEnumerator.Current
             {
                 get { return Current; }
             }
-            /// <summary>
-            /// Parent BlockCollection to enumerate.
-            /// </summary>
-            private readonly BlockCollection<T> _parent;
-            /// <summary>
-            /// Index of current block of parent collection.
-            /// </summary>
-            private int _currentIndex;
         }
     }
 }

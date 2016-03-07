@@ -1,4 +1,4 @@
-﻿namespace Bigio.BigArray.SupportClasses.BlockStructure
+﻿namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
     /// <summary>
     /// Object of BlockRange class contain information of some range inside the block.
@@ -19,6 +19,7 @@
             CommonStartIndex = commonStartIndex;
             Count = count;
         }
+
         /// <summary>
         /// Check equal of current BlockRange and other BlockRange.
         /// </summary>
@@ -31,14 +32,17 @@
                     && Count == other.Count
                     && Subindex == other.Subindex);
         }
+
         /// <summary>
         /// Common start index(not subindex) of the block.
         /// </summary>
         public int CommonStartIndex;
+
         /// <summary>
         /// Count of elements of the block.
         /// </summary>
         public int Count;
+
         /// <summary>
         /// Subindex(internal block index) of start of range.
         /// </summary>

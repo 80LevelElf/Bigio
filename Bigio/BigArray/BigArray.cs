@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Bigio.BigArray.Interfaces;
-using Bigio.BigArray.Managers;
-using Bigio.BigArray.SupportClasses;
-using Bigio.BigArray.SupportClasses.BlockCollection;
-using Bigio.BigArray.SupportClasses.BlockStructure;
+using Bigio.BigArray.Support_Classes.BlockCollection;
+using Bigio.BigArray.Support_Classes.BlockStructure;
+using Bigio.Common.Classes;
+using Bigio.Common.Managers;
 
 namespace Bigio
 {
@@ -24,12 +24,15 @@ namespace Bigio
     public partial class BigArray<T> : IBigList<T>
     {
         //Data
+
         [NonSerialized]
         private readonly BlockStructure<T> _blockStructure;
+
         /// <summary>
         /// The blocks object provides API for easy work with blocks.
         /// </summary>
-        private readonly Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T> _blockCollection;
+        private readonly BlockCollection<T> _blockCollection;
+
         /// <summary>
         /// It is main data container where we save information.
         /// It is cant be null. There is always one block even it is empty.
@@ -37,6 +40,7 @@ namespace Bigio
         private int _count;
 
         //API
+
         /// <summary>
         /// Create a new instance of the BigArray(T) class that is empty 
         /// and has one empty block with DefaultBlockSize capacity.
@@ -45,6 +49,7 @@ namespace Bigio
             : this(new Collection<T>())
         {
         }
+
         /// <summary>
         /// Create a new instance of the BigArray(T) class using elements from specified collection
         /// and use InternalBlockList as internal block collection for storage blocks.
@@ -55,9 +60,10 @@ namespace Bigio
         {
             Initialize(collection);
 
-            _blockCollection = new Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T>(collection);
+            _blockCollection = new BlockCollection<T>(collection);
             _blockStructure = new BlockStructure<T>(_blockCollection);
         }
+
         /// <summary>
         /// Create a new instance of the BigArray(T) class using elements from specified collection
         /// and blockCollection as internal collection for storage blocks.
@@ -71,14 +77,17 @@ namespace Bigio
         {
             Initialize(collection);
 
-            _blockCollection = new Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T>(blockCollection, collection);
+            _blockCollection = new BlockCollection<T>(blockCollection, collection);
             _blockStructure = new BlockStructure<T>(_blockCollection);
         }
+
         /// <summary>
         /// Add an object to the end of last block of the BigArray(T).
         /// </summary>
         public void Add(T value)
         {
+            _blockCollection.AddFirstBlockIfThereIsNeeded();
+
             int indexOfBlock = _blockCollection.Count - 1;
             if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
             {
@@ -91,6 +100,7 @@ namespace Bigio
             Count++;
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Adds the elements of the specified collection to the end of BigArray(T).
         /// </summary>
@@ -99,22 +109,24 @@ namespace Bigio
         public void AddRange(ICollection<T> collection)
         {
             if (collection == null)
-            {
                 throw new ArgumentNullException("collection");
-            }
 
+            if (collection.Count == 0)
+                return;
+
+            _blockCollection.AddFirstBlockIfThereIsNeeded();
             var lastBlock = _blockCollection[_blockCollection.Count - 1];
 
             //Transfer data to the last block while it is possible
-            var sizeToFill = 0;
+            var sizeOfTransferToLastBlock = 0;
             var emptySize = MaxBlockSize - lastBlock.Count;
-
+            
             if (emptySize != 0)
             {
-                sizeToFill = (emptySize < collection.Count) ? emptySize : collection.Count;
+                sizeOfTransferToLastBlock = Math.Min(emptySize, collection.Count);
                 var enumerator = collection.GetEnumerator();
 
-                for (int i = 0; i < sizeToFill; i++)
+                for (int i = 0; i < sizeOfTransferToLastBlock; i++)
                 {
                     enumerator.MoveNext();
                     lastBlock.Add(enumerator.Current);
@@ -122,11 +134,13 @@ namespace Bigio
             }
 
             //Transfer other data as new blocks
-            _blockCollection.Add(collection, sizeToFill);
+            if (sizeOfTransferToLastBlock != collection.Count)
+                _blockCollection.Add(collection, sizeOfTransferToLastBlock);
 
             Count += collection.Count;
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Returns a read-only wrapper based on current BigArray(T).
         /// </summary>
@@ -135,6 +149,7 @@ namespace Bigio
         {
             return new ReadOnlyCollection<T>(this);
         }
+
         /// <summary>
         /// Searches the entire sorted BigArray(T) for an element using the default comparer and returns the zero-based index of the element.
         /// </summary>
@@ -146,6 +161,7 @@ namespace Bigio
         {
             return BinarySearch(0, Count, item, Comparer<T>.Default);
         }
+
         /// <summary>
         /// Searches the entire sorted BigArray(T) for an element using the specified comparer and returns the zero-based index of the element.
         /// </summary>
@@ -161,6 +177,7 @@ namespace Bigio
         {
             return BinarySearch(0, Count, item, comparer);
         }
+
         /// <summary>
         /// Searches a range of elements in the sorted BigArray(T) for an element using the specified comparer and returns the zero-based index of the element.
         /// </summary>
@@ -173,6 +190,9 @@ namespace Bigio
         ///  if there is no larger element, the bitwise complement of Count.</returns>
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
+            if (Count == 0 && index == 0 && count == 0)
+                return ~0;
+
             if (!this.IsValidRange(index, count))
             {
                 throw new ArgumentOutOfRangeException();
@@ -226,6 +246,7 @@ namespace Bigio
             }
             return ~(endIndex + counter);
         }
+
         /// <summary>
         /// Removes all elements from the BigArray(T).
         /// </summary>
@@ -234,6 +255,7 @@ namespace Bigio
             _blockCollection.Clear();
             Count = 0;
         }
+
         /// <summary>
         /// Remove true if BigArray(T) contains value, otherwise return false.
         /// </summary>
@@ -242,6 +264,7 @@ namespace Bigio
         {
             return IndexOf(item) != -1;
         }
+
         /// <summary>
         /// Converts the elements in the current BigArray(T) to another type, and returns a list containing the converted elements.
         /// </summary>
@@ -263,6 +286,7 @@ namespace Bigio
             }
             return result;
         }
+
         /// <summary>
         /// Copies the entire BigArray(T) to a compatible one-dimensional array, starting at the beginning of the target array.
         /// </summary>
@@ -276,6 +300,7 @@ namespace Bigio
             }
             CopyTo(0, array, 0, array.Length);
         }
+
         /// <summary>
         /// Copies the entire BigArray(T) to a compatible one-dimensional array
         /// , starting at the specified index of the target array.
@@ -287,6 +312,7 @@ namespace Bigio
         {
             CopyTo(0, array, arrayIndex, Count);
         }
+
         /// <summary>
         /// Copies a range of elements from the BigArray(T) to a compatible one-dimensional array,
         ///  starting at the specified index of the target array.
@@ -328,6 +354,7 @@ namespace Bigio
                 }
             }
         }
+
         /// <summary>
         /// Determines whether the BigArray(T) contains elements that match the conditions defined by the specified predicate.
         /// </summary>
@@ -337,6 +364,7 @@ namespace Bigio
         {
             return _blockCollection.Any(block => block.Exists(match));
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
         ///  and returns the first occurrence within the entire BigArray(T).
@@ -368,6 +396,7 @@ namespace Bigio
             //If there is not needed item
             return default(T);
         }
+
         /// <summary>
         /// Retrieves all the elements that match the conditions defined by the specified predicate.
         /// </summary>
@@ -395,6 +424,7 @@ namespace Bigio
 
             return resultArray;
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
         ///  and returns the zero-based index of the first occurrence within the entire BigArray(T).
@@ -405,6 +435,7 @@ namespace Bigio
         {
             return FindIndex(0, Count, match);
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
         ///  and returns the zero-based index of the first occurrence within the range of elements in the BigArray(T)
@@ -417,6 +448,7 @@ namespace Bigio
         {
             return FindIndex(index, Count - index, match);
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
         ///  and returns the zero-based index of the first occurrence within the range of elements in the BigArray(T)
@@ -451,6 +483,7 @@ namespace Bigio
             //If there is no needed value
             return -1;
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
         ///  and returns the last occurrence within the entire BigArray(T).
@@ -476,6 +509,7 @@ namespace Bigio
             //If there is no such item
             return default(T);
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
         ///  and returns the zero-based index of the last occurrence within the entire BigArray(T).
@@ -487,6 +521,7 @@ namespace Bigio
             int index = (Count == 0) ? 0 : Count - 1;
             return FindLastIndex(index, Count, match);
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the last 
         /// occurrence within the range of elements in the BigArray(T) that extends from the first element to the specified index.
@@ -498,6 +533,7 @@ namespace Bigio
         {
             return FindLastIndex(index, index + 1, match);
         }
+
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the 
         /// last occurrence within the range of elements in the BigArray(T) that contains the specified number of elements and ends at the specified index.
@@ -530,6 +566,7 @@ namespace Bigio
             //If there is no needed value
             return -1;
         }
+
         /// <summary>
         /// Returns an enumerator that iterates through the BigArray(T).
         /// </summary>
@@ -537,6 +574,7 @@ namespace Bigio
         {
             return new BigArrayEnumerator(this);
         }
+
         /// <summary>
         /// Creates a shallow copy of a range of elements in the source BigArray(T).
         /// </summary>
@@ -571,10 +609,12 @@ namespace Bigio
 
             return newArray;
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new BigArrayEnumerator(this);
         }
+
         /// <summary>
         /// If value conatins in BigArray(T) returns index of this value, otherwise return -1.
         /// </summary>
@@ -584,6 +624,7 @@ namespace Bigio
         {
             return IndexOf(item, 0, Count);
         }
+
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the first
         ///  occurrence within the range of elements in the BigArray(T) that extends from the 
@@ -597,6 +638,7 @@ namespace Bigio
         {
             return IndexOf(item, index, Count - index);
         }
+
         /// <summary>
         ///  Searches for the specified object and returns the zero-based index of the first occurrence
         ///  within the range of elements in the BigArray(T) that starts at the specified index
@@ -609,6 +651,11 @@ namespace Bigio
         ///  in the BigArray(T) that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
         public int IndexOf(T item, int index, int count)
         {
+            if (!this.IsValidRange(index, count))
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
 
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
@@ -626,6 +673,7 @@ namespace Bigio
             //If there is no needed value
             return -1;
         }
+
         /// <summary>
         /// Inserts an element into the BigArray(T) at the specified index.
         /// </summary>
@@ -684,6 +732,7 @@ namespace Bigio
             Count++;
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Inserts the elements of a collection into the BigArray(T) at the specified index.
         /// </summary>
@@ -718,6 +767,7 @@ namespace Bigio
             Count += collection.Count;
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the last occurrence within the entire BigArray(T).
         /// </summary>
@@ -728,6 +778,7 @@ namespace Bigio
             int index = (Count == 0) ? 0 : Count - 1;
             return LastIndexOf(item, index, Count);
         }
+
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the last occurrence
         /// within the range of elements in the BigArray(T) that extends from the first element to the specified index.
@@ -740,6 +791,7 @@ namespace Bigio
         {
             return LastIndexOf(item, index, index + 1);
         }
+
         /// <summary>
         /// Searches for the specified object and returns the zero-based index
         ///  of the last occurrence within the range of elements in the BigArray(T) that contains the specified 
@@ -769,12 +821,13 @@ namespace Bigio
             //If there is no needed value
             return -1;
         }
+
         /// <summary>
         /// Rebalance BigArray(T) to every block have DefaultBlockSize elements.
         /// </summary>
         public void Rebalance()
         {
-            var divideBlocks = new Bigio.BigArray.SupportClasses.BlockCollection.BlockCollection<T>(this);
+            var divideBlocks = new BigArray.Support_Classes.BlockCollection.BlockCollection<T>(this);
 
             _blockCollection.Clear();
             _blockCollection.AddRange(divideBlocks);
@@ -782,6 +835,7 @@ namespace Bigio
             //We must do it because we have changed count of elements in blocks
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Removes the first occurrence of a specific object from the BigArray(T).
         /// </summary>
@@ -814,6 +868,7 @@ namespace Bigio
             //If there is not value in this distributed array
             return false;
         }
+
         /// <summary>
         /// Removes the element at the specified index of the BigArray(T).
         /// </summary>
@@ -841,6 +896,7 @@ namespace Bigio
             Count--;
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Remove last element of array.
         /// </summary>
@@ -864,6 +920,7 @@ namespace Bigio
             Count--;
             _blockStructure.DataChanged();
         }
+
         /// <summary>
         /// Removes a range of elements from the BigArray(T).
         /// </summary>
@@ -909,6 +966,7 @@ namespace Bigio
             _blockStructure.DataChanged();
             Count -= count;
         }
+
         /// <summary>
         /// Reverses the order of the elements in the entire BigArray(T).
         /// </summary>
@@ -920,6 +978,7 @@ namespace Bigio
             }
             _blockCollection.Reverse();
         }
+
         /// <summary>
         /// Copies the elements of the BigArray(T) to a new array.
         /// </summary>
@@ -935,6 +994,7 @@ namespace Bigio
             }
             return array;
         }
+
         /// <summary>
         /// Gets or sets the element at the specified index.
         /// </summary>
@@ -954,6 +1014,7 @@ namespace Bigio
                 _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex] = value;
             }
         }
+
         /// <summary>
         /// Get the number of elements actually contained in the BigArray(T).
         /// </summary>
@@ -972,6 +1033,7 @@ namespace Bigio
                 _count = value;
             }
         }
+
         /// <summary>
         /// Default size of one BigArray(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -987,6 +1049,7 @@ namespace Bigio
                 _blockCollection.DefaultBlockSize = value;
             }
         }
+
         /// <summary>
         /// The size of any block never will be more than this number.
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -1002,6 +1065,7 @@ namespace Bigio
                 _blockCollection.MaxBlockSize = value;
             }
         }
+
         /// <summary>
         /// Gets a value indicating whether the BigArray(T) is read-only.
         /// </summary>

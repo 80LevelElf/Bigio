@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Bigio.BigArray.SupportClasses;
+using Bigio.Common.Classes;
 
-namespace Bigio.BigArray.Managers
+namespace Bigio.Common.Managers
 {
     /// <summary>
     /// ValidationManager contain different validation functions for check validate
@@ -19,6 +19,7 @@ namespace Bigio.BigArray.Managers
         {
             return IsValidCount(collection.Count, count);
         }
+
         /// <summary>
         /// Check count to valid with the specified collection count.
         /// </summary>
@@ -27,8 +28,9 @@ namespace Bigio.BigArray.Managers
         /// <returns>True if count is valid, otherwise return false.</returns>
         public static bool IsValidCount(int collectionCount, int count)
         {
-            return !(count < 0 || count > collectionCount);
+            return count >= 0 && count <= collectionCount;
         }
+
         /// <summary>
         /// Check index to valid in current BigArray(T).
         /// </summary>
@@ -39,6 +41,7 @@ namespace Bigio.BigArray.Managers
         {
             return IsValidIndex(collection.Count, index);
         }
+
         /// <summary>
         /// Check index to valid in current BigArray(T).
         /// </summary>
@@ -47,10 +50,12 @@ namespace Bigio.BigArray.Managers
         /// <returns>True if index is valid, otherwise return false.</returns>
         public static bool IsValidIndex(int collectionCount, int index)
         {
-            return !(index < 0 || index >= collectionCount);
+            return index >= 0 && index < collectionCount;
         }
+
         /// <summary>
         /// Check range of the specified collection to valid.
+        /// Index can be euqal to collection.Count
         /// </summary>
         /// <param name="collection">Collection to check.</param>
         /// <param name="index">The zero-based starting index of range of the specified collection to check.</param>
@@ -60,8 +65,10 @@ namespace Bigio.BigArray.Managers
         {
             return IsValidRange(collection.Count, index, count);
         }
+
         /// <summary>
         /// Check range of the specified collection to valid.
+        /// Range index can be euqal to collection.Count
         /// </summary>
         /// <typeparam name="T">Type of collection elements.</typeparam>
         /// <param name="collection">Collection to check.</param>
@@ -71,8 +78,10 @@ namespace Bigio.BigArray.Managers
         {
             return IsValidRange(collection.Count, range.Index, range.Count);
         }
+
         /// <summary>
         /// Check range of the collection with specified count to valid.
+        /// Index can be euqal to collectionCount
         /// </summary>
         /// <param name="collectionCount">Count of collection to check.</param>
         /// <param name="index">The zero-based starting index of range of the specified collection to check.</param>
@@ -80,10 +89,12 @@ namespace Bigio.BigArray.Managers
         /// <returns>Return true of range is valid, otherwise return false.</returns>
         public static bool IsValidRange(int collectionCount, int index, int count)
         {
-            return !(index < 0 || count < 0 || index + count > collectionCount);
+            return index >= 0 && count >= 0 && index + count <= collectionCount;
         }
+
         /// <summary>
         /// Check range of the collection with specified count to valid.
+        /// Range index can be euqal to collectionCount
         /// </summary>
         /// <param name="collectionCount">Count of collection to check.</param>
         /// <param name="range">Range consist of specified index and count to check.</param>

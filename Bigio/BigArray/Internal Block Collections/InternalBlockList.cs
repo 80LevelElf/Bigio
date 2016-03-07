@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bigio.BigArray.Interfaces;
 
-namespace Bigio.BigArray.InternalBlockCollections
+namespace Bigio.BigArray.Internal_Block_Collections
 {
     /// <summary>
     /// InternalBlockList is interlayer of List(T) for List(T) can be used
@@ -13,6 +13,7 @@ namespace Bigio.BigArray.InternalBlockCollections
         {
             AddRange((IEnumerable<T>) collection);
         }
+
         public void InsertRange(int index, ICollection<T> collection)
         {
             InsertRange(index, (IEnumerable<T>)collection);

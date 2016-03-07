@@ -43,20 +43,20 @@
     <Compile Include="BigArray\BigArray.cs" />
     <Compile Include="BigArray\BigArrayEnumerator.cs" />
     <Compile Include="BigArray\Interfaces\IBigList.cs" />
-    <Compile Include="BigArray\InternalBlockCollections\InternalBlockList.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockStructure\BlockInfo.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockStructure\BlockStructure.cs" />
-    <Compile Include="BigArray\Managers\ValidationManager.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockCollection\Block.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockCollection\BlockCollection.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockCollection\BlockCollectionEnumerator.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockStructure\MultyblockRange.cs" />
-    <Compile Include="BigArray\SupportClasses\Range.cs" />
+    <Compile Include="BigArray\Internal Block Collections\InternalBlockList.cs" />
+    <Compile Include="BigArray\Support Classes\BlockStructure\BlockInfo.cs" />
+    <Compile Include="BigArray\Support Classes\BlockStructure\BlockStructure.cs" />
+    <Compile Include="BigArray\Support Classes\BlockCollection\Block.cs" />
+    <Compile Include="BigArray\Support Classes\BlockCollection\BlockCollection.cs" />
+    <Compile Include="BigArray\Support Classes\BlockCollection\BlockCollectionEnumerator.cs" />
+    <Compile Include="BigArray\Support Classes\BlockStructure\MultyblockRange.cs" />
     <Compile Include="BigQueue\BigQueue.cs" />
     <Compile Include="BigArray\Managers\DefaultValuesManager.cs" />
     <Compile Include="BigStack\BigStack.cs" />
+    <Compile Include="Common\Classes\Range.cs" />
+    <Compile Include="Common\Managers\ValidationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BigArray\SupportClasses\BlockStructure\BlockRange.cs" />
+    <Compile Include="BigArray\Support Classes\BlockStructure\BlockRange.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

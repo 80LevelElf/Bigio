@@ -3,26 +3,51 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Bigio.BigArray.Interfaces;
-using Bigio.BigArray.InternalBlockCollections;
+using Bigio.BigArray.Internal_Block_Collections;
 using Bigio.BigArray.Managers;
+using Bigio.Common.Managers;
 
-namespace Bigio.BigArray.SupportClasses.BlockCollection
+namespace Bigio.BigArray.Support_Classes.BlockCollection
 {
     /// <summary>
     /// BlockCollection is collection of blocks which abstracts you from internal work with block 
-    /// collection. BlockCollection always contain at least one block(it is can be empty)
-    /// that called "insuring block".
+    /// collection.
     /// </summary>
     /// <typeparam name="T">Type of block elements.</typeparam>
     public partial class BlockCollection<T> : ICollection<Block<T>>
     {
+        //Data
+
+        /// <summary>
+        /// Collection with blocks provides the main data object in the Blocks class.
+        /// It contain at least one block(this block can be empty).
+        /// </summary>
+        private readonly IBigList<Block<T>> _blocks;
+
+        /// <summary>
+        /// Internal value of DefaultBlockSize. Never used it out of DefaultBlockSize set and get method.
+        /// </summary>
+        private int _defaultBlockSize;
+
+        /// <summary>
+        /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
+        /// </summary>
+        private int _maxBlockSize;
+
         //API
+
         /// <summary>
         /// Create a new instance of Blocks(T) class.
         /// </summary>
-        public BlockCollection(): this(new Collection<T>())
+        public BlockCollection()
         {
+            _blocks = new InternalBlockList<Block<T>>();
+
+            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
+            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
+            IsReadOnly = false;
         }
+
         /// <summary>
         /// Create a new instance of Blocks(T) class.
         /// </summary>
@@ -33,17 +58,19 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         {
             
         }
+
         /// <summary>
         /// Create a new instance of Blocks(T) class.t. 
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new BigArray(T).
         /// The collection it self cannot be null and cant contain null blocks
         /// , if type T is a reference type. </param>
-        public BlockCollection(ICollection<T> collection)
+        public BlockCollection(ICollection<T> collection) : this()
         {
             _blocks = new InternalBlockList<Block<T>>();
             Initialize(collection);
         }
+
         /// <summary>
         /// Create a new instance of Blocks(T) class.
         /// </summary>
@@ -52,15 +79,17 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         /// <param name="collection">Collection whitch use as base for new BigArray(T).
         /// The collection it self cannot be null and cant contain null blocks
         /// , if type T is a reference type.</param>
-        public BlockCollection(IBigList<Block<T>> blockCollection, ICollection<T> collection)
+        public BlockCollection(IBigList<Block<T>> blockCollection, ICollection<T> collection) : this()
         {
             if (blockCollection == null)
             {
                 throw new ArgumentOutOfRangeException("blockCollection");
             }
+
             _blocks = blockCollection;
             Initialize(collection);
         }
+
         /// <summary>
         /// Add new block to the end of collection of blocks of the BlockCollection(T).
         /// If your block is too big, function will try to divite it into blocks.
@@ -78,6 +107,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
 
             Add(block, 0, block.Count);
         }
+
         /// <summary>
         /// Add new block to the end of collection of blocks of the BlockCollection(T).
         /// If your block is too big, function will try to divite it into blocks.
@@ -95,6 +125,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
 
             Add(block, 0, block.Count);
         }
+
         /// <summary>
         /// Add data starting with index of block to the end of collection 
         /// of blocks of the BlockCollection(T) as new blocks.
@@ -109,6 +140,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         {
             Add(block, blockSubindex, block.Count - blockSubindex);
         }
+
         /// <summary>
         /// Add data from specified range of block to the end of collection
         /// of blocks of the BlockCollection(T) as new blocks.
@@ -122,9 +154,10 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         /// <param name="blockCount">The number of elements of block to copy.</param>
         public void Add(ICollection<T> block, int blockSubindex, int blockCount)
         {
-            var blocks = DivideIntoBlocks(block, blockSubindex, blockCount);
-            AddRange(blocks);
+            if (block.Count != 0)
+                AddRange(DivideIntoBlocks(block, blockSubindex, blockCount));
         }
+
         /// <summary>
         /// Add new empty block as last block. New block will have DefaultBlockSize capacity.
         /// You need to use this function istead of Add(emptyBlock) because if
@@ -133,9 +166,9 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         /// </summary>
         public void AddNewBlock()
         {
-            TryToRemoveInsuringBlock();
-            _blocks.Add(new Block<T>());
+            _blocks.Add(new Block<T>(DefaultBlockSize));
         }
+
         /// <summary>
         /// Adds the blocks of the specified collection to the end of the BlockCollection.
         /// If block is too big, it will be divide into several blocks.
@@ -153,6 +186,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
             }
 
             var blocksToAdd = new List<Block<T>>(range.Count);
+
             //Divide each block
             foreach (var block in range)
             {
@@ -161,35 +195,27 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
 
             if (blocksToAdd.Count != 0)
             {
-                TryToRemoveInsuringBlock();
                 _blocks.AddRange(blocksToAdd);
             }
         }
+
         /// <summary>
-        /// Remove all blocks from the BlockCollection(T) and add insuring block.
+        /// Remove all blocks from the BlockCollection(T).
         /// </summary>
         public void Clear()
         {
-            TryToRemoveInsuringBlock(); //Unload InsuringBlock to _blocks
             _blocks.Clear();
-
-            TryToAddInsuringBlock();
         }
+
         /// <summary>
         /// Remove true if BlockCollection(T) contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Block to be checked.</param>
         public bool Contains(Block<T> item)
         {
-            var result = _blocks.Contains(item);
-
-            if (!result && _insuringBlock != null)
-            {
-                result = item.Equals(_insuringBlock);
-            }
-
-            return result;
+            return _blocks.Contains(item);
         }
+
         /// <summary>
         /// Copies the entire BlockCollection(T) to a compatible one-dimensional array
         /// , starting at the specified index of the target array.
@@ -203,19 +229,15 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
             {
                 throw new ArgumentNullException("array");
             }
+
             if (!array.IsValidRange(arrayIndex, Count))
             {
                 throw new ArgumentOutOfRangeException("arrayIndex");
             }
 
-            if (_insuringBlock != null)
-            {
-                array[arrayIndex] = _insuringBlock;
-                arrayIndex++;
-            }
-
             _blocks.CopyTo(array, arrayIndex);
         }
+
         /// <summary>
         /// Returns an enumerator that iterates through the collection of blocks.
         /// </summary>
@@ -224,10 +246,12 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         {
             return new BlockCollectionEnumerator(this);
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
+
         /// <summary>
         /// Inserts an element into the BigArray(T) at the specified index.
         /// If your block is too big, function will try to divite it into blocks.
@@ -240,6 +264,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         {
             InsertRange(index, DivideIntoBlocks(block));
         }
+
         /// <summary>
         /// Insert new empty block at the specified idex. New block will have DefaultBlockSize capacity.
         /// You need to use this function istead of Insert(index, emptyBlock) because if
@@ -248,9 +273,9 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         /// <param name="index"></param>
         public void InsertNewBlock(int index)
         {
-            TryToRemoveInsuringBlock();
-            _blocks.Insert(index, new Block<T>());
+            _blocks.Insert(index, new Block<T>(DefaultBlockSize));
         }
+
         /// <summary>
         /// Inserts the elements of a block range into the block collection at the specified index.
         /// If block is too big, it will be divide into several blocks.
@@ -273,6 +298,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
             }
 
             var blocksToInsert = new List<Block<T>>(range.Count);
+
             //Divide each block
             foreach (var block in range)
             {
@@ -281,12 +307,10 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
 
             if (blocksToInsert.Count != 0)
             {
-                TryToRemoveInsuringBlock();
-
-                //Insert
                 _blocks.InsertRange(index, blocksToInsert);
             }
         }
+
         /// <summary>
         /// Removes the first occurrence of a specific block from the BlockCollection(T).
         /// </summary>
@@ -295,20 +319,9 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         ///  This method also returns false if item was not found in the BlockCollection(T).</returns>
         public bool Remove(Block<T> block)
         {
-            bool result;
-            if (_insuringBlock != null && block.Equals(_insuringBlock))
-            {
-                TryToRemoveInsuringBlock();
-                result = true;
-            }
-            else
-            {
-                result = _blocks.Remove(block);                
-            }
-
-            TryToAddInsuringBlock();
-            return result;
+            return _blocks.Remove(block);
         }
+
         /// <summary>
         /// Removes the block at the specified index of the _blocks.
         /// </summary>
@@ -320,34 +333,17 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 throw new ArgumentOutOfRangeException("index");
             }
 
-            if (_insuringBlock == null)
-            {
-                _blocks.RemoveAt(index);
-            }
-                //Remove InsuringBlock
-            else
-            {
-                if (index == 0)
-                {
-                    TryToRemoveInsuringBlock();
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException("index");
-                }
-            }
-            TryToAddInsuringBlock();
+            _blocks.RemoveAt(index);
         }
+
         /// <summary>
         /// Reverses the order of the blocks in the entire BlocksCollection.
         /// </summary>
         public void Reverse()
         {
-            // If there is only insuring block, it will reverse empty _blocks collection,
-            // otherwise we reverse _blocks collection and we dont have insuring block
-            // to think about it.
            _blocks.Reverse();
         }
+
         /// <summary>
         /// If count of elements of block at specified index more or equal to MaxBlockSize,
         /// it will be divide into the new blocks with DefaultBlockSize size.
@@ -360,29 +356,22 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 throw new ArgumentOutOfRangeException("index");
             }
 
-            if (_insuringBlock == null)
+            int count = _blocks[index].Count;
+            if (count >= MaxBlockSize)
             {
-                int count = _blocks[index].Count;
-                if (count != 0 && count >= MaxBlockSize)
-                {
-                    var newBlocks = DivideIntoBlocks(_blocks[index]);
-                    RemoveAt(index);
-                    InsertRange(index, newBlocks);
-                }
+                var newBlocks = DivideIntoBlocks(_blocks[index]);
+                RemoveAt(index);
+                InsertRange(index, newBlocks);
             }
-            //Try to divide InsuringBlock
-            else
-            {
-                if (index == 0)
-                {
-                    TryToRemoveInsuringBlock();
-                    TryToDivideBlock(0); //Divide InsuringBlock as simple block
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException("index");
-                }
-            }
+        }
+
+        /// <summary>
+        /// If there is no any blocks - add first empty block.
+        /// </summary>
+        public void AddFirstBlockIfThereIsNeeded()
+        {
+            if (Count == 0)
+                AddNewBlock();
         }
 
         //Support functions
@@ -398,25 +387,12 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 throw new ArgumentNullException("collection");
             }
 
+            if (collection.Count == 0)
+                return new Block<T>[0];
+
             return DivideIntoBlocks(collection, 0, collection.Count);
         }
-        /// <summary>
-        /// Divide specified range of collection(starts at the specified index)
-        /// into blocks with DefaultBlockSize size.
-        /// </summary>
-        /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<Block<T>> DivideIntoBlocks
-            (ICollection<T> collection, int collectionIndex)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException("collection");
-            }
 
-            return DivideIntoBlocks(collection, collectionIndex, collection.Count - collectionIndex);
-        }
         /// <summary>
         /// Divide specified range of collection
         /// (starts at the specified index and contaies specified count of elements)
@@ -447,7 +423,8 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
             }
 
             var blocks = new Block<T>[countOfBlocks];
-            //Transfer data from list to new blocks
+
+            //Transfer data from collection to new blocks
             var item = collection.GetEnumerator();
             for (int i = 0; i < collectionIndex; i++) //Move item to the index position
             {
@@ -467,7 +444,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                     currentBlockSize = countToDivide - (i * DefaultBlockSize);
                 }
                 //Declare new block
-                blocks[i] = new Block<T>();
+                blocks[i] = new Block<T>(DefaultBlockSize);
                 //Transfer data
                 for (int j = 0; j < currentBlockSize; j++)
                 {
@@ -480,34 +457,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
             //Return result
             return blocks;
         }
-        /// <summary>
-        /// If there is no insuring block and there is no element, function
-        /// empty insuring block with DefaultBlockSize capacity. 
-        /// Otherwise nothing happened.
-        /// </summary>
-        private void TryToAddInsuringBlock()
-        {
-            if (_blocks.Count == 0 && _insuringBlock == null)
-            {
-                _insuringBlock = new Block<T>();
-            }
-        }
-        /// <summary>
-        /// If there is not empty insuring block, function will insert it
-        /// as simple block and set insuring block as null. 
-        /// </summary>
-        private void TryToRemoveInsuringBlock()
-        {
-            if (_insuringBlock != null)
-            {
-                if (_insuringBlock.Count != 0)
-                {
-                    _blocks.Insert(0, _insuringBlock); //We cant use Insert method of BlockCollection
-                    //because there is eternal recursion
-                }
-                _insuringBlock = null;
-            }
-        }
+
         /// <summary>
         /// Execute preliminary initialization of BlockCollection's internal data.
         /// </summary>
@@ -519,19 +469,7 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 throw new ArgumentNullException("collection");
             }
 
-            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
-            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
-            IsReadOnly = false;
-
-            var blocks = DivideIntoBlocks(collection);
-            if (blocks.Count != 0)
-            {
-                AddRange(blocks);
-            }
-            else
-            {
-                TryToAddInsuringBlock();
-            }
+            AddRange(DivideIntoBlocks(collection));
         }
 
         //Data
@@ -543,13 +481,10 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         {
             get
             {
-                if (_blocks.Count == 0 && index == 0)
-                {
-                    return _insuringBlock;
-                }
                 return _blocks[index];
             }
         }
+
         /// <summary>
         /// Get the number of blocks actually contained in the block collection.
         /// </summary>
@@ -557,13 +492,10 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
         {
             get
             {
-                if (_blocks.Count == 0)
-                {
-                    return 1; //In this way we have InsuringBlock.
-                }
                 return _blocks.Count;
             }
         }
+
         /// <summary>
         /// Default size of one BigArray(T) block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -588,7 +520,9 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 _defaultBlockSize = value;
             }
         }
+
         public bool IsReadOnly { get; private set; }
+
         /// <summary>
         /// The size of any block never will be more than this number.
         /// Because of the way memory allocation is most effective that it is a power of 2.
@@ -609,24 +543,6 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
                 _maxBlockSize = value;
             }
         }
-        /// <summary>
-        /// Collection with blocks provides the main data object in the Blocks class.
-        /// It contain at least one block(this block can be empty).
-        /// </summary>
-        private readonly IBigList<Block<T>> _blocks;
-        /// <summary>
-        /// Internal value of DefaultBlockSize. Never used it out of DefaultBlockSize set and get method.
-        /// </summary>
-        private int _defaultBlockSize;
-        /// <summary>
-        /// If there is blocks i _blocks collection we use this block
-        /// to collect and work with data, because BlockCollection must have
-        /// at least one block.
-        /// </summary>
-        private Block<T> _insuringBlock;
-        /// <summary>
-        /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
-        /// </summary>
-        private int _maxBlockSize;
     }
 }
+

@@ -1,4 +1,4 @@
-﻿namespace Bigio.BigArray.SupportClasses
+﻿namespace Bigio.Common.Classes
 {
     /// <summary>
     /// Range is object containes information about some
@@ -18,10 +18,12 @@
             Index = index;
             Count = count;
         }
+
         /// <summary>
         /// Index of start element of range.
         /// </summary>
         public int Index;
+
         /// <summary>
         /// Count of elements in range.
         /// </summary>

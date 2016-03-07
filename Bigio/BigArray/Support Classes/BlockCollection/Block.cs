@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bigio.BigArray.Managers;
 
-namespace Bigio.BigArray.SupportClasses.BlockCollection
+namespace Bigio.BigArray.Support_Classes.BlockCollection
 {
     /// <summary>
     /// It is layer over List(T) to have simple way to add new functional and change internal
@@ -10,9 +10,17 @@ namespace Bigio.BigArray.SupportClasses.BlockCollection
     public class Block<T> : List<T>
     {
         /// <summary>
+        /// Create new instance of Block with specified capacity.
+        /// </summary>
+        public Block(int capacity) : base(capacity)
+        {
+            
+        }
+
+        /// <summary>
         /// Create new instance of Block. There is DefaultBlockSize as capacity of it.
         /// </summary>
-        public Block():base(DefaultValuesManager.DefaultBlockSize)
+        public Block() : base(DefaultValuesManager.DefaultBlockSize)
         {
             
         }

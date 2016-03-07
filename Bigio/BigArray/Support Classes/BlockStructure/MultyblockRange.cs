@@ -2,14 +2,34 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Bigio.BigArray.SupportClasses.BlockStructure
+namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
     /// <summary>
     /// Object of MultyblockRange contain information of range that can overlap many blocks. 
     /// </summary>
     class MultyblockRange : IEnumerable<BlockRange>
     {
+        //Data
+
+        /// <summary>
+        /// Internal value of IndexOfStartBlock field. Dont use it out of IndexOfStartBlock
+        /// set and get functions.
+        /// </summary>
+        private int _indexOfStartBlock;
+
+        /// <summary>
+        /// Internal value of Ranges field. Dont use it out of Ranges
+        /// set and get functions.
+        /// </summary>
+        private IEnumerable<BlockRange> _ranges;
+
+        /// <summary>
+        /// Internal value of Count field. Don't use it from your code. Use Count instead.
+        /// </summary>
+        private int _count;
+
         //API
+
         /// <summary>
         /// Create new instance of MultyblockRange.
         /// </summary>
@@ -23,6 +43,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
             Ranges = ranges;
             Count = count;
         }
+
         /// <summary>
         /// Check equal of current MultyblockRange and other MultyblockRange.
         /// </summary>
@@ -54,14 +75,17 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
             // it will return false.
             return (enumerator.MoveNext() == otherEnumerator.MoveNext());
         }
+
         public IEnumerator<BlockRange> GetEnumerator()
         {
             return _ranges.GetEnumerator();
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
+
         /// <summary>
         /// Count of BlockRanges containing in MultyblockRange.
         /// </summary>
@@ -81,6 +105,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
                 _count = value;
             }
         }
+
         /// <summary>
         /// Zero-based index of the start block in BlockCollection.
         /// </summary>
@@ -100,6 +125,7 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
                 _indexOfStartBlock = value;
             }
         }
+
         /// <summary>
         /// Block ranges of blocks from the start block.
         /// </summary>
@@ -119,21 +145,5 @@ namespace Bigio.BigArray.SupportClasses.BlockStructure
                 _ranges = value;
             }
         }
-
-        //Data
-        /// <summary>
-        /// Internal value of IndexOfStartBlock field. Dont use it out of IndexOfStartBlock
-        /// set and get functions.
-        /// </summary>
-        private int _indexOfStartBlock;
-        /// <summary>
-        /// Internal value of Ranges field. Dont use it out of Ranges
-        /// set and get functions.
-        /// </summary>
-        private IEnumerable<BlockRange> _ranges;
-        /// <summary>
-        /// Internal value of Count field. Don't use it from your code. Use Count instead.
-        /// </summary>
-        private int _count;
     }
 }
