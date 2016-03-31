@@ -3,4 +3,9 @@
 *.dll
 *.DotSettings
 *.user
-!BigDataCollections.dll
+
+packages/
+bin/
+obj/
+
+!Bigio/bin/Release/Bigio.dll
