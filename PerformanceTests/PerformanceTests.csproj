@@ -46,7 +46,7 @@
     <Reference Include="System.Management" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigioTests\AddTest.cs" />
+    <Compile Include="BigArray\AddAndAddRangeTest.cs" />
     <Compile Include="Configs\StandardConfig.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

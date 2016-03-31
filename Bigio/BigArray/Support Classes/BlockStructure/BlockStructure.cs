@@ -465,6 +465,27 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             return new BlockInfo(indexOfBlock, blockStartIndex, blockCount);
         }
 
+        #region BinaryBlockInfo
+
+        private BlockInfo BinaryBlockInfo_Multythread(int index, Range searchBlockRange)
+        {
+            TryToUpdateStructureInfo();
+
+            //Check for validity
+            if (!ValidationManager.IsValidIndex(_countOfElements, index))
+                throw new ArgumentOutOfRangeException("index");
+
+            if (searchBlockRange.Count == 0)
+            {
+                if (!_blocksInfo.IsValidIndex(searchBlockRange.Index))
+                    throw new ArgumentOutOfRangeException("searchBlockRange");
+
+                return new BlockInfo();
+            }
+        }
+
+        #endregion
+
         //Data
 
         /// <summary>
