@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{6C5C4D83-DCC9-4BCE-A7D9-4B9F16180C47}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bigio", "Bigio\Bigio.csproj", "{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTests", "PerformanceTests\PerformanceTests.csproj", "{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +39,16 @@ Global
 		{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F7EAC7DF-7666-48A5-BD18-0C36F2EC2C36}.Release|x86.ActiveCfg = Release|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4E6CF41B-8908-4BFA-855F-EE8DF5F7BD13}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

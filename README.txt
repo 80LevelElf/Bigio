@@ -1,6 +1,6 @@
-BigDataCollection is a simple set of several collections for big data.
+Bigio is a simple set of several collections for big data.
 Because of architecture this collections work faster with big data than system List or LinkedList.
-You can use it very easy – just add dll file (it is very small) of BigDataCollection to your project.
+You can use it very easy – just add dll file (it is very small) of Bigio to your project.
 
 This code distributed with BSD license:
 Copyright (c) 2013-2014, Salakhutdinov Rustam

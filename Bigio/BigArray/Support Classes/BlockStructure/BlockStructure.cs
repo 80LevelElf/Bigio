@@ -85,9 +85,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             (int index, Range searchBlockRange, SearchMod searchMod = SearchMod.BinarySearch)
         {
             if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
-            {
                 throw new ArgumentOutOfRangeException("searchBlockRange");
-            }
 
             switch (searchMod)
             {
@@ -95,9 +93,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                     return BinaryBlockInfo(index, searchBlockRange);
                 case SearchMod.LinearSearch:
                     if (!_isDataChanged)
-                    {
                         return BinaryBlockInfo(index, searchBlockRange);
-                    }
+
                     return LinearBlockInfo(index, searchBlockRange);
                 default:
                     throw new ArgumentOutOfRangeException("searchMod");
@@ -168,9 +165,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             TryToUpdateStructureInfo();
 
             if (!ValidationManager.IsValidRange(_countOfElements, calcRange))
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             //If user want to select empty block
             if (calcRange.Count == 0)
@@ -208,9 +203,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             (Range calcRange, SearchMod searchMod = SearchMod.BinarySearch)
         {
             if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             int reverseIndex = (calcRange.Index == 0 && calcRange.Count == 0)
                 ? 0 : calcRange.Index - calcRange.Count + 1;
@@ -218,9 +211,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
             int indexOfStartBlock = range.IndexOfStartBlock + range.Count - 1;
             if (indexOfStartBlock < 0)
-            {
                 indexOfStartBlock = 0;
-            }
 
             //Reverse all block in range
             var reverseBlockRanges = new BlockRange[range.Count];
@@ -245,9 +236,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             private set
             {
                 if (value == null)
-                {
                     throw new ArgumentNullException("value");
-                }
 
                 _blockCollection = value;
             }
@@ -273,15 +262,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         private void TryToUpdateStructureInfo()
         {
             if (!_isDataChanged)
-            {
                 return;
-            }
 
             int count = _blockCollection.Count;
             if (_blocksInfo.Length != count)
-            {
                 _blocksInfo = new BlockInfo[count];
-            }
 
             int blockStartIndex = 0;
             _countOfElements = 0;
@@ -363,16 +348,12 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
             //Check for validity
             if (!ValidationManager.IsValidIndex(_countOfElements, index))
-            {
                 throw new ArgumentOutOfRangeException("index");
-            }
 
             if (searchBlockRange.Count == 0)
             {
                 if (!_blocksInfo.IsValidIndex(searchBlockRange.Index))
-                {
                     throw new ArgumentOutOfRangeException("searchBlockRange");
-                }
 
                 return new BlockInfo();
             }
@@ -400,9 +381,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 if (!isIndexInRangeCheck)
                 {
                     if (index < startIndex || index > endIndex)
-                    {
                         throw new ArgumentOutOfRangeException("searchBlockRange");
-                    }
 
                     isIndexInRangeCheck = true;
                 }
