@@ -4,8 +4,18 @@
 *.DotSettings
 *.user
 
-packages/
-bin/
-obj/
+UnitTests/bin/
+UnitTests/obj/
+UnitTests/packages/
 
-!Bigio/bin/Release/Bigio.dll
+Bigio/bin/
+Bigio/obj/
+Bigio/packages/
+
+PerformanceTests/bin/
+PerformanceTests/obj/
+PerformanceTests/packages/
+
+/packages/
+
+!/bin/Bigio.dll
