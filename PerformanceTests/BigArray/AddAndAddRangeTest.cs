@@ -2,10 +2,10 @@
 using Bigio;
 using PerformanceTests.Configs;
 
-namespace PerformanceTests.BigioTests
+namespace PerformanceTests.BigArray
 {
     [Config(typeof(StandardConfig))]
-    public class AddTest
+    public class AddAndAddRangeTest
     {
         private readonly BigArray<int> _bigArrayToAdd = new BigArray<int>();
         private readonly BigArray<int> _bigArrayToAddRange = new BigArray<int>();

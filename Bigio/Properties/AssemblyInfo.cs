@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 
 [assembly: InternalsVisibleTo("UnitTests")] //Make it visible for unit tests
+[assembly: InternalsVisibleTo("PerformanceTests")] //Make it visible for performance tests
 
 [assembly: ComVisible(false)]
 

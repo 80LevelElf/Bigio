@@ -1,6 +1,6 @@
 ﻿using System;
 using BenchmarkDotNet.Running;
-using PerformanceTests.BigioTests;
+using PerformanceTests.BigArray;
 
 namespace PerformanceTests
 {
@@ -8,7 +8,7 @@ namespace PerformanceTests
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<AddTest>();
+            BenchmarkRunner.Run<AddAndAddRangeTest>();
 
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
