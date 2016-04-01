@@ -8,7 +8,7 @@ namespace PerformanceTests
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<AddAndAddRangeTest>();
+            BenchmarkRunner.Run<TemplateTest_JustToCheckSmth>();
 
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();

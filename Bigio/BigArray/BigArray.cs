@@ -194,19 +194,13 @@ namespace Bigio
                 return ~0;
 
             if (!this.IsValidRange(index, count))
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             if (comparer == null)
-            {
                 comparer = Comparer<T>.Default;
-            }
 
             if (index == 0 && count == 0)
-            {
                 return ~0;
-            }
 
             int startIndex = index;
             int endIndex = index + count;
@@ -215,6 +209,7 @@ namespace Bigio
             {
                 int middlePosition = (startIndex + endIndex) / 2;
                 T middleValue = this[middlePosition];
+
                 //Compare
                 int compareResult = comparer.Compare(item, middleValue);
                 switch (compareResult)
@@ -231,9 +226,7 @@ namespace Bigio
             }
             //If there is no such item specify the location where the element should be
             if (endIndex == -1) // if we need first element
-            {
                 return -1;
-            }
 
             //Because there is no such item, we will find plae for it
             var enumerator = GetEnumerator();
@@ -274,16 +267,14 @@ namespace Bigio
         public BigArray<TOutput> ConvertAll<TOutput>(Converter<T, TOutput> converter)
         {
             if (converter == null)
-            {
                 throw new ArgumentNullException("converter");
-            }
 
             var result = new BigArray<TOutput>();
+
             //Convert all blocks
             foreach (var block in _blockCollection)
-            {
                 result._blockCollection.Add(block.ConvertAll(converter));
-            }
+
             return result;
         }
 
@@ -295,9 +286,8 @@ namespace Bigio
         public void CopyTo(T[] array)
         {
             if (array == null)
-            {
                 throw new ArgumentNullException();
-            }
+
             CopyTo(0, array, 0, array.Length);
         }
 
@@ -326,19 +316,13 @@ namespace Bigio
         {
             //If there is empty distributed array
             if (index == 0 && Count == 0)
-            {
                 return;
-            }
 
             if (!this.IsValidIndex(index) || !array.IsValidRange(arrayIndex, count))
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             if (array == null)
-            {
                 throw new ArgumentNullException("array");
-            }
 
             var enumerator = GetEnumerator();
             ((BigArrayEnumerator)enumerator).MoveToIndex(index);
@@ -349,9 +333,7 @@ namespace Bigio
                 array[i] = enumerator.Current;
 
                 if (!enumerator.MoveNext())
-                {
                     break;
-                }
             }
         }
 
@@ -362,7 +344,13 @@ namespace Bigio
         /// <returns>True if the BigArray(T) contains one or more elements that match the conditions defined by the specified predicate; otherwise false. </returns>
         public bool Exists(Predicate<T> match)
         {
-            return _blockCollection.Any(block => block.Exists(match));
+            //This value was approximately estimated by practical way
+            const int borderCountToSwitchMode = 10000000;
+
+            if (Count < borderCountToSwitchMode)
+                return _blockCollection.Any(block => block.Exists(match));
+            else
+                return _blockCollection.AsParallel().Any(block => block.Exists(match));
         }
 
         /// <summary>
@@ -375,9 +363,7 @@ namespace Bigio
         public T Find(Predicate<T> match)
         {
             if (match == null)
-            {
                 throw new ArgumentNullException("match");
-            }
 
             var multyblockRange = _blockStructure.MultyblockRange(new Range(0, Count));
 
@@ -388,9 +374,7 @@ namespace Bigio
                     .FindIndex(blockRange.Subindex, blockRange.Count, match);
 
                 if (findIndexResult != -1)
-                {
                     return this[blockRange.CommonStartIndex + findIndexResult];
-                }
             }
 
             //If there is not needed item
@@ -406,9 +390,7 @@ namespace Bigio
         public BigArray<T> FindAll(Predicate<T> match)
         {
             if (match == null)
-            {
                 throw new ArgumentNullException("match");
-            }
 
             var resultArray = new BigArray<T>();
 
@@ -417,9 +399,7 @@ namespace Bigio
                 var findData = block.FindAll(match);
 
                 if (findData.Count != 0)
-                {
                     resultArray.AddRange(findData);
-                }
             }
 
             return resultArray;
@@ -462,9 +442,7 @@ namespace Bigio
         public int FindIndex(int index, int count, Predicate<T> match)
         {
             if (match == null)
-            {
                 throw new ArgumentNullException("match");
-            }
 
             var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
 
@@ -475,9 +453,7 @@ namespace Bigio
                     .FindIndex(blockRange.Subindex, blockRange.Count, match);
 
                 if (findIndexResult != -1)
-                {
                     return blockRange.CommonStartIndex + findIndexResult;
-                }
             }
 
             //If there is no needed value
@@ -501,9 +477,7 @@ namespace Bigio
                 int findLastIndexResult = _blockCollection[indexOfBlock--]
                     .FindLastIndex(blockRange.Subindex, blockRange.Count, match);
                 if (findLastIndexResult != -1)
-                {
                     return this[blockRange.CommonStartIndex + findLastIndexResult];
-                }
             }
 
             //If there is no such item
@@ -545,9 +519,7 @@ namespace Bigio
         public int FindLastIndex(int index, int count, Predicate<T> match)
         {
             if (match == null)
-            {
                 throw new ArgumentNullException("match");
-            }
 
             var range = _blockStructure.ReverseMultyblockRange(new Range(index, count));
 
@@ -557,10 +529,9 @@ namespace Bigio
             {
                 int findLastIndexResult = _blockCollection[indexOfBlock--]
                     .FindLastIndex(blockRange.Subindex, blockRange.Count, match);
+
                 if (findLastIndexResult != -1)
-                {
                     return blockRange.CommonStartIndex + findLastIndexResult;
-                }
             }
 
             //If there is no needed value
@@ -584,16 +555,12 @@ namespace Bigio
         public BigArray<T> GetRange(int index, int count)
         {
             if (!this.IsValidRange(index, count))
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             var newArray = new BigArray<T>();
 
             if (count == 0)
-            {
                 return newArray;
-            }
 
             var enumerator = GetEnumerator();
             ((BigArrayEnumerator)enumerator).MoveToIndex(index);
@@ -652,9 +619,7 @@ namespace Bigio
         public int IndexOf(T item, int index, int count)
         {
             if (!this.IsValidRange(index, count))
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
 
@@ -665,9 +630,7 @@ namespace Bigio
                     .IndexOf(item, blockRange.Subindex, blockRange.Count);
 
                 if (indexOfResult != -1)
-                {
                     return blockRange.CommonStartIndex + indexOfResult;
-                }
             }
 
             //If there is no needed value
@@ -759,6 +722,7 @@ namespace Bigio
             {
                 blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch); // Default case
             }
+
             //Insert
             _blockCollection[blockInfo.IndexOfBlock].InsertRange(
                 index - blockInfo.StartIndex, collection);
@@ -827,7 +791,7 @@ namespace Bigio
         /// </summary>
         public void Rebalance()
         {
-            var divideBlocks = new BigArray.Support_Classes.BlockCollection.BlockCollection<T>(this);
+            var divideBlocks = new BlockCollection<T>(this);
 
             _blockCollection.Clear();
             _blockCollection.AddRange(divideBlocks);
@@ -849,15 +813,15 @@ namespace Bigio
             {
                 var block = _blockCollection[i];
                 int blockIndexOf = block.IndexOf(item);
+
                 //If there is value in this block 
                 if (blockIndexOf != -1)
                 {
                     block.Remove(item);
+
                     //If there is empty block - remove it
                     if (block.Count == 0)
-                    {
                         _blockCollection.RemoveAt(i);
-                    }
 
                     Count--;
                     _blockStructure.DataChanged();
@@ -889,9 +853,7 @@ namespace Bigio
 
             //If there is empty block, we will remove it
             if (_blockCollection[blockInfo.IndexOfBlock].Count == 0)
-            {
                 _blockCollection.RemoveAt(blockInfo.IndexOfBlock);
-            }
 
             Count--;
             _blockStructure.DataChanged();
@@ -903,9 +865,7 @@ namespace Bigio
         public void RemoveLast()
         {
             if (Count == 0)
-            {
                 throw new InvalidOperationException("Can't remove element from empty collectioin!");
-            }
 
             int indexOfLastBlock = _blockCollection.Count - 1;
             var lastBlock = _blockCollection[indexOfLastBlock];
@@ -913,9 +873,7 @@ namespace Bigio
             lastBlock.RemoveAt(lastBlock.Count - 1);
 
             if (lastBlock.Count == 0)
-            {
                 _blockCollection.RemoveAt(indexOfLastBlock);
-            }
 
             Count--;
             _blockStructure.DataChanged();
@@ -976,6 +934,7 @@ namespace Bigio
             {
                 block.Reverse();
             }
+
             _blockCollection.Reverse();
         }
 
@@ -987,11 +946,13 @@ namespace Bigio
         {
             var array = new T[Count];
             int count = 0;
+
             //Transfer data
             foreach (var item in this)
             {
                 array[count++] = item;
             }
+
             return array;
         }
 
@@ -1027,9 +988,8 @@ namespace Bigio
             set
             {
                 if (value < 0)
-                {
                     throw new ArgumentOutOfRangeException("value", "Count cant be less then 0!");
-                }
+
                 _count = value;
             }
         }

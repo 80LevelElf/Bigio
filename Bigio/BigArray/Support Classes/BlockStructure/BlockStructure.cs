@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.Common.Classes;
 using Bigio.Common.Managers;
@@ -61,15 +62,15 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// </summary>
         /// <param name="index">Common zero-based index of element in BigArray(T). 
         /// It's to find parent block.</param>
-        /// <param name="statBlock">Function will try to find block, which containes
-        /// specified index from statBlock to last block of BlockCollection(T).
+        /// <param name="statBlockIndex">Function will try to find block, which containes
+        /// specified index from statBlockIndex to last block of BlockCollection(T).
         /// It use to get better performance.</param>
         /// <param name="searchMod">SearchMod is way to find needed data.</param>
         public BlockInfo BlockInfo
-            (int index, int statBlock, SearchMod searchMod = SearchMod.BinarySearch)
+            (int index, int statBlockIndex, SearchMod searchMod = SearchMod.BinarySearch)
         {
             return BlockInfo
-                (index, new Range(statBlock, _blockCollection.Count - statBlock), searchMod);
+                (index, new Range(statBlockIndex, _blockCollection.Count - statBlockIndex), searchMod);
         }
 
         /// <summary>
@@ -362,10 +363,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
             int indexOfStartBlock = searchBlockRange.Index;
             int indexOfEndBlock = indexOfStartBlock + searchBlockRange.Count - 1;
+
             // In code below we check is index in range. We don't do it before cycle 
             // to get better performance(suggestingPosition often is right and in this way we get
             // very bad performance)
-            bool isIndexInRangeCheck = false;
+            bool isIndexInCheckRange = false;
 
             while (indexOfStartBlock <= indexOfEndBlock)
             {
@@ -378,38 +380,38 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 double countOfBlocks = endBlockInfo.IndexOfBlock - startBlockInfo.IndexOfBlock + 1;
 
                 //We do it to check it only once 
-                if (!isIndexInRangeCheck)
+                if (!isIndexInCheckRange)
                 {
                     if (index < startIndex || index > endIndex)
                         throw new ArgumentOutOfRangeException("searchBlockRange");
 
-                    isIndexInRangeCheck = true;
+                    isIndexInCheckRange = true;
                 }
 
-                double suggestingPosition;
+                double suggestingBlockPosition;
                 if (index == startBlockInfo.StartIndex)
                 {
-                    suggestingPosition = startBlockInfo.IndexOfBlock;
+                    suggestingBlockPosition = startBlockInfo.IndexOfBlock;
                 }
                 else
                 {
-                    suggestingPosition = indexOfStartBlock
+                    suggestingBlockPosition = indexOfStartBlock
                         + (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
                 }
 
                 //Compare
-                var newPosition = (int)suggestingPosition;
-                var blockInfo = _blocksInfo[newPosition];
+                var newBlockPosition = (int)suggestingBlockPosition;
+                var blockInfo = _blocksInfo[newBlockPosition];
                 int result = blockInfo.Compare(index);
                 switch (result)
                 {
                     case -1:
-                        indexOfEndBlock = newPosition - 1;
+                        indexOfEndBlock = newBlockPosition - 1;
                         break;
                     case 0:
                         return blockInfo;
                     case 1:
-                        indexOfStartBlock = newPosition + 1;
+                        indexOfStartBlock = newBlockPosition + 1;
                         break;
                 }
             }
@@ -467,7 +469,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
         #region BinaryBlockInfo
 
-        private BlockInfo BinaryBlockInfo_Multythread(int index, Range searchBlockRange)
+        /*private BlockInfo BinaryBlockInfo_Multythread(int index, Range searchBlockRange)
         {
             TryToUpdateStructureInfo();
 
@@ -482,7 +484,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
                 return new BlockInfo();
             }
-        }
+        }*/
 
         #endregion
 

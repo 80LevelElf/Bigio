@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BigArray\AddAndAddRangeTest.cs" />
+    <Compile Include="BigArray\TemplateTest_JustToCheckSmth.cs" />
     <Compile Include="Configs\StandardConfig.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
