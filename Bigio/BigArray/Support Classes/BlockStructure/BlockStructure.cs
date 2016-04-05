@@ -460,9 +460,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             }
 
             if (!isFind)
-            {
                 throw new ArgumentOutOfRangeException("index");
-            }
 
             return new BlockInfo(indexOfBlock, blockStartIndex, blockCount);
         }

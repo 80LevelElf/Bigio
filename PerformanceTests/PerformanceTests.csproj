@@ -37,6 +37,10 @@
       <HintPath>..\packages\BenchmarkDotNet.0.9.4\lib\net40\BenchmarkDotNet.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="ClassLibrary2, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elders.PowerCollections.1.0.0\lib\net35\ClassLibrary2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
@@ -46,8 +50,16 @@
     <Reference Include="System.Management" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigArray\AddAndAddRangeTest.cs" />
-    <Compile Include="BigArray\TemplateTest_JustToCheckSmth.cs" />
+    <Compile Include="BigioTests\AddAndAddRangeTest.cs" />
+    <Compile Include="BigioTests\IndexOfAndSearchTest.cs" />
+    <Compile Include="BigioTests\InsertAndInsertRangeTest.cs" />
+    <Compile Include="BigioTests\LoopsTest.cs" />
+    <Compile Include="TemplateTests\AbstractTest.cs" />
+    <Compile Include="TemplateTests\AddAndAddRangeTest.cs" />
+    <Compile Include="TemplateTests\IndexOfAndSearchTest.cs" />
+    <Compile Include="TemplateTests\InsertAndInsertRangeTest.cs" />
+    <Compile Include="TemplateTests\LoopsTest.cs" />
+    <Compile Include="TemplateTestJustToCheckSmth.cs" />
     <Compile Include="Configs\StandardConfig.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

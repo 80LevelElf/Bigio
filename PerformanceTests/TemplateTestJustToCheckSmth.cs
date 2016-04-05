@@ -3,18 +3,18 @@ using BenchmarkDotNet.Attributes;
 using Bigio;
 using PerformanceTests.Configs;
 
-namespace PerformanceTests.BigArray
+namespace PerformanceTests
 {
     [Config(typeof(StandardConfig))]
-    public class TemplateTest_JustToCheckSmth
+    public class TemplateTestJustToCheckSmth
     {
         private readonly BigArray<int> _bigArrayToAdd = new BigArray<int>();
         private readonly Random _random = new Random();
-        private const int MAX = 100000000;
+        private const int MAX = 10000000;
 
-        public TemplateTest_JustToCheckSmth()
+        public TemplateTestJustToCheckSmth()
         {
-            for (int i = 0; i < 10000000; i++)
+            for (int i = 0; i < MAX; i++)
             {
                 _bigArrayToAdd.Add(_random.Next());
             }
@@ -29,7 +29,7 @@ namespace PerformanceTests.BigArray
         [Benchmark]
         public void Bigio_ExistsMltThr()
         {
-            _bigArrayToAdd.Exists_Parallel(i => i == _random.Next());
+            //_bigArrayToAdd.Exists_Parallel(i => i == _random.Next());
         }
     }
 }
