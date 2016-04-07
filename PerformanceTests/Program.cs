@@ -6,7 +6,7 @@ namespace PerformanceTests
     {
         static void Main(string[] args)
         {
-            TestManager.TestAdd();
+            TestManager.TestIndexOf();
 
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();

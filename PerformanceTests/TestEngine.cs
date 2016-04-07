@@ -10,6 +10,7 @@ namespace PerformanceTests
     {
         private readonly TList _list;
         private const int DEFAULT_LIST_SIZE = 1000000;
+        private readonly int[] _sampleArray = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
         public TestEngine()
         {
@@ -75,6 +76,69 @@ namespace PerformanceTests
             for (int i = 0; i < elementCount; i++)
             {
                 _list.Add(i);
+            }
+        }
+
+        protected void InsertInStartPosition(int elementCount)
+        {
+            ClearList();
+
+            for (int i = 0; i < elementCount; i++)
+            {
+                _list.Insert(0, i);
+            }
+        }
+
+        protected void InsertInMiddlePosition(int elementCount)
+        {
+            ClearList();
+
+            for (int i = 0; i < elementCount; i++)
+            {
+                _list.Insert(_list.Count / 2, i);
+            }
+        }
+
+        protected void For(int count)
+        { 
+            if (_list.Count != DEFAULT_LIST_SIZE)
+                FillList();
+
+            //We need to do it 'count' time otherwise test of For will be test of Add
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = 0; j < _list.Count; j++)
+                {
+                    _list[j] ++;
+                }
+            }
+        }
+
+        protected void Foreach(int count)
+        {
+            if (_list.Count != DEFAULT_LIST_SIZE)
+                FillList();
+
+            int temp = 0;
+
+            //We need to do it 'count' time otherwise test of For will be test of Add
+            for (int i = 0; i < count; i++)
+            {
+                foreach (var item in _list)
+                {
+                    temp = item;
+                }
+            }
+        }
+
+        protected void IndexOf(int elementCount)
+        {
+            if (_list.Count != elementCount)
+                FillList(elementCount);
+
+            for (int i = 0; i < elementCount; i++)
+            {
+                _list.IndexOf(i);
             }
         }
     }

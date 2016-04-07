@@ -7,6 +7,7 @@ namespace PerformanceTests
 {
     public static class TestManager
     {
+        private const int HUNDRED = 100;
         private const int THOUSAND = 1000;
         private const int MILLION = THOUSAND * THOUSAND;
         private const int BILLIARD = MILLION * THOUSAND;
@@ -19,6 +20,40 @@ namespace PerformanceTests
         {
             TestArguments arg = new TestArguments("Add", new[] { MILLION / 10, MILLION, MILLION * 10, MILLION * 100});
             WriteResult("Add", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestInsertInStartPosition()
+        {
+            WriteResult("InsertInStartPosition",
+                _bigioTestEngine.GetResult(new TestArguments("InsertInStartPosition", new[] { MILLION / 100, MILLION / 10, MILLION, MILLION * 10 })),
+                _wintellectTestEngine.GetResult(new TestArguments("InsertInStartPosition", new[] { MILLION / 100, MILLION / 10, MILLION, MILLION * 10 })),
+                _listTestEngine.GetResult(new TestArguments("InsertInStartPosition", new[] { MILLION / 100, MILLION / 10 })));
+        }
+
+        public static void TestInsertInMiddlePosition()
+        {
+            WriteResult("InsertInMiddlePosition",
+                _bigioTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
+                _wintellectTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
+                _listTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", new[] { THOUSAND, MILLION / 100, MILLION / 10 })));
+        }
+
+        public static void TestFor()
+        {
+            TestArguments arg = new TestArguments("For", new[] { 1, 10 });
+            WriteResult("For", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestForeach()
+        {
+            TestArguments arg = new TestArguments("Foreach", new[] { 1, 10, 30 });
+            WriteResult("Foreach", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestIndexOf()
+        {
+            TestArguments arg = new TestArguments("IndexOf", new[] { HUNDRED, THOUSAND, THOUSAND * 10 });
+            WriteResult("IndexOf", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
         }
 
         private static void WriteResult(string methodName, List<TestResult> bigioResult, List<TestResult> wintellectResult,
