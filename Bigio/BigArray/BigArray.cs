@@ -661,6 +661,7 @@ namespace Bigio
             if (isMaxSize)
             {
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
+                _blockStructure.DataChanged();
                 Insert(index, item);
                 return;
             }
