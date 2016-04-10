@@ -1,0 +1,3 @@
+1) Create task in BlockStructure to update it async
+2) Add missed tests (InsertRandom, etc.)
+3) Rewrite a lot of methods as multythread
