@@ -18,42 +18,86 @@ namespace PerformanceTests
 
         public static void TestAdd()
         {
-            TestArguments arg = new TestArguments("Add", new[] { MILLION / 10, MILLION, MILLION * 10, MILLION * 100});
+            TestArguments arg = new TestArguments("Add", CallFlag.ClearTestList, new[] { MILLION / 10, MILLION, MILLION * 10, MILLION * 100});
             WriteResult("Add", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestAddRange()
+        {
+            WriteResult("AddRange",
+                _bigioTestEngine.GetResult(new TestArguments("AddRange", CallFlag.ClearTestList, new[] { MILLION / 100, MILLION / 10, MILLION })),
+                _wintellectTestEngine.GetResult(new TestArguments("AddRange", CallFlag.ClearTestList, new[] { MILLION / 100, MILLION / 10, MILLION })),
+                _listTestEngine.GetResult(new TestArguments("AddRange", CallFlag.ClearTestList, new[] { MILLION / 100, MILLION / 10, MILLION })));
         }
 
         public static void TestInsertInStartPosition()
         {
             WriteResult("InsertInStartPosition",
-                _bigioTestEngine.GetResult(new TestArguments("InsertInStartPosition", new[] { MILLION / 100, MILLION / 10, MILLION, MILLION * 10 })),
-                _wintellectTestEngine.GetResult(new TestArguments("InsertInStartPosition", new[] { MILLION / 100, MILLION / 10, MILLION, MILLION * 10 })),
-                _listTestEngine.GetResult(new TestArguments("InsertInStartPosition", new[] { MILLION / 100, MILLION / 10 })));
+                _bigioTestEngine.GetResult(new TestArguments("InsertInStartPosition", CallFlag.ClearTestList, new[] { MILLION / 100, MILLION / 10, MILLION, MILLION * 10 })),
+                _wintellectTestEngine.GetResult(new TestArguments("InsertInStartPosition", CallFlag.ClearTestList, new[] { MILLION / 100, MILLION / 10, MILLION, MILLION * 10 })),
+                _listTestEngine.GetResult(new TestArguments("InsertInStartPosition", CallFlag.ClearTestList, new[] { MILLION / 100, MILLION / 10 })));
         }
 
         public static void TestInsertInMiddlePosition()
         {
             WriteResult("InsertInMiddlePosition",
-                _bigioTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
-                _wintellectTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
-                _listTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", new[] { THOUSAND, MILLION / 100, MILLION / 10 })));
+                _bigioTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
+                _wintellectTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
+                _listTestEngine.GetResult(new TestArguments("InsertInMiddlePosition", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10 })));
+        }
+
+        public static void TestInsertInRandomPosition()
+        {
+            WriteResult("InsertInRandomPosition",
+                _bigioTestEngine.GetResult(new TestArguments("InsertInRandomPosition", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10, MILLION })),
+                _wintellectTestEngine.GetResult(new TestArguments("InsertInRandomPosition", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10, MILLION })),
+                _listTestEngine.GetResult(new TestArguments("InsertInRandomPosition", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10 })));
+        }
+
+        public static void TestInsertRangeInRandom()
+        {
+            WriteResult("InsertRangeInRandom",
+                _bigioTestEngine.GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
+                _wintellectTestEngine.GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100, MILLION / 10 })),
+                _listTestEngine.GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { THOUSAND, MILLION / 100 })));
         }
 
         public static void TestFor()
         {
-            TestArguments arg = new TestArguments("For", new[] { 1, 10 });
+            TestArguments arg = new TestArguments("For", CallFlag.FillTestList, new[] { 1, 4 });
             WriteResult("For", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
         }
 
         public static void TestForeach()
         {
-            TestArguments arg = new TestArguments("Foreach", new[] { 1, 10, 30 });
+            TestArguments arg = new TestArguments("Foreach", CallFlag.FillTestList, new[] { 1, 10, 30 });
             WriteResult("Foreach", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
         }
 
         public static void TestIndexOf()
         {
-            TestArguments arg = new TestArguments("IndexOf", new[] { HUNDRED, THOUSAND, THOUSAND * 10 });
+            TestArguments arg = new TestArguments("IndexOf", CallFlag.FillTestList, new[] { HUNDRED, THOUSAND, THOUSAND * 10 });
             WriteResult("IndexOf", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestBinarySearch()
+        {
+            TestArguments arg = new TestArguments("BinarySearch", CallFlag.FillTestList, new[] { THOUSAND, THOUSAND * 10, THOUSAND * 100 });
+            WriteResult("BinarySearch", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestFindAll()
+        {
+            TestArguments arg = new TestArguments("FindAll", CallFlag.FillTestList, new[] { 2, 5, 7 });
+            WriteResult("FindAll", _bigioTestEngine.GetResult(arg), _wintellectTestEngine.GetResult(arg), _listTestEngine.GetResult(arg));
+        }
+
+        public static void TestReverse()
+        {
+            WriteResult("Reverse",
+                _bigioTestEngine.GetResult(new TestArguments("Reverse", CallFlag.FillTestList, new[] { 1, 5, 10, 15 })),
+                _wintellectTestEngine.GetResult(new TestArguments("Reverse", CallFlag.FillTestList, new[] { 1 })),
+                _listTestEngine.GetResult(new TestArguments("Reverse", CallFlag.FillTestList, new[] { 1, 5, 10, 15 })));
         }
 
         private static void WriteResult(string methodName, List<TestResult> bigioResult, List<TestResult> wintellectResult,

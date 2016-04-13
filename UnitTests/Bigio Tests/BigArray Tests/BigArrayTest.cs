@@ -45,10 +45,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             }
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.Insert, -1, 0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.Insert, distributedArray.Count + 1, 0));
         }
@@ -93,6 +93,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             distributedArray.InsertRange(distributedArray.Count, array4);
             Assert.AreEqual(distributedArray.Count, size);
 
+            //Check insertion in the empty array
+            distributedArray.Clear();
+            distributedArray.InsertRange(0, array1);
+
             //DA must be : 0,1,2,3...,n-1,n
             for (int i = 0; i < distributedArray.Count - 1; i++)
             {
@@ -100,14 +104,14 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             }
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentNullException, int, ICollection<int>>
                 (distributedArray.InsertRange, 0, null));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, ICollection<int>>
                 (distributedArray.InsertRange, -1, new Collection<int>()));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, ICollection<int>>
                 (distributedArray.InsertRange, distributedArray.Count + 1, new Collection<int>()));
         }
@@ -161,21 +165,21 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             CheckEqual(array, resultArray);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentNullException, int[]>
                 (distibutedArray.CopyTo, null));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int[], int>
                 (distibutedArray.CopyTo, array, array.Length - distibutedArray.Count + 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int[], int>
                 (distibutedArray.CopyTo, array, -1));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, int[], int, int>
                 (distibutedArray.CopyTo, 0, array, array.Length - distibutedArray.Count + 1, 3));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, int[], int, int>
                 (distibutedArray.CopyTo, 0, array, 0, -1));
         }
@@ -191,27 +195,39 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.AreEqual(emptyArray.Find(IsEqual0), 0);
 
             //Exceptions
-            ExceptionManager.IsThrowException<ArgumentNullException, Predicate<int>, int>
+            ExceptionManager.IsThrowFuncException<ArgumentNullException, Predicate<int>, int>
                 (distributedArray.Find, null);
         }
 
         [Test]
         public static void FindAll()
         {
+            FindAllBody(true);
+
+            //Make it 20 times. Maybe there will be some multythread erros
+            for (int i = 0; i < 20; i++)
+            {
+                FindAllBody(false);
+            }
+        }
+
+        private static void FindAllBody(bool saveOrder)
+        {
             var distributedArray = new BigArray<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-            distributedArray = distributedArray.FindAll(IsMultipleOf2);
+            distributedArray = distributedArray.FindAll(IsMultipleOf2, saveOrder);
             var resultArray = new BigArray<int> { 2, 4, 6, 8, 10 };
 
             CheckEqual(distributedArray, resultArray);
 
             var emptyArray = new BigArray<int>();
-            Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2));
+            Assert.IsEmpty(emptyArray.FindAll(IsMultipleOf2, saveOrder));
 
             //Exceptions
-            ExceptionManager.IsThrowException
-                <ArgumentNullException, Predicate<int>, BigArray<int>>
-                (distributedArray.FindAll, null);
+            ExceptionManager.IsThrowFuncException
+                <ArgumentNullException, Predicate<int>, bool, BigArray<int>>
+                (distributedArray.FindAll, null, saveOrder);
         }
+
         [Test]
         public static void FindIndex()
         {
@@ -237,24 +253,24 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.AreEqual(emptyArray.FindIndex(IsEqual0), -1);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentNullException, Predicate<int>, int>
                 (distributedArray.FindIndex, null));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, Predicate<int>, int>
                 (distributedArray.FindIndex, distributedArray.Count, IsEqual0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, Predicate<int>, int>
                 (distributedArray.FindIndex, -1, IsEqual0));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindIndex, distributedArray.Count - 1, 2, IsEqual0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindIndex, -1, 1, IsEqual0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindIndex, 1, -1, IsEqual0));
         }
@@ -284,26 +300,26 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.AreEqual(emptyArray.FindLastIndex(IsEqual0), -1);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentNullException, Predicate<int>, int>
                 (distributedArray.FindLastIndex, null));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, Predicate<int>, int>
                 (distributedArray.FindLastIndex, distributedArray.Count, IsEqual0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, Predicate<int>, int>
                 (distributedArray.FindLastIndex, -1, IsEqual0));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindLastIndex, distributedArray.Count - 1
                 , distributedArray.Count + 1, IsEqual0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindLastIndex, distributedArray.Count + 1
                 , 1, IsEqual0));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, Predicate<int>, int>
                 (distributedArray.FindLastIndex, 1, -1, IsEqual0));
         }
@@ -357,10 +373,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.IsEmpty(emptyArray.GetRange(0, 0));
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, BigArray<int>>
                 (distributedArray.GetRange, -1, 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, BigArray<int>>
                 (distributedArray.GetRange, 0, distributedArray.Count + 1));
         }
@@ -406,20 +422,20 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.AreEqual(emptyArray.IndexOf(0), -1);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int>
                 (distributedArray.IndexOf, 0, distributedArray.Count));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int>
                 (distributedArray.IndexOf, 0, -1));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.IndexOf, 0, -1, 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.IndexOf, 0, distributedArray.Count - 1, 2));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.IndexOf, 0, 1, -1));
         }
@@ -449,20 +465,20 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.AreEqual(emptyArray.LastIndexOf(0), -1);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int>
                 (distributedArray.LastIndexOf, 0, distributedArray.Count));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int>
                 (distributedArray.LastIndexOf, 0, -1));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.LastIndexOf, 0, 0, 2));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.LastIndexOf, 0, distributedArray.Count, 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowFuncException
                 <ArgumentOutOfRangeException, int, int, int, int>
                 (distributedArray.LastIndexOf, 0, 2, -1));
         }
@@ -541,10 +557,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             CheckEqual(distributedArray, checkList);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int>
                 (distributedArray.RemoveAt, -1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int>
                 (distributedArray.RemoveAt, distributedArray.Count));
         }
@@ -612,10 +628,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.IsEmpty(emptyArray);
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.RemoveRange, -1, 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, int, int>
                 (distributedArray.RemoveRange, distributedArray.Count - 1, 2));
         }

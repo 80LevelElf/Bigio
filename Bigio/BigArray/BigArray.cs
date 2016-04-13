@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Bigio.BigArray.Interfaces;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.BigArray.Support_Classes.BlockStructure;
@@ -387,19 +388,32 @@ namespace Bigio
         /// <param name="match">The Predicate(T) delegate that defines the conditions of the elements to search for.</param>
         /// <returns>A BigArray(T) containing all the elements that match the conditions defined by the specified predicate,
         ///  if found; otherwise, an empty BigArray(T).</returns>
-        public BigArray<T> FindAll(Predicate<T> match)
+        public BigArray<T> FindAll(Predicate<T> match, bool isSaveOrder = false)
         {
             if (match == null)
                 throw new ArgumentNullException("match");
 
             var resultArray = new BigArray<T>();
 
-            foreach (var block in _blockCollection)
+            if (isSaveOrder)
             {
-                var findData = block.FindAll(match);
+                foreach (var block in _blockCollection)
+                {
+                    var findData = block.FindAll(match);
 
-                if (findData.Count != 0)
-                    resultArray.AddRange(findData);
+                    if (findData.Count != 0)
+                        resultArray.AddRange(findData);
+                }
+            }
+            else
+            {
+                Parallel.ForEach(_blockCollection, block =>
+                {
+                    var findData = block.FindAll(match);
+
+                    if (findData.Count != 0)
+                        resultArray.AddRange(findData);
+                });
             }
 
             return resultArray;
@@ -708,20 +722,20 @@ namespace Bigio
             //Validity of index and count check in BlockInfo
             var blockInfo = new BlockInfo();
 
-            //Determine indexOfBlock and blockStartIndex
-            if (index == Count)
+            if (index == 0 && Count == 0) // Empty array
+            {
+                _blockCollection.AddFirstBlockIfThereIsNeeded();
+                blockInfo.IndexOfBlock = 0;
+                blockInfo.StartIndex = 0;
+            }
+            else if (index == Count) // Last position
             {
                 blockInfo.IndexOfBlock = _blockCollection.Count - 1;
                 blockInfo.StartIndex = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
             }
-            else if (Count == 0 && index == 0) // If there is insertion in empty BigArray
+            else // Default case
             {
-                blockInfo.IndexOfBlock = 0;
-                blockInfo.StartIndex = 0;
-            }
-            else
-            {
-                blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch); // Default case
+                blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
             }
 
             //Insert
@@ -931,10 +945,10 @@ namespace Bigio
         /// </summary>
         public void Reverse()
         {
-            foreach (var block in _blockCollection)
+            Parallel.ForEach(_blockCollection, block =>
             {
                 block.Reverse();
-            }
+            });
 
             _blockCollection.Reverse();
         }

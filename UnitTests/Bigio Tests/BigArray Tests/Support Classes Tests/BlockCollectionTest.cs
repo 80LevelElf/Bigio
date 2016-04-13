@@ -29,14 +29,14 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             }
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentNullException, Block<int>>
+            Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentNullException, Block<int>>
                 (blockCollection.Add, null));
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentNullException, int, Block<int>>
+            Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentNullException, int, Block<int>>
                 (blockCollection.Insert, 0, null));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Block<int>>
+            Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentOutOfRangeException, int, Block<int>>
                 (blockCollection.Insert, -1, new Block<int>()));
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Block<int>>
+            Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentOutOfRangeException, int, Block<int>>
                 (blockCollection.Insert, blockCollection.Count + 1, new Block<int>()));
         }
 
@@ -88,17 +88,17 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             }
 
             //Exceptions
-            ExceptionManager.IsThrowException
+            ExceptionManager.IsThrowActionException
                 <ArgumentNullException, ICollection<Block<int>>>
                 (blockCollection.AddRange, null);
-            ExceptionManager.IsThrowException
+            ExceptionManager.IsThrowActionException
                 <ArgumentNullException, int, ICollection<Block<int>>>
                 (blockCollection.InsertRange, 0, null);
 
-            ExceptionManager.IsThrowException
+            ExceptionManager.IsThrowActionException
                 <ArgumentNullException, int, ICollection<Block<int>>>
                 (blockCollection.InsertRange, -1, new Collection<Block<int>>());
-            ExceptionManager.IsThrowException
+            ExceptionManager.IsThrowActionException
                 <ArgumentNullException, int, ICollection<Block<int>>>
                 (blockCollection.InsertRange, blockCollection.Count + 1, new Collection<Block<int>>());
         }
@@ -148,14 +148,14 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             }
 
             //Exceptions
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentNullException, Block<int>[], int>
                 (blockCollection.CopyTo, null, 0));
 
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, Block<int>[], int>
                 (blockCollection.CopyTo, array1, array1.Length - blockCollection.Count + 1));
-            Assert.IsTrue(ExceptionManager.IsThrowException
+            Assert.IsTrue(ExceptionManager.IsThrowActionException
                 <ArgumentOutOfRangeException, Block<int>[], int>
                 (blockCollection.CopyTo, array1, -1));
         }
@@ -213,9 +213,9 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
                 Assert.AreEqual(blockCollection[i], list[i]);
             }
 
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int>
+            Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentOutOfRangeException, int>
                 (blockCollection.RemoveAt, -1));
-            Assert.IsTrue(ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int>
+            Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentOutOfRangeException, int>
                 (blockCollection.RemoveAt, blockCollection.Count));
         }
 

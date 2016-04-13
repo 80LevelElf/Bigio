@@ -69,30 +69,30 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 
             //-1 element
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, SearchMod, BlockInfo>(
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, -1, mod));
             //Element after last
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, SearchMod, BlockInfo>(
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, CountOfBlocks*BlockSize, mod));
 
             //Exceptions with ranges
 
             //Element at left towards range
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, 0, new Range(1, 1),  mod));
             //Element at right towards range
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, 2, new Range(1, 1), mod));
             //Wrong left-side range with right location of element
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, 0, new Range(-1, 2), mod));
             //Wrong right-side range with right location of element
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, CountOfBlocks * BlockSize - 1, new Range(CountOfBlocks - 1, 2), mod));
         }
         private static void MultyblockRange(SearchMod mod)
@@ -113,15 +113,15 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 
             //Left overlap
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.MultyblockRange, new Range(-1, 2), mod));
             //Rigth overlap
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.MultyblockRange, new Range(CountOfBlocks*BlockSize - 1, 2), mod));
             //Wrong count
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.MultyblockRange, new Range(BlockSize, -2), mod));
         }
         private static void ReverseMultyblockRange(SearchMod mod)
@@ -143,21 +143,21 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 
             //Left overlap
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.ReverseMultyblockRange, new Range(0, 2), mod));
             //Rigth overlap
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.ReverseMultyblockRange, new Range(CountOfBlocks * BlockSize, 2), mod));
             //Wrong count
             Assert.IsTrue(
-                ExceptionManager.IsThrowException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
+                ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.ReverseMultyblockRange, new Range(BlockSize, -2), mod));
         }
         private static BlockStructure<int> CteareTestStructure()
         {
             //Prepare block collection
-            var blockCollection = new Bigio.BigArray.Support_Classes.BlockCollection.BlockCollection<int>();
+            var blockCollection = new BlockCollection<int>();
 
             for (int i = 0; i < CountOfBlocks; i++)
             {
