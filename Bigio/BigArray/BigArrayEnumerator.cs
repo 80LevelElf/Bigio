@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Bigio.BigArray.Support_Classes.BlockCollection;
 
 namespace Bigio
 {
@@ -17,6 +18,10 @@ namespace Bigio
             /// </summary>
             private int _indexOfCurrentBlock;
 
+            private readonly int _blockCount;
+
+            private readonly BlockCollection<T> _blockCollection; 
+
             /// <summary>
             /// Enumerator of current block. When we cross current block
             /// _subenumerator will be enumerator of block after current,
@@ -33,6 +38,9 @@ namespace Bigio
             public BigArrayEnumerator(BigArray<T> array)
             {
                 Array = array;
+                _blockCollection = Array._blockCollection;
+                _blockCount = _blockCollection.Count;
+
                 if (Array.Count != 0)
                 {
                     Reset();
@@ -53,15 +61,19 @@ namespace Bigio
                 if (!canMove)
                 {
                     //Try to move next block
-                    if (_indexOfCurrentBlock < Array._blockCollection.Count - 1)
+                    _indexOfCurrentBlock++;
+
+                    if (_indexOfCurrentBlock < _blockCount)
                     {
-                        _indexOfCurrentBlock++;
-                        _subenumerator = Array._blockCollection[_indexOfCurrentBlock].GetEnumerator();
+                        _subenumerator = _blockCollection[_indexOfCurrentBlock].GetEnumerator();
+
                         return MoveNext();
                     }
+
                     //There is no block to move
                     return false;
                 }
+
                 //If everithing is ok
                 return true;
             }

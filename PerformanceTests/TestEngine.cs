@@ -180,12 +180,14 @@ namespace PerformanceTests
 
         protected void FindAll(int count, MethodInfo method)
         {
+            bool is2Args = method.GetParameters().Length == 2;
+
             for (int i = 0; i < count; i++)
             {
                 var copyOfI = i;
                 Predicate<int> predicate = item => item == copyOfI;
 
-                var result = (IEnumerable<int>)method.Invoke(_list, new object[] { predicate });
+                var result = (IEnumerable<int>)method.Invoke(_list, is2Args ? new object[] { predicate, false } : new object[] { predicate });
                 result.ToList(); //Because Wintellect use lazy evaluation in FindAll
             }
         }

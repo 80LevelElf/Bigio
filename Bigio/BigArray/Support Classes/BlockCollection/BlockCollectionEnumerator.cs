@@ -23,6 +23,8 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             /// </summary>
             private int _currentIndex;
 
+
+
             //API
 
             /// <summary>
