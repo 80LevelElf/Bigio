@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Wintellect.PowerCollections;
 
 namespace PerformanceTests
 {
@@ -24,12 +23,15 @@ namespace PerformanceTests
         public TestEngine()
         {
             _list = (TList)Activator.CreateInstance(typeof(TList));
-
+            
             _usingReflectionMethods.Add("InsertRangeInRandom", GetMethodsInfoOfList("InsertRange").First(i => i.GetParameters().Length == 2));
             _usingReflectionMethods.Add("AddRange", GetMethodsInfoOfList("AddRange").First(i => i.GetParameters().Length == 1));
             _usingReflectionMethods.Add("BinarySearch", GetMethodsInfoOfList("BinarySearch").First(i => i.GetParameters().Length == 1));
             _usingReflectionMethods.Add("FindAll", GetMethodsInfoOfList("FindAll").First(i => i.GetParameters().Length == 1 || i.GetParameters().Length == 2));
             _usingReflectionMethods.Add("Reverse", GetMethodsInfoOfList("Reverse").First(i => i.GetParameters().Length == 0));
+            _usingReflectionMethods.Add("LastIndexOf", GetMethodsInfoOfList("LastIndexOf").First(i => i.GetParameters().Length == 1));
+            _usingReflectionMethods.Add("Find", GetMethodsInfoOfList("Find").First(i => i.GetParameters().Length == 1));
+            _usingReflectionMethods.Add("FindLast", GetMethodsInfoOfList("FindLast").First(i => i.GetParameters().Length == 1));
         }
 
         public List<TestResult> GetResult(TestArguments arguments)
@@ -37,7 +39,7 @@ namespace PerformanceTests
             return GetResult(arguments.MethodName, arguments.CallFlag, arguments.TestCountArray).ToList();
         }
 
-        public IEnumerable<TestResult> GetResult(string methodName, CallFlag flag, int[] testCountArray = null)
+        private IEnumerable<TestResult> GetResult(string methodName, CallFlag flag, int[] testCountArray = null)
         {
             if (testCountArray == null)
                 testCountArray = new[] {DEFAULT_LIST_SIZE};
@@ -57,7 +59,7 @@ namespace PerformanceTests
                 {
                     timeOfAllInvoketionsMs += MeasureMethod(method, argumentList, flag);
                 }
-
+                
                 yield return new TestResult(currentCount, timeOfAllInvoketionsMs / countOfInvokations);
             }
         }
@@ -192,11 +194,41 @@ namespace PerformanceTests
             }
         }
 
+        protected void Find(int count, MethodInfo method)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var copyOfI = i;
+                Predicate<int> predicate = item => item == copyOfI;
+
+                method.Invoke(_list, new object[] { predicate });
+            }
+        }
+
+        protected void FindLast(int count, MethodInfo method)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var copyOfI = i;
+                Predicate<int> predicate = item => item == copyOfI;
+
+                method.Invoke(_list, new object[] { predicate });
+            }
+        }
+
         protected void Reverse(int count, MethodInfo method)
         {
             for (int i = 0; i < count; i++)
             {
                 method.Invoke(_list, new object[] { });
+            }
+        }
+
+        protected void LastIndexOf(int count, MethodInfo method)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                method.Invoke(_list, new object[] { i });
             }
         }
 

@@ -26,6 +26,7 @@ namespace PerformanceTests
                 Task.Factory.StartNew(TestManager.TestFor),
                 Task.Factory.StartNew(TestManager.TestForeach),
                 Task.Factory.StartNew(TestManager.TestIndexOf),
+                Task.Factory.StartNew(TestManager.TestLastIndexOf),
                 Task.Factory.StartNew(TestManager.TestInsertInMiddlePosition),
                 Task.Factory.StartNew(TestManager.TestInsertInStartPosition),
                 Task.Factory.StartNew(TestManager.TestAdd),
@@ -33,6 +34,8 @@ namespace PerformanceTests
                 Task.Factory.StartNew(TestManager.TestInsertRangeInRandom),
                 Task.Factory.StartNew(TestManager.TestAddRange),
                 Task.Factory.StartNew(TestManager.TestBinarySearch),
+                Task.Factory.StartNew(TestManager.TestFindLast),
+                Task.Factory.StartNew(TestManager.TestFind),
                 Task.Factory.StartNew(TestManager.TestFindAll),
                 Task.Factory.StartNew(TestManager.TestReverse),
             };
