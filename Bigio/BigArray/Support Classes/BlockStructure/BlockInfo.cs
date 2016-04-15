@@ -9,12 +9,12 @@
         /// Create new instance of BlockInfo with specified data.
         /// </summary>
         /// <param name="indexOfBlock">Index of block inside block collection.</param>
-        /// <param name="startIndex">Common start index of current block.</param>
+        /// <param name="startIndexOfBlock">Common start index of current block.</param>
         /// <param name="count">Count of elements inside current block.</param>
-        public BlockInfo(int indexOfBlock, int startIndex, int count)
+        public BlockInfo(int indexOfBlock, int startIndexOfBlock, int count)
         {
             IndexOfBlock = indexOfBlock;
-            StartIndex = startIndex;
+            StartIndexOfBlock = startIndexOfBlock;
             Count = count;
         }
 
@@ -28,11 +28,11 @@
         /// If index locate after block, it will return 1.</returns>
         public int Compare(int index)
         {
-            if (index < StartIndex)
+            if (index < StartIndexOfBlock)
             {
                 return -1;
             }
-            if (index >= StartIndex + Count)
+            if (index >= StartIndexOfBlock + Count)
             {
                 return 1;
             }
@@ -44,10 +44,10 @@
         /// </summary>
         /// <param name="other">Other BlockInfo to check.</param>
         /// <returns>If BlockInfos are the same in all data members
-        /// (IndexOfBlock, StartIndex and Count) return true, otherwise return false.</returns>
+        /// (IndexOfBlock, StartIndexOfBlock and Count) return true, otherwise return false.</returns>
         public bool Equals(BlockInfo other)
         {
-            return IndexOfBlock == other.IndexOfBlock && StartIndex == other.StartIndex && Count == other.Count;
+            return IndexOfBlock == other.IndexOfBlock && StartIndexOfBlock == other.StartIndexOfBlock && Count == other.Count;
         }
 
         /// <summary>
@@ -57,10 +57,10 @@
 
         /// <summary>
         /// Common start index of current block. For example:
-        /// if there is 2 blocks(both of 100 elements), then StartIndex of first block is 0 and
-        /// StartIndex of second block is 100(because it starts by 100 element).
+        /// if there is 2 blocks(both of 100 elements), then StartIndexOfBlock of first block is 0 and
+        /// StartIndexOfBlock of second block is 100(because it starts by 100 element).
         /// </summary>
-        public int StartIndex;
+        public int StartIndexOfBlock;
 
         /// <summary>
         /// Count of elements inside current block.

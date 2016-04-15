@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Web;
 using Bigio.BigArray.Support_Classes.BlockCollection;
+using Bigio.BigArray.Support_Classes.BlockStructure;
 
 namespace Bigio
 {
@@ -13,21 +15,17 @@ namespace Bigio
         {
             //Data
 
-            /// <summary>
-            /// Index of parent block of current _subenumerator.
-            /// </summary>
-            private int _indexOfCurrentBlock;
-
             private readonly int _blockCount;
 
-            private BlockCollection<T> _blockCollection; 
+            private readonly BlockCollection<T> _blockCollection;
 
-            /// <summary>
-            /// Enumerator of current block. When we cross current block
-            /// _subenumerator will be enumerator of block after current,
-            /// if there is next block.
-            /// </summary>
-            private IEnumerator<T> _subenumerator;
+            private Block<T> _currentBlock;
+
+            private int _indexInCurrentBlock;
+
+            private int _currentBlockIndex;
+
+            private int _currentBlockCount;
 
             //API
 
@@ -53,62 +51,60 @@ namespace Bigio
 
             public bool MoveNext()
             {
-                if (_subenumerator == null)
-                {
-                    return false;
-                }
-
-                bool canMove = _subenumerator.MoveNext();
-                if (!canMove)
+                if (_indexInCurrentBlock >= _currentBlockCount - 1)
                 {
                     //Try to move next block
-                    _indexOfCurrentBlock++;
+                    _currentBlockIndex++;
 
-                    if (_indexOfCurrentBlock < _blockCount)
+                    if (_currentBlockIndex < _blockCount)
                     {
-                        _subenumerator = _blockCollection[_indexOfCurrentBlock].GetEnumerator();
+                        _currentBlock = _blockCollection[_currentBlockIndex];
+                        _indexInCurrentBlock = 0;
+                        _currentBlockCount = _currentBlock.Count;
 
-                        return MoveNext();
+                        return true;
                     }
 
                     //There is no block to move
                     return false;
                 }
 
-                //If everithing is ok
+                _indexInCurrentBlock++;
                 return true;
             }
+
             /// <summary>
             /// Move enumerator to the specified index of the BigArray(T).
             /// </summary>
-            /// <param name="index">he zero-based index of the element to point to.</param>
+            /// <param name="index">The zero-based index of the element to point to.</param>
             public void MoveToIndex(int index)
             {
-                var blockInfo = Array._blockStructure.BlockInfo(index);
+                var blockInfo = Array._blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
-                _subenumerator = Array._blockCollection[blockInfo.IndexOfBlock].GetEnumerator();
-
-                //It is always executed at least once
-                for (int i = blockInfo.StartIndex; i <= index; i++)
-                {
-                    _subenumerator.MoveNext();
-                }
+                _indexInCurrentBlock = index - blockInfo.StartIndexOfBlock;
+                _currentBlockIndex = blockInfo.IndexOfBlock;
+                _currentBlock = Array._blockCollection[_currentBlockIndex];
+                _currentBlockCount = blockInfo.Count;
             }
+
             public void Reset()
             {
                 if (Array.Count != 0)
                 {
-                    _subenumerator = Array._blockCollection[0].GetEnumerator();
-                    _indexOfCurrentBlock = 0;
+                    _indexInCurrentBlock = -1;
+                    _currentBlockIndex = -1;
+                    _currentBlockCount = -1;
                 }
             }
+
             public T Current
             {
                 get
                 {
-                    return _subenumerator.Current;
+                    return _currentBlock[_indexInCurrentBlock];
                 }
             }
+
             object IEnumerator.Current
             {
                 get { return Current; }

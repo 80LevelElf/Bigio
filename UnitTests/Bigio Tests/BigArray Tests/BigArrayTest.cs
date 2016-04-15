@@ -325,7 +325,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         }
 
         [Test]
-        public static void GetEnumerator()
+        public static void Foreach()
         {
             var distributedArray = new BigArray<int>();
             int size = 4 * distributedArray.MaxBlockSize;

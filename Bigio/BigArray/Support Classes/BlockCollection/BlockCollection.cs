@@ -387,7 +387,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>
         /// <param name="countToDivide">The number of elements of the collection to divide.</param>
         /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private ICollection<Block<T>> DivideIntoBlocks
+        private IList<Block<T>> DivideIntoBlocks
             (ICollection<T> collection, int collectionIndex, int countToDivide)
         {
             if (collection == null)

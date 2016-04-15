@@ -112,7 +112,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         {
             TryToUpdateStructureInfo();
 
-            return _blocksInfo[indexOfBlock].StartIndex;
+            return _blocksInfo[indexOfBlock].StartIndexOfBlock;
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 var blockCount = _blockCollection[i].Count;
 
                 //Get information
-                _blocksInfo[i].StartIndex = blockStartIndex;
+                _blocksInfo[i].StartIndexOfBlock = blockStartIndex;
                 _blocksInfo[i].IndexOfBlock = i;
                 _blocksInfo[i].Count = blockCount;
 
@@ -300,8 +300,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             (Range calcRange, int indexOfStartBlock, int indexOfEndBlock)
         {
             var infoOfStartBlock = _blocksInfo[indexOfStartBlock];
-            var currentStartIndex = infoOfStartBlock.StartIndex;
-            var currentEndIndex = infoOfStartBlock.StartIndex;
+            var currentStartIndex = infoOfStartBlock.StartIndexOfBlock;
+            var currentEndIndex = infoOfStartBlock.StartIndexOfBlock;
             var endIndex = calcRange.Index + calcRange.Count - 1;
 
             for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
@@ -376,8 +376,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 var startBlockInfo = _blocksInfo[indexOfStartBlock];
                 var endBlockInfo = _blocksInfo[indexOfEndBlock];
 
-                double startIndex = startBlockInfo.StartIndex;
-                double endIndex = endBlockInfo.StartIndex + endBlockInfo.Count - 1;
+                double startIndex = startBlockInfo.StartIndexOfBlock;
+                double endIndex = endBlockInfo.StartIndexOfBlock + endBlockInfo.Count - 1;
                 double countOfBlocks = endBlockInfo.IndexOfBlock - startBlockInfo.IndexOfBlock + 1;
 
                 //We do it to check it only once 
@@ -390,7 +390,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 }
 
                 double suggestingBlockPosition;
-                if (index == startBlockInfo.StartIndex)
+                if (index == startBlockInfo.StartIndexOfBlock)
                 {
                     suggestingBlockPosition = startBlockInfo.IndexOfBlock;
                 }

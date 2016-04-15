@@ -666,7 +666,7 @@ namespace Bigio
 
             var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
-            int blockSubindex = index - blockInfo.StartIndex;
+            int blockSubindex = index - blockInfo.StartIndexOfBlock;
             var block = _blockCollection[blockInfo.IndexOfBlock];
 
             bool isMaxSize = (block.Count == MaxBlockSize);
@@ -724,12 +724,12 @@ namespace Bigio
             {
                 _blockCollection.AddFirstBlockIfThereIsNeeded();
                 blockInfo.IndexOfBlock = 0;
-                blockInfo.StartIndex = 0;
+                blockInfo.StartIndexOfBlock = 0;
             }
             else if (index == Count) // Last position
             {
                 blockInfo.IndexOfBlock = _blockCollection.Count - 1;
-                blockInfo.StartIndex = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
+                blockInfo.StartIndexOfBlock = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
             }
             else // Default case
             {
@@ -738,7 +738,7 @@ namespace Bigio
 
             //Insert
             _blockCollection[blockInfo.IndexOfBlock].InsertRange(
-                index - blockInfo.StartIndex, collection);
+                index - blockInfo.StartIndexOfBlock, collection);
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
@@ -862,7 +862,7 @@ namespace Bigio
             var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
             //Remove
-            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.StartIndex);
+            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.StartIndexOfBlock);
 
             //If there is empty block, we will remove it
             if (_blockCollection[blockInfo.IndexOfBlock].Count == 0)
@@ -979,13 +979,13 @@ namespace Bigio
             {
                 //Check for exceptions in BlockInfo()
                 var blockInfo = _blockStructure.BlockInfo(index);
-                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex];
+                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndexOfBlock];
             }
             set
             {
                 //Check for exceptions in BlockInfo()
                 var blockInfo = _blockStructure.BlockInfo(index);
-                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndex] = value;
+                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndexOfBlock] = value;
             }
         }
 

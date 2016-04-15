@@ -51,7 +51,7 @@ namespace PerformanceTests
 
             Task.WaitAll(threads.ToArray());
 
-            StopwatchEstimation();
+            //StopwatchEstimation();
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
         }

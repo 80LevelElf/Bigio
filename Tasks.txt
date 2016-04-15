@@ -1,3 +1,4 @@
 1?) Create task in BlockStructure to update it async - I can't do that fully async, because I need _blockCollection and lock work too slowly
 2) Rewrite a lot of methods as multythread
 3) Rewrite code with Paralell
+4) Look Task Scheduler
