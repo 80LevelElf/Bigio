@@ -20,7 +20,7 @@ namespace Bigio
 
             private readonly int _blockCount;
 
-            private readonly BlockCollection<T> _blockCollection; 
+            private BlockCollection<T> _blockCollection; 
 
             /// <summary>
             /// Enumerator of current block. When we cross current block
@@ -46,10 +46,11 @@ namespace Bigio
                     Reset();
                 }
             }
+
             public void Dispose()
             {
-
             }
+
             public bool MoveNext()
             {
                 if (_subenumerator == null)

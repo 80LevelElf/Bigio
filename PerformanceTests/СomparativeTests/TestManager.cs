@@ -5,7 +5,7 @@ using System.Text;
 using Bigio;
 using Wintellect.PowerCollections;
 
-namespace PerformanceTests
+namespace PerformanceTests.СomparativeTests
 {
     public static class TestManager
     {
@@ -64,8 +64,8 @@ namespace PerformanceTests
         public static void TestInsertRangeInRandom()
         {
             WriteResult("InsertRangeInRandom",
-                GetBigioEngine().GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { HUNDRED, THOUSAND, MILLION / 100, MILLION / 10, MILLION })),
-                GetWintellectEngine().GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { HUNDRED, THOUSAND, MILLION / 100, MILLION / 10, MILLION })),
+                GetBigioEngine().GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { HUNDRED, THOUSAND, MILLION / 100, MILLION / 10 })),
+                GetWintellectEngine().GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { HUNDRED, THOUSAND, MILLION / 100, MILLION / 10 })),
                 GetListEngine().GetResult(new TestArguments("InsertRangeInRandom", CallFlag.ClearTestList, new[] { HUNDRED, THOUSAND, MILLION / 100 })));
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.Common.Classes;
 using Bigio.Common.Managers;
@@ -34,7 +35,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
     /// This class used for get information about BlockCollection(T) structure,
     /// for example for searching block with specified index.
     /// </summary>
-    class BlockStructure<T>
+    partial class BlockStructure<T>
     {
         //API
         public BlockStructure(BlockCollection<T> blockCollection)
@@ -445,8 +446,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             //Calc
             for (int i = searchBlockRange.Index; i < searchBlockRange.Index + searchBlockRange.Count; i++)
             {
-                var block = _blockCollection[i];
-                blockCount = block.Count;
+                blockCount = _blockCollection[i].Count;
 
                 //If there is needed block
                 if (index >= blockStartIndex && index < blockStartIndex + blockCount)

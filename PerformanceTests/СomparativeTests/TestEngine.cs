@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace PerformanceTests
+namespace PerformanceTests.СomparativeTests
 {
     public class TestEngine<TList> where TList : IList<int>
     {
         private readonly TList _list;
         private const int DEFAULT_LIST_SIZE = 1000000;
         private readonly int[] _sampleArray = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-        private readonly Stopwatch _stopwatch = new Stopwatch();
         private readonly Random _random = new Random();
 
         /// <summary>
@@ -57,27 +55,16 @@ namespace PerformanceTests
 
                 for (int i = 0; i < countOfInvokations; i++)
                 {
-                    timeOfAllInvoketionsMs += MeasureMethod(method, argumentList, flag);
+                    if (flag == CallFlag.ClearTestList)
+                        ClearList();
+                    if (flag == CallFlag.FillTestList)
+                        FillList();
+
+                    timeOfAllInvoketionsMs += MeasureEngine.MeasureMethod(this, method, argumentList);
                 }
                 
                 yield return new TestResult(currentCount, timeOfAllInvoketionsMs / countOfInvokations);
             }
-        }
-
-        private long MeasureMethod(MethodInfo method, List<object> argument, CallFlag flag)
-        {
-            if (flag == CallFlag.ClearTestList)
-                ClearList();
-            if (flag == CallFlag.FillTestList)
-                FillList();
-
-            _stopwatch.Reset();
-            _stopwatch.Start();
-
-            method.Invoke(this, argument.ToArray());
-
-            _stopwatch.Stop();
-            return _stopwatch.ElapsedMilliseconds;
         }
 
         protected void ClearList()

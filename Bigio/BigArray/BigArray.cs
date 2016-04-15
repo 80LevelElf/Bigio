@@ -694,9 +694,7 @@ namespace Bigio
                 bool isPrevBlockFull = false;
 
                 if (!isStartBlock)
-                {
                     isPrevBlockFull = (_blockCollection[blockInfo.IndexOfBlock].Count == MaxBlockSize);
-                }
 
                 if (isStartBlock || isPrevBlockFull)
                 {

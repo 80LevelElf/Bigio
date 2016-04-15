@@ -82,9 +82,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public BlockCollection(IBigList<Block<T>> blockCollection, ICollection<T> collection) : this()
         {
             if (blockCollection == null)
-            {
                 throw new ArgumentOutOfRangeException("blockCollection");
-            }
 
             _blocks = blockCollection;
             Initialize(collection);
@@ -101,9 +99,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void Add(Block<T> block)
         {
             if (block == null)
-            {
                 throw new ArgumentNullException("block");
-            }
 
             Add(block, 0, block.Count);
         }
@@ -119,9 +115,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void Add(ICollection<T> block)
         {
             if (block == null)
-            {
                 throw new ArgumentNullException("block");
-            }
 
             Add(block, 0, block.Count);
         }
@@ -155,7 +149,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void Add(ICollection<T> block, int blockSubindex, int blockCount)
         {
             if (block.Count != 0)
-                AddRange(DivideIntoBlocks(block, blockSubindex, blockCount));
+                AddDividedBlockRange(DivideIntoBlocks(block, blockSubindex, blockCount));
         }
 
         /// <summary>
@@ -181,21 +175,12 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void AddRange(ICollection<Block<T>> range)
         {
             if (range == null)
-            {
                 throw new ArgumentNullException("range");
-            }
-
-            var blocksToAdd = new List<Block<T>>(range.Count);
 
             //Divide each block
             foreach (var block in range)
             {
-                blocksToAdd.AddRange(DivideIntoBlocks(block));
-            }
-
-            if (blocksToAdd.Count != 0)
-            {
-                _blocks.AddRange(blocksToAdd);
+                _blocks.AddRange(DivideIntoBlocks(block));
             }
         }
 
@@ -406,21 +391,15 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             (ICollection<T> collection, int collectionIndex, int countToDivide)
         {
             if (collection == null)
-            {
                 throw new ArgumentNullException("collection");
-            }
 
             if (!collection.IsValidRange(collectionIndex, countToDivide))
-            {
                 throw new ArgumentOutOfRangeException();
-            }
 
             //Calculate blocks count
             int countOfBlocks = countToDivide / DefaultBlockSize;
             if (countToDivide % DefaultBlockSize != 0)
-            {
                 countOfBlocks++;
-            }
 
             var blocks = new Block<T>[countOfBlocks];
 
@@ -436,25 +415,23 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
                 //Calculate curent block size
                 int currentBlockSize;
                 if (i != countOfBlocks - 1)
-                {
                     currentBlockSize = DefaultBlockSize;
-                }
                 else
-                {
                     currentBlockSize = countToDivide - (i * DefaultBlockSize);
-                }
+
                 //Declare new block
                 blocks[i] = new Block<T>(DefaultBlockSize);
+
                 //Transfer data
                 for (int j = 0; j < currentBlockSize; j++)
                 {
                     item.MoveNext();
-                    //Insert data
+
                     T insertion = item.Current;
                     blocks[i].Add(insertion);
                 }
             }
-            //Return result
+
             return blocks;
         }
 
@@ -465,11 +442,17 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         private void Initialize(ICollection<T> collection)
         {
             if (collection == null)
-            {
                 throw new ArgumentNullException("collection");
-            }
 
             AddRange(DivideIntoBlocks(collection));
+        }
+
+        private void AddDividedBlockRange(ICollection<Block<T>> range)
+        {
+            if (range == null)
+                throw new ArgumentNullException("range");
+
+            _blocks.AddRange(range);
         }
 
         //Data
@@ -509,13 +492,10 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             set
             {
                 if (value < 0)
-                {
                     throw new ArgumentOutOfRangeException("value");
-                }
+
                 if (value > MaxBlockSize)
-                {
                     throw new ArgumentOutOfRangeException("value", "DefaultBlockSize cant be more than MaxBlockSize");
-                }
 
                 _defaultBlockSize = value;
             }
