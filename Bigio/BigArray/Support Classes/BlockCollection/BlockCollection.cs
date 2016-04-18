@@ -211,14 +211,10 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void CopyTo(Block<T>[] array, int arrayIndex)
         {
             if (array == null)
-            {
                 throw new ArgumentNullException("array");
-            }
 
             if (!array.IsValidRange(arrayIndex, Count))
-            {
                 throw new ArgumentOutOfRangeException("arrayIndex");
-            }
 
             _blocks.CopyTo(array, arrayIndex);
         }
@@ -273,14 +269,10 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void InsertRange(int index, ICollection<Block<T>> range)
         {
             if (range == null)
-            {
                 throw new ArgumentNullException("range");
-            }
 
-            if (!this.IsValidIndex(index) && index != Count) //We also can insert item as last block
-            {
+            if (!this.IsValidIndex(index) && index != Count/*We also can insert item as last block*/)
                 throw new ArgumentOutOfRangeException("index");
-            }
 
             var blocksToInsert = new List<Block<T>>(range.Count);
 
@@ -291,9 +283,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             }
 
             if (blocksToInsert.Count != 0)
-            {
                 _blocks.InsertRange(index, blocksToInsert);
-            }
         }
 
         /// <summary>
@@ -314,9 +304,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void RemoveAt(int index)
         {
             if (!this.IsValidIndex(index))
-            {
                 throw new ArgumentOutOfRangeException("index");
-            }
 
             _blocks.RemoveAt(index);
         }
@@ -337,9 +325,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void TryToDivideBlock(int index)
         {
             if (!this.IsValidIndex(index))
-            {
                 throw new ArgumentOutOfRangeException("index");
-            }
 
             int count = _blocks[index].Count;
             if (count >= MaxBlockSize)
@@ -368,9 +354,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         private ICollection<Block<T>> DivideIntoBlocks(ICollection<T> collection)
         {
             if (collection == null)
-            {
                 throw new ArgumentNullException("collection");
-            }
 
             if (collection.Count == 0)
                 return new Block<T>[0];

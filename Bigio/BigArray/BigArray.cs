@@ -87,10 +87,8 @@ namespace Bigio
         /// </summary>
         public void Add(T value)
         {
-            _blockCollection.AddFirstBlockIfThereIsNeeded();
-
             int indexOfBlock = _blockCollection.Count - 1;
-            if (_blockCollection[indexOfBlock].Count >= MaxBlockSize)
+            if (_blockCollection.Count == 0 || _blockCollection[indexOfBlock].Count >= MaxBlockSize)
             {
                 _blockCollection.AddNewBlock();
                 indexOfBlock++;

@@ -11,18 +11,10 @@ namespace PerformanceTests
     {
         static void StopwatchEstimation()
         {
-            var list = new BigArray<int>();
-
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Random random = new Random();
             //Write some test here
-
-            for (int i = 0; i < 1000000; i++)
-            {
-                list.Insert(random.Next(i), i);
-            }
 
             stopwatch.Stop();
             Console.WriteLine(stopwatch.ElapsedMilliseconds);

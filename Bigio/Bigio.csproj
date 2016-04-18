@@ -38,7 +38,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigArray\BigArayAsyncEnumerator.cs" />
     <Compile Include="BigArray\BigArray.cs" />
     <Compile Include="BigArray\BigArrayEnumerator.cs" />
     <Compile Include="BigArray\Interfaces\IBigList.cs" />
