@@ -33,9 +33,36 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
     /// This class used for get information about BlockCollection(T) structure,
     /// for example for searching block with specified index.
     /// </summary>
-    partial class BlockStructure<T>
+    internal class BlockStructure<T>
     {
+        //Data
+
+        /// <summary>
+        /// Parent _blockCollection to define structure of it.
+        /// </summary>
+        private BlockCollection<T> _blockCollection;
+
+        /// <summary>
+        /// Information about each block, which contain in _blockCollection.
+        /// It can be defferent from real information if data changed and user don't update information.
+        /// </summary>
+        private BlockInfo[] _blocksInfo;
+
+        /// <summary>
+        /// If information changed and it is need to be update flag will be true, otherwise false.
+        /// </summary>
+        private bool _isDataChanged = true;
+
+        private int _indexOfChangedBlock = -1;
+
+        /// <summary>
+        /// It is a cache information of count of elements in BigArray(T).
+        /// If data changed, it can be different from real count.
+        /// </summary>
+        private int _countOfElements;
+
         //API
+
         public BlockStructure(BlockCollection<T> blockCollection)
         {
             BlockCollection = blockCollection;
@@ -250,9 +277,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// You need to call this function after you changed data in BigArray
         /// to update structure of BlockStructure when it will be need to do.
         /// </summary>
-        public void DataChanged()
+        public void DataChanged(int blockIndex)
         {
             _isDataChanged = true;
+            _indexOfChangedBlock = _indexOfChangedBlock == -1 ? blockIndex : Math.Min(_indexOfChangedBlock, blockIndex);
         }
 
         //Support classes
@@ -462,50 +490,5 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
             return new BlockInfo(indexOfBlock, blockStartIndex, blockCount);
         }
-
-        #region BinaryBlockInfo
-
-        /*private BlockInfo BinaryBlockInfo_Multythread(int index, Range searchBlockRange)
-        {
-            TryToUpdateStructureInfo();
-
-            //Check for validity
-            if (!ValidationManager.IsValidIndex(_countOfElements, index))
-                throw new ArgumentOutOfRangeException("index");
-
-            if (searchBlockRange.Count == 0)
-            {
-                if (!_blocksInfo.IsValidIndex(searchBlockRange.Index))
-                    throw new ArgumentOutOfRangeException("searchBlockRange");
-
-                return new BlockInfo();
-            }
-        }*/
-
-        #endregion
-
-        //Data
-
-        /// <summary>
-        /// Parent _blockCollection to define structure of it.
-        /// </summary>
-        private BlockCollection<T> _blockCollection;
-
-        /// <summary>
-        /// Information about each block, which contain in _blockCollection.
-        /// It can be defferent from real information if data changed and user don't update information.
-        /// </summary>
-        private BlockInfo[] _blocksInfo;
-
-        /// <summary>
-        /// If information changed and it is need to be update flag will be true, otherwise false.
-        /// </summary>
-        private bool _isDataChanged = true;
-
-        /// <summary>
-        /// It is a cache information of count of elements in BigArray(T).
-        /// If data changed, it can be different from real count.
-        /// </summary>
-        private int _countOfElements;
     }
 }

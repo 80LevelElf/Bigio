@@ -44,14 +44,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EngineMeasuringTest\BlockStructureTest.cs" />
     <Compile Include="MeasureEngine.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="СomparativeTests\TestArguments.cs" />
+    <Compile Include="TestArguments.cs" />
+    <Compile Include="TestResult.cs" />
     <Compile Include="СomparativeTests\CallFlag.cs" />
     <Compile Include="СomparativeTests\TestEngine.cs" />
     <Compile Include="СomparativeTests\TestManager.cs" />
-    <Compile Include="СomparativeTests\TestResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -63,9 +64,7 @@
       <Name>Bigio</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="EngineMeasuringTest\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

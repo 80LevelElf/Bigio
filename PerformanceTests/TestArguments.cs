@@ -1,4 +1,6 @@
-﻿namespace PerformanceTests.СomparativeTests
+﻿using PerformanceTests.СomparativeTests;
+
+namespace PerformanceTests
 {
     public class TestArguments
     {
@@ -7,6 +9,13 @@
             MethodName = methodName;
             TestCountArray = testCountArray;
             CallFlag = flag;
+        }
+
+        public TestArguments(string methodName, int[] testCountArray)
+        {
+            MethodName = methodName;
+            TestCountArray = testCountArray;
+            CallFlag = CallFlag.NoFlag;
         }
 
         public string MethodName { get; private set; }

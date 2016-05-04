@@ -97,7 +97,7 @@ namespace Bigio
             _blockCollection[indexOfBlock].Add(value);
 
             Count++;
-            _blockStructure.DataChanged();
+            _blockStructure.DataChanged(indexOfBlock);
         }
 
         /// <summary>
@@ -114,7 +114,8 @@ namespace Bigio
                 return;
 
             _blockCollection.AddFirstBlockIfThereIsNeeded();
-            var lastBlock = _blockCollection[_blockCollection.Count - 1];
+            int lastBlockIndex = _blockCollection.Count - 1;
+            var lastBlock = _blockCollection[lastBlockIndex];
 
             //Transfer data to the last block while it is possible
             var sizeOfTransferToLastBlock = 0;
@@ -137,7 +138,7 @@ namespace Bigio
                 _blockCollection.Add(collection, sizeOfTransferToLastBlock);
 
             Count += collection.Count;
-            _blockStructure.DataChanged();
+            _blockStructure.DataChanged(lastBlockIndex);
         }
 
         /// <summary>
@@ -673,7 +674,7 @@ namespace Bigio
             if (isMaxSize)
             {
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
-                _blockStructure.DataChanged();
+                _blockStructure.DataChanged(blockInfo.IndexOfBlock);
                 Insert(index, item);
                 return;
             }
@@ -704,7 +705,7 @@ namespace Bigio
             }
 
             Count++;
-            _blockStructure.DataChanged();
+            _blockStructure.DataChanged(blockInfo.IndexOfBlock);
         }
 
         /// <summary>
@@ -740,7 +741,7 @@ namespace Bigio
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
-            _blockStructure.DataChanged();
+            _blockStructure.DataChanged(blockInfo.IndexOfBlock);
         }
 
         /// <summary>
@@ -808,7 +809,8 @@ namespace Bigio
             _blockCollection.AddRange(divideBlocks);
 
             //We must do it because we have changed count of elements in blocks
-            _blockStructure.DataChanged();
+            if (_blockCollection.Count != 0)
+                _blockStructure.DataChanged(0);
         }
 
         /// <summary>
@@ -832,10 +834,14 @@ namespace Bigio
 
                     //If there is empty block - remove it
                     if (block.Count == 0)
+                    {
                         _blockCollection.RemoveAt(i);
+                    }
 
                     Count--;
-                    _blockStructure.DataChanged();
+
+                    //TODO: it's not right. Rewrite it
+                    _blockStructure.DataChanged(i);
 
                     return true;
                 }
@@ -867,7 +873,8 @@ namespace Bigio
                 _blockCollection.RemoveAt(blockInfo.IndexOfBlock);
 
             Count--;
-            _blockStructure.DataChanged();
+            //TODO: it's not right. Rewrite it
+            _blockStructure.DataChanged(blockInfo.IndexOfBlock);
         }
 
         /// <summary>
@@ -887,7 +894,8 @@ namespace Bigio
                 _blockCollection.RemoveAt(indexOfLastBlock);
 
             Count--;
-            _blockStructure.DataChanged();
+            //TODO: it's not right. Rewrite it
+            _blockStructure.DataChanged(indexOfLastBlock);
         }
 
         /// <summary>
@@ -932,7 +940,9 @@ namespace Bigio
                 indexOfBlock++;
             }
 
-            _blockStructure.DataChanged();
+            //TODO: it's not right. Rewrite it
+            _blockStructure.DataChanged(indexOfBlock);
+
             Count -= count;
         }
 

@@ -2,7 +2,8 @@
 {
     public enum CallFlag
     {
-        FillTestList = 1,
-        ClearTestList = 2
+        NoFlag = 0,
+        FillTestCollection = 1,
+        ClearTestCollection = 2,
     }
 }

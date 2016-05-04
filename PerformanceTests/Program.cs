@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Bigio;
+using PerformanceTests.EngineMeasuringTest;
 using PerformanceTests.СomparativeTests;
 
 namespace PerformanceTests
@@ -20,8 +21,21 @@ namespace PerformanceTests
             Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
-        static void Main(string[] args)
+        static void StartBlockStructureTest()
         {
+            Console.WriteLine("BlockStructure performance test");
+            var threads = new List<Task>()
+            {
+                Task.Factory.StartNew(BlockStructureTest.TestBinarySearch),
+                Task.Factory.StartNew(BlockStructureTest.TestLinearSearch),
+            };
+
+            Task.WaitAll(threads.ToArray());
+        }
+
+        static void StartСomparativeTests()
+        {
+            Console.WriteLine("Сomparative estimation of Bigio BigArray, Wintellect BigList and .Net List");
             var threads = new List<Task>()
             {
                 Task.Factory.StartNew(TestManager.TestFor),
@@ -42,8 +56,11 @@ namespace PerformanceTests
             };
 
             Task.WaitAll(threads.ToArray());
+        }
 
-            //StopwatchEstimation();
+        static void Main(string[] args)
+        {
+            StartСomparativeTests();
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
         }

@@ -1,4 +1,4 @@
-﻿namespace PerformanceTests.СomparativeTests
+﻿namespace PerformanceTests
 {
     public class TestResult
     {

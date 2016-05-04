@@ -16,5 +16,10 @@ namespace PerformanceTests
             stopwatch.Stop();
             return stopwatch.ElapsedMilliseconds;
         }
+
+        public static long MeasureStaticMethod(MethodInfo method, List<object> argument)
+        {
+            return MeasureMethod(null, method, argument);
+        }
     }
 }

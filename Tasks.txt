@@ -1,4 +1,9 @@
-1?) Create task in BlockStructure to update it async - I can't do that fully async, because I need _blockCollection and lock work too slowly
-2) Rewrite a lot of methods as multythread
-3) Rewrite code with Paralell
-4) Look Task Scheduler
+1) Rewrite a lot of methods as multythread
+2) Rewrite code with Paralell
+3) Look Task Scheduler
+
+Current:
+Add last changed index to BlockStructure. Now:
+1) We can use it in BinarySearch if our index is in "proved" part of block structure
+2) We can use it LinearSearch - start with last known blockStructureIndex and move on.
+And most of all - after such moving we can restore BlockStructure

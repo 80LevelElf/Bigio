@@ -50,14 +50,15 @@ namespace PerformanceTests.СomparativeTests
                 if (_usingReflectionMethods.ContainsKey(methodName))
                     argumentList.Add(_usingReflectionMethods[methodName]);
 
+                //Get middle estimation of several times calling
                 long timeOfAllInvoketionsMs = 0;
                 int countOfInvokations = 3;
 
                 for (int i = 0; i < countOfInvokations; i++)
                 {
-                    if (flag == CallFlag.ClearTestList)
+                    if (flag == CallFlag.ClearTestCollection)
                         ClearList();
-                    if (flag == CallFlag.FillTestList)
+                    if (flag == CallFlag.FillTestCollection)
                         FillList();
 
                     timeOfAllInvoketionsMs += MeasureEngine.MeasureMethod(this, method, argumentList);
