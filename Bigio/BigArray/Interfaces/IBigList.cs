@@ -3,8 +3,8 @@
 namespace Bigio.BigArray.Interfaces
 {
     /// <summary>
-    /// IBigList is a IList collection with additional methods for more fast work
-    /// as internal block collection of BigArray(T).
+    /// IBigList is a <see cref="IList{T}"/> collection with additional methods for more fast work
+    /// as internal block collection of <see cref="BigArray{T}"/>.
     /// </summary>
     public interface IBigList<T>: IList<T>
     {

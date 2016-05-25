@@ -8,7 +8,7 @@ using Bigio.Common.Managers;
 namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
     /// <summary>
-    /// This class used for get information about BlockCollection(T) structure,
+    /// This class used for get information about <see cref="BlockCollection{T}"/> structure,
     /// for example for searching block with specified index.
     /// </summary>
     internal class BlockStructure<T>
@@ -16,29 +16,33 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         //Data
 
         /// <summary>
-        /// We use this flag to show that all blockInfo in _blocksInfoList is up to date.
+        /// We use this flag to show that all <see cref="BlockInfo(int)"/> in <see cref="_blocksInfoList"/> is up to date.
         /// </summary>
         public const int NoBlockChanges = -1;
 
         /// <summary>
-        /// Parent _blockCollection to define structure of it.
+        /// Parent <see cref="BlockCollection"/> to define structure of it.
         /// </summary>
         private BlockCollection<T> _blockCollection;
 
         /// <summary>
-        /// Information about each block, which contain in _blockCollection.
+        /// Information about each block, which contain in <see cref="_blockCollection"/>.
         /// It can be defferent from real information if data changed and user don't update information.
         /// Important: _blocksInfoList can be obsoloete if <see cref="_indexOfFirstChangedBlock"/> was changed!
         /// </summary>
         private readonly List<BlockInfo> _blocksInfoList;
 
         /// <summary>
-        /// It is an index of first changed block. Since this block information of _blocksInfoList is obsolete.
+        /// It is an index of first changed block. Next to this block information of <see cref="_blocksInfoList"/> is obsolete.
+        /// If block structure is up to date _indexOfFirstChangedBlock equals to <see cref="NoBlockChanges"/>
         /// </summary>
         private int _indexOfFirstChangedBlock;
 
         //API
-
+        /// <summary>
+        /// Create new instance of <see cref="BlockStructure"/> describing specify <see cref="BlockCollection"/>
+        /// </summary>
+        /// <param name="blockCollection"><see cref="BlockCollection"/> to descibe.</param>
         public BlockStructure(BlockCollection<T> blockCollection)
         {
             BlockCollection = blockCollection;
@@ -51,9 +55,9 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Calculate information about block and location of block inside BlockCollection(T).
+        /// Calculate information about block and location of block inside <see cref="BlockCollection{T}"/>.
         /// </summary>
-        /// <param name="index">Common zero-based index of element in BigArray(T).
+        /// <param name="index">Common zero-based index of element in <see cref="BigArray{T}"/>.
         ///  It's to find parent block.</param>
         public BlockInfo BlockInfo(int index)
         {
@@ -61,12 +65,12 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Calculate information about block and location of block inside BlockCollection(T).
+        /// Calculate information about block and location of block inside <see cref="BlockCollection{T}"/>.
         /// </summary>
-        /// <param name="index">Common zero-based index of element in BigArray(T). 
+        /// <param name="index">Common zero-based index of element in <see cref="BigArray{T}"/>. 
         /// It's to find parent block.</param>
         /// <param name="statBlockIndex">Function will try to find block, which containes
-        /// specified index from statBlockIndex to last block of BlockCollection(T).
+        /// specified index from statBlockIndex to last block of <see cref="BlockCollection{T}"/>.
         /// It use to get better performance.</param>
         public BlockInfo BlockInfo(int index, int statBlockIndex)
         {
@@ -74,12 +78,12 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Calculate information about block and location of block inside BlockCollection(T).
+        /// Calculate information about block and location of block inside <see cref="BlockCollection{T}"/>.
         /// </summary>
-        /// <param name="index">Common zero-based index of element in BigArray(T).
+        /// <param name="index">Common zero-based index of element in <see cref="BigArray{T}"/>.
         ///  It's to find parent block.</param>
         /// <param name="searchBlockRange">Function will try to find block, which containes
-        /// specified index in this range of BlockCollection(T).
+        /// specified index in this range of <see cref="BlockCollection{T}"/>.
         /// It use to get better performance.</param>
         public BlockInfo BlockInfo(int index, Range searchBlockRange)
         {
@@ -94,10 +98,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
         /// <summary>
         /// Calculate a block range for all blocks that overlap with specified range.
-        /// Block range provide information about overlapping specified range and block.
+        /// Block range provide information about overlapping specified <param name="calcRange"></param> and block.
         /// </summary>
         /// <param name="calcRange">Range to get multyblock range.</param>
-        /// <returns>Return MultyblockRange object provides information about overlapping of specified range and block.</returns>
+        /// <returns>Return MultyblockRange object provides information about overlapping of specified <see cref="calcRange"/> and block.</returns>
         public MultyblockRange MultyblockRange(Range calcRange)
         {
             //If user want to select empty block
@@ -118,7 +122,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Calculate a reverse block range for all blocks that overlap with specified range.
+        /// Calculate a reverse block range for all blocks that overlap with specified <see cref="calcRange"/>.
         /// Block range provide information about overlapping specified range and block.
         /// ReverseMultyblockRange start with last BlockRange(IndexOfStartBlock is index of last overlap block)
         /// so first element in ReverseMultyblockRange is information about last overlapping block.
@@ -129,7 +133,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// For example: if you want to get ReverseMultyblockRange of array with one block with 100 element,
         /// you will must write this: structureObject.ReverseMultyblockRange(99, 100);
         /// </param>
-        /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
+        /// <returns>Return reverse <see cref="BlockStructure.MultyblockRange"/> object provides information about reverse overlapping of specified 
+        /// <see cref="calcRange"/> and block.</returns>
         public MultyblockRange ReverseMultyblockRange(Range calcRange)
         {
             if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
@@ -255,12 +260,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// This way to find block with specified index have log(2,n) performance,
-        /// where n is count of blocks. But this way use information of blocks 
-        /// and if we want to use this way, we'll must to calculate structure information before.
-        /// It is good way to get BlockInfo if you won't change data in BigArray(T)
-        /// after getting BlockInfo
-        /// (For example if you want to get element in BigArray(T) with specified index).
+        /// It is way to find block we already cached. This method have log(2,n) complexity and use some kind of
+        /// binary search.
         /// </summary>
         /// <param name="index">Index to find information about block, which containes it.</param>
         /// <param name="searchBlockRange">Block range to find index in it. It use to get better performance.</param>
@@ -338,13 +339,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// This way to find block with specified index have n performance,
-        /// where n is count of blocks. This way don't need any information about
-        /// structure as BinarySearch and you must use it, if you will change data in BigArray(T)
-        /// for example if you wany to find info about block to delete element inside this block.
+        /// It is way to find needed block if we don't cache it yet. This method have O(n) complexity.
+        /// In fact we just get last cached block and move next until we find block we need. Also we cache all new blocks until needed.
         /// </summary>
         /// <param name="index">Index to find information about block, which containes it.</param>
-        /// <param name="searchBlockRange">Range to find index in it. It use to get better performance.</param>
+        /// <param name="searchBlockRange"><see cref="Range"/> to find index in it. It use to get better performance.</param>
         /// <returns>Information about block, which contain specified index.</returns>
         private BlockInfo LinearBlockInfo(int index, Range searchBlockRange)
         {
@@ -390,8 +389,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Get first cached block info to start with in linear search.
-        /// If we don't have anyone - add first block
+        /// Get first cached <see cref="BlockStructure.BlockInfo"/> to start with in <see cref="LinearBlockInfo"/>.
+        /// If we don't have anyone - add first <see cref="BlockStructure.BlockInfo"/>
         /// </summary>
         private BlockInfo GetStartBlockInfoForLinear()
         {
@@ -419,27 +418,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             return _blocksInfoList[_indexOfFirstChangedBlock - 1];
         }
 
-        //Support classes
         /// <summary>
-        /// Updates information about structure to use BinaryBlockInfo.
+        /// Get count of elements we already have in our cache. It might be helpful to determine what kind of search 
+        /// need to call.
         /// </summary>
-        private void TryToUpdateStructureInfo()
-        {
-            _blocksInfoList.Clear();
-            var commonStartIndex = 0;
-
-            for (int i = 0; i < _blockCollection.Count; i++)
-            {
-                var blockCount = _blockCollection[i].Count;
-
-                _blocksInfoList.Add(new BlockInfo(i, commonStartIndex, blockCount));
-
-                commonStartIndex += blockCount;
-            }
-
-            _indexOfFirstChangedBlock = NoBlockChanges;
-        }
-
+        /// <returns>Count of cached elements.</returns>
         private int GetCachedElementCount()
         {
             if (_indexOfFirstChangedBlock == NoBlockChanges)
@@ -460,6 +443,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             return GetCountByEndBlock(_blocksInfoList[indexOfFirstChangedBlock - 1]);
         }
 
+        /// <summary>
+        /// Get real count of cached blocks we have.
+        /// </summary>
+        /// <returns>Real count of cached blocks we have</returns>
         private int GetCachedBlockCount()
         {
             if (_indexOfFirstChangedBlock == NoBlockChanges)
@@ -468,6 +455,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             return _indexOfFirstChangedBlock;
         }
 
+        /// <summary>
+        /// Get count of elements in range of start block to specife <param name="endBlockInfo"></param>
+        /// </summary>
+        /// <param name="endBlockInfo">End block of block range to get element count of</param>
+        /// <returns>Count of elements in range of start block to specify <param name="endBlockInfo"></param></returns>
         private int GetCountByEndBlock(BlockInfo endBlockInfo)
         {
             return endBlockInfo.CommonStartIndex + endBlockInfo.Count;

@@ -25,19 +25,19 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         private readonly IBigList<Block<T>> _blocks;
 
         /// <summary>
-        /// Internal value of DefaultBlockSize. Never used it out of DefaultBlockSize set and get method.
+        /// Internal value of <see cref="DefaultBlockSize"/>.
         /// </summary>
         private int _defaultBlockSize;
 
         /// <summary>
-        /// Internal value of MaxBlockSize. Never used it out of DefaultBlockSize set and get method.
+        /// Internal value of <see cref="MaxBlockSize"/>.
         /// </summary>
         private int _maxBlockSize;
 
         //API
 
         /// <summary>
-        /// Create a new instance of Blocks(T) class.
+        /// Create a new instance of <see cref="BlockCollection{T}"/> class.
         /// </summary>
         public BlockCollection()
         {
@@ -49,18 +49,16 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Create a new instance of Blocks(T) class.
+        /// Create a new instance of <see cref="BlockCollection{T}"/> class and use <see cref="blockCollection"/> as block collection.
         /// </summary>
-        /// <param name="blockCollection">Collection to set it as internal block collection
-        /// for controll of it. It can't be null.</param>
-        public BlockCollection(IBigList<Block<T>> blockCollection)
-            : this(blockCollection, new Collection<T>())
+        /// <param name="blockCollection">Collection to set it as internal block collection for controll of it. It can't be null.</param>
+        public BlockCollection(IBigList<Block<T>> blockCollection) : this(blockCollection, new Collection<T>())
         {
             
         }
 
         /// <summary>
-        /// Create a new instance of Blocks(T) class.t. 
+        /// Create a new instance of <see cref="BlockCollection"/> and get blocks from specify <see cref="collection"/>
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new BigArray(T).
         /// The collection it self cannot be null and cant contain null blocks

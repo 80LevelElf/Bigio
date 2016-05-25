@@ -1,9 +1,1 @@
-1) Rewrite a lot of methods as multythread
-2) Rewrite code with Paralell
-3) Look Task Scheduler
-
-Current:
-Add last changed index to BlockStructure. Now:
-1) We can use it in BinarySearch if our index is in "proved" part of block structure
-2) We can use it LinearSearch - start with last known blockStructureIndex and move on.
-And most of all - after such moving we can restore BlockStructure
+1) Rewrite BlockCollection to make it use template and reflection instead of IBigList<Block<T>> blockCollection
