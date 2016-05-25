@@ -11,7 +11,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public void Test()
         {
             var array = new BigArray<int>();
-            int count = (int) Math.Pow(10, 7);
+            int count = (int) Math.Pow(10, 6);
 
             for (int i = 0; i < count; i++)
             {
@@ -19,7 +19,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             }
 
             //Checking
-            int startIndex = (int)Math.Pow(10, 4); 
+            int startIndex = (int)Math.Pow(10, 3); 
 
             BigArray<int>.BigArrayEnumerator enumerator = (BigArray<int>.BigArrayEnumerator) array.GetEnumerator();
             enumerator.MoveToIndex(startIndex);

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Bigio.BigArray.Interfaces;
@@ -95,9 +96,9 @@ namespace Bigio
             }
 
             _blockCollection[indexOfBlock].Add(value);
+            _blockStructure.DataChanged(indexOfBlock);
 
             Count++;
-            _blockStructure.DataChanged(indexOfBlock);
         }
 
         /// <summary>
@@ -665,7 +666,7 @@ namespace Bigio
 
             var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
-            int blockSubindex = index - blockInfo.StartIndexOfBlock;
+            int blockSubindex = index - blockInfo.CommonStartIndex;
             var block = _blockCollection[blockInfo.IndexOfBlock];
 
             bool isMaxSize = (block.Count == MaxBlockSize);
@@ -684,6 +685,7 @@ namespace Bigio
             {
                 _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
+                _blockStructure.DataChanged(blockInfo.IndexOfBlock);
             }
             //Try to add to the previous block
             else
@@ -698,14 +700,15 @@ namespace Bigio
                 if (isStartBlock || isPrevBlockFull)
                 {
                     _blockCollection.InsertNewBlock(blockInfo.IndexOfBlock);
+
                     blockInfo.IndexOfBlock++;
                 }
 
                 _blockCollection[blockInfo.IndexOfBlock - 1].Add(item);
+                _blockStructure.DataChanged(blockInfo.IndexOfBlock - 1);
             }
 
             Count++;
-            _blockStructure.DataChanged(blockInfo.IndexOfBlock);
         }
 
         /// <summary>
@@ -723,12 +726,12 @@ namespace Bigio
             {
                 _blockCollection.AddFirstBlockIfThereIsNeeded();
                 blockInfo.IndexOfBlock = 0;
-                blockInfo.StartIndexOfBlock = 0;
+                blockInfo.CommonStartIndex = 0;
             }
             else if (index == Count) // Last position
             {
                 blockInfo.IndexOfBlock = _blockCollection.Count - 1;
-                blockInfo.StartIndexOfBlock = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
+                blockInfo.CommonStartIndex = Count - _blockCollection[blockInfo.IndexOfBlock].Count;
             }
             else // Default case
             {
@@ -737,7 +740,7 @@ namespace Bigio
 
             //Insert
             _blockCollection[blockInfo.IndexOfBlock].InsertRange(
-                index - blockInfo.StartIndexOfBlock, collection);
+                index - blockInfo.CommonStartIndex, collection);
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
@@ -836,13 +839,14 @@ namespace Bigio
                     if (block.Count == 0)
                     {
                         _blockCollection.RemoveAt(i);
+                        _blockStructure.DataChangedAfterBlockRemoving(i);
+                    }
+                    else
+                    {
+                        _blockStructure.DataChanged(i); 
                     }
 
                     Count--;
-
-                    //TODO: it's not right. Rewrite it
-                    _blockStructure.DataChanged(i);
-
                     return true;
                 }
             }
@@ -866,15 +870,20 @@ namespace Bigio
             var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
 
             //Remove
-            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.StartIndexOfBlock);
+            _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.CommonStartIndex);
 
             //If there is empty block, we will remove it
             if (_blockCollection[blockInfo.IndexOfBlock].Count == 0)
+            {
                 _blockCollection.RemoveAt(blockInfo.IndexOfBlock);
+                _blockStructure.DataChangedAfterBlockRemoving(blockInfo.IndexOfBlock);
+            }
+            else
+            {
+                _blockStructure.DataChanged(blockInfo.IndexOfBlock);
+            }
 
             Count--;
-            //TODO: it's not right. Rewrite it
-            _blockStructure.DataChanged(blockInfo.IndexOfBlock);
         }
 
         /// <summary>
@@ -891,11 +900,16 @@ namespace Bigio
             lastBlock.RemoveAt(lastBlock.Count - 1);
 
             if (lastBlock.Count == 0)
+            {
                 _blockCollection.RemoveAt(indexOfLastBlock);
+                _blockStructure.DataChangedAfterBlockRemoving(indexOfLastBlock);
+            }
+            else
+            {
+                _blockStructure.DataChanged(indexOfLastBlock);
+            }
 
             Count--;
-            //TODO: it's not right. Rewrite it
-            _blockStructure.DataChanged(indexOfLastBlock);
         }
 
         /// <summary>
@@ -940,9 +954,7 @@ namespace Bigio
                 indexOfBlock++;
             }
 
-            //TODO: it's not right. Rewrite it
-            _blockStructure.DataChanged(indexOfBlock);
-
+            _blockStructure.DataChangedAfterBlockRemoving(multyblockRange.IndexOfStartBlock);
             Count -= count;
         }
 
@@ -987,13 +999,13 @@ namespace Bigio
             {
                 //Check for exceptions in BlockInfo()
                 var blockInfo = _blockStructure.BlockInfo(index);
-                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndexOfBlock];
+                return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.CommonStartIndex];
             }
             set
             {
                 //Check for exceptions in BlockInfo()
                 var blockInfo = _blockStructure.BlockInfo(index);
-                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.StartIndexOfBlock] = value;
+                _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.CommonStartIndex] = value;
             }
         }
 
@@ -1006,11 +1018,9 @@ namespace Bigio
             {
                 return _count;
             }
-            set
+            private set
             {
-                if (value < 0)
-                    throw new ArgumentOutOfRangeException("value", "Count cant be less then 0!");
-
+                Debug.Assert(value >= 0);
                 _count = value;
             }
         }

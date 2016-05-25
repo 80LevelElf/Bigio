@@ -22,16 +22,19 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
                 distributedArray.Add(i);
             }
             Assert.AreEqual(distributedArray.Count, size/4);
+
             for (int i = 0; i < size/4; i++)
             {
                 distributedArray.Insert(i, i);
             }
             Assert.AreEqual(distributedArray.Count, size / 2);
+
             for (int i = size/2; i < size*3/4; i++)
             {
                 distributedArray.Add(i);
             }
             Assert.AreEqual(distributedArray.Count, size * 3 / 4);
+
             for (int i = size*3/4; i < size; i++)
             {
                 distributedArray.Insert(i, i);

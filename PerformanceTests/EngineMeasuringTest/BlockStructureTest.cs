@@ -94,7 +94,7 @@ namespace PerformanceTests.EngineMeasuringTest
         private static void LinearSearch(BlockStructure<int> blockStructure, int count)
         {
             //To prevent using BinarySearch
-            blockStructure.DataChanged(-1);
+            blockStructure.DataChanged(0);
 
             for (int i = 0; i < count; i++)
             {

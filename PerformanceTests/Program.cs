@@ -15,7 +15,14 @@ namespace PerformanceTests
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            //Write some test here
+            //Write some test code here
+            var list = new BigArray<int>();
+            Random _random = new Random();
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                list.Insert(_random.Next(list.Count), i);
+            }
 
             stopwatch.Stop();
             Console.WriteLine(stopwatch.ElapsedMilliseconds);
@@ -43,10 +50,10 @@ namespace PerformanceTests
                 Task.Factory.StartNew(TestManager.TestIndexOf),
                 Task.Factory.StartNew(TestManager.TestLastIndexOf),
                 Task.Factory.StartNew(TestManager.TestAdd),
-                Task.Factory.StartNew(TestManager.TestInsertInRandomPosition),
+                /*Task.Factory.StartNew(TestManager.TestInsertInRandomPosition),
                 Task.Factory.StartNew(TestManager.TestInsertInMiddlePosition),
                 Task.Factory.StartNew(TestManager.TestInsertInStartPosition),
-                Task.Factory.StartNew(TestManager.TestInsertRangeInRandom),
+                Task.Factory.StartNew(TestManager.TestInsertRangeInRandom),*/
                 Task.Factory.StartNew(TestManager.TestAddRange),
                 Task.Factory.StartNew(TestManager.TestBinarySearch),
                 Task.Factory.StartNew(TestManager.TestFindLast),
@@ -60,7 +67,7 @@ namespace PerformanceTests
 
         static void Main(string[] args)
         {
-            StartСomparativeTests();
+            StopwatchEstimation();
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
         }

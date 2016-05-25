@@ -17,18 +17,21 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             BlockSize = DefaultValuesManager.DefaultBlockSize;
             TestStructure = CteareTestStructure();
         }
+
         [Test]
         public static void BlockInfo()
         {
             BlockInfo(SearchMod.BinarySearch);
             BlockInfo(SearchMod.LinearSearch);
         }
+
         [Test]
         public static void MultyblockRange()
         {
             MultyblockRange(SearchMod.BinarySearch);
             MultyblockRange(SearchMod.LinearSearch);
         }
+
         [Test]
         public static void ReverseMultyblockRange()
         {
@@ -95,6 +98,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
                 ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, int, Range, SearchMod, BlockInfo>(
                 TestStructure.BlockInfo, CountOfBlocks * BlockSize - 1, new Range(CountOfBlocks - 1, 2), mod));
         }
+
         private static void MultyblockRange(SearchMod mod)
         {
             //Simple test
@@ -124,6 +128,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
                 ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.MultyblockRange, new Range(BlockSize, -2), mod));
         }
+
         private static void ReverseMultyblockRange(SearchMod mod)
         {
             //Simple test
@@ -154,6 +159,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
                 ExceptionManager.IsThrowFuncException<ArgumentOutOfRangeException, Range, SearchMod, MultyblockRange>
                 (TestStructure.ReverseMultyblockRange, new Range(BlockSize, -2), mod));
         }
+
         private static BlockStructure<int> CteareTestStructure()
         {
             //Prepare block collection
