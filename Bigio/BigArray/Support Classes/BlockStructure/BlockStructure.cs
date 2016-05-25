@@ -93,31 +93,6 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Calculate index of block, witch containt element with specified zero-base index.
-        /// Function try to find it from startBlock block to last block of BlockCollection(T). 
-        /// </summary>
-        /// <param name="index">Zero-base index of element to find parent block.</param>
-        /// <param name="startBlock">Start block of range to find block in it.
-        /// It use to ger better performance.</param>
-        /// <returns>Index of block witch containt element with specified zero-base index.</returns>
-        public int IndexOfBlock(int index, int startBlock)
-        {
-            return BlockInfo(index, startBlock).IndexOfBlock;
-        }
-
-        /// <summary>
-        /// Calculate index of block witch containt element with specified zero-base index.
-        /// Function try to find it in searchBlockRange range of BlockCollection(T). 
-        /// </summary>
-        /// <param name="index">Zero-base index of element to find parent block.</param>
-        /// <param name="searchBlockRange">Range to find in it.</param>
-        /// <returns>Index of block witch containt element with specified zero-base index.</returns>
-        public int IndexOfBlock(int index, Range searchBlockRange)
-        {
-            return BlockInfo(index, searchBlockRange).IndexOfBlock;
-        }
-
-        /// <summary>
         /// Calculate a block range for all blocks that overlap with specified range.
         /// Block range provide information about overlapping specified range and block.
         /// </summary>
@@ -135,7 +110,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             }
 
             int indexOfStartBlock = BlockInfo(calcRange.Index).IndexOfBlock;
-            int indexOfEndBlock = IndexOfBlock(calcRange.Index + calcRange.Count - 1, indexOfStartBlock);
+            int indexOfEndBlock = BlockInfo(calcRange.Index + calcRange.Count - 1, indexOfStartBlock).IndexOfBlock;
             int countOfBlocks = indexOfEndBlock - indexOfStartBlock + 1;
 
             return new MultyblockRange(indexOfStartBlock, countOfBlocks
