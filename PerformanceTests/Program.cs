@@ -24,7 +24,6 @@ namespace PerformanceTests
                 list.Insert(_random.Next(list.Count), i);
             }
 
-            list.Insert(1000000 - 1, 1);
             Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
@@ -67,7 +66,7 @@ namespace PerformanceTests
 
         static void Main(string[] args)
         {
-            StopwatchEstimation();
+            StartСomparativeTests();
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
         }

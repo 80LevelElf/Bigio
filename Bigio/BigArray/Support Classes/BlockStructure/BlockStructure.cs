@@ -47,7 +47,6 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             if (BlockCollection.Count != 0)
             {
                 DataChanged(0);
-                TryToUpdateStructureInfo();
             }
         }
 
@@ -94,28 +93,6 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Calculate start zero-based common index of specified block.
-        /// </summary>
-        /// <param name="indexOfBlock">Index of block to get it's start index.</param>
-        /// <returns>Start zero-based common index.</returns>
-        public int BlockStartIndex(int indexOfBlock)
-        {
-            TryToUpdateStructureInfo();
-
-            return _blocksInfoList[indexOfBlock].CommonStartIndex;
-        }
-
-        /// <summary>
-        /// Calculate index of block, witch containt element with specified zero-base index.
-        /// </summary>
-        /// <param name="index">Zero-base index of element to find parent block.</param>
-        /// <returns>Index of block witch containt element with specified zero-base index.</returns>
-        public int IndexOfBlock(int index)
-        {
-            return BlockInfo(index).IndexOfBlock;
-        }
-
-        /// <summary>
         /// Calculate index of block, witch containt element with specified zero-base index.
         /// Function try to find it from startBlock block to last block of BlockCollection(T). 
         /// </summary>
@@ -148,22 +125,16 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <returns>Return MultyblockRange object provides information about overlapping of specified range and block.</returns>
         public MultyblockRange MultyblockRange(Range calcRange)
         {
-            TryToUpdateStructureInfo();
-
-            if (!ValidationManager.IsValidRange(GetCachedElementCount(), calcRange))
-                throw new ArgumentOutOfRangeException("calcRange");
-            //Debug.Assert(ValidationManager.IsValidRange(GetCachedElementCount(), calcRange));
-
             //If user want to select empty block
             if (calcRange.Count == 0)
             {
                 return (calcRange.Index == 0)
                     ? new MultyblockRange(0, 0, new BlockRange[0])
                     : new MultyblockRange
-                        (BlockStartIndex(IndexOfBlock(calcRange.Index)), 0, new BlockRange[0]);
+                        (BlockInfo(calcRange.Index).CommonStartIndex, 0, new BlockRange[0]);
             }
 
-            int indexOfStartBlock = IndexOfBlock(calcRange.Index);
+            int indexOfStartBlock = BlockInfo(calcRange.Index).IndexOfBlock;
             int indexOfEndBlock = IndexOfBlock(calcRange.Index + calcRange.Count - 1, indexOfStartBlock);
             int countOfBlocks = indexOfEndBlock - indexOfStartBlock + 1;
 
