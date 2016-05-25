@@ -1,36 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.Common.Classes;
 using Bigio.Common.Managers;
 
 namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
-    /// <summary>
-    /// SearchMod is way to find needed data.
-    /// </summary>
-    enum SearchMod
-    {
-        /// <summary>
-        /// This way to find block with specified index have log(2,n) performance,
-        /// where n is count of blocks. But this way use information of blocks 
-        /// and if we want to use this way, we'll must to calculate structure information before.
-        /// It is good way to get BlockInfo if you won't change data in BigArray(T)
-        /// after getting BlockInfo
-        /// (For example if you want to get element in BigArray(T) with specified index).
-        /// </summary>
-        BinarySearch,
-        /// <summary>
-        /// This way to find block with specified index have n performance,
-        /// where n is count of blocks. This way don't need any information about
-        /// structure as BinarySearch and you must use it, if you will change data in BigArray(T)
-        /// for example if you wany to find info about block to delete element inside this block.
-        /// </summary>
-        LinearSearch
-    }
-
     /// <summary>
     /// This class used for get information about BlockCollection(T) structure,
     /// for example for searching block with specified index.
@@ -80,11 +56,9 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// </summary>
         /// <param name="index">Common zero-based index of element in BigArray(T).
         ///  It's to find parent block.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
-        public BlockInfo BlockInfo
-            (int index, SearchMod searchMod = SearchMod.BinarySearch)
+        public BlockInfo BlockInfo(int index)
         {
-            return BlockInfo(index, 0, searchMod);
+            return BlockInfo(index, 0);
         }
 
         /// <summary>
@@ -95,12 +69,9 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <param name="statBlockIndex">Function will try to find block, which containes
         /// specified index from statBlockIndex to last block of BlockCollection(T).
         /// It use to get better performance.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
-        public BlockInfo BlockInfo
-            (int index, int statBlockIndex, SearchMod searchMod = SearchMod.BinarySearch)
+        public BlockInfo BlockInfo(int index, int statBlockIndex)
         {
-            return BlockInfo
-                (index, new Range(statBlockIndex, _blockCollection.Count - statBlockIndex), searchMod);
+            return BlockInfo(index, new Range(statBlockIndex, _blockCollection.Count - statBlockIndex));
         }
 
         /// <summary>
@@ -111,14 +82,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <param name="searchBlockRange">Function will try to find block, which containes
         /// specified index in this range of BlockCollection(T).
         /// It use to get better performance.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
-        public BlockInfo BlockInfo
-            (int index, Range searchBlockRange, SearchMod searchMod = SearchMod.BinarySearch)
+        public BlockInfo BlockInfo(int index, Range searchBlockRange)
         {
             if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
                 throw new ArgumentOutOfRangeException("searchBlockRange");
-
-            int temp = GetCachedElementCount();
 
             if (index < GetCachedElementCount())
                 return BinaryBlockInfo(index, searchBlockRange);
@@ -142,11 +109,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// Calculate index of block, witch containt element with specified zero-base index.
         /// </summary>
         /// <param name="index">Zero-base index of element to find parent block.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Index of block witch containt element with specified zero-base index.</returns>
-        public int IndexOfBlock(int index, SearchMod searchMod = SearchMod.BinarySearch)
+        public int IndexOfBlock(int index)
         {
-            return BlockInfo(index, searchMod).IndexOfBlock;
+            return BlockInfo(index).IndexOfBlock;
         }
 
         /// <summary>
@@ -156,11 +122,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <param name="index">Zero-base index of element to find parent block.</param>
         /// <param name="startBlock">Start block of range to find block in it.
         /// It use to ger better performance.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Index of block witch containt element with specified zero-base index.</returns>
-        public int IndexOfBlock(int index, int startBlock, SearchMod searchMod = SearchMod.BinarySearch)
+        public int IndexOfBlock(int index, int startBlock)
         {
-            return BlockInfo(index, startBlock, searchMod).IndexOfBlock;
+            return BlockInfo(index, startBlock).IndexOfBlock;
         }
 
         /// <summary>
@@ -169,12 +134,10 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// </summary>
         /// <param name="index">Zero-base index of element to find parent block.</param>
         /// <param name="searchBlockRange">Range to find in it.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Index of block witch containt element with specified zero-base index.</returns>
-        public int IndexOfBlock
-            (int index, Range searchBlockRange, SearchMod searchMod = SearchMod.BinarySearch)
+        public int IndexOfBlock(int index, Range searchBlockRange)
         {
-            return BlockInfo(index, searchBlockRange, searchMod).IndexOfBlock;
+            return BlockInfo(index, searchBlockRange).IndexOfBlock;
         }
 
         /// <summary>
@@ -182,10 +145,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// Block range provide information about overlapping specified range and block.
         /// </summary>
         /// <param name="calcRange">Range to get multyblock range.</param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Return MultyblockRange object provides information about overlapping of specified range and block.</returns>
-        public MultyblockRange MultyblockRange
-            (Range calcRange, SearchMod searchMod = SearchMod.BinarySearch)
+        public MultyblockRange MultyblockRange(Range calcRange)
         {
             TryToUpdateStructureInfo();
 
@@ -199,12 +160,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 return (calcRange.Index == 0)
                     ? new MultyblockRange(0, 0, new BlockRange[0])
                     : new MultyblockRange
-                        (BlockStartIndex(IndexOfBlock(calcRange.Index, searchMod)), 0, new BlockRange[0]);
+                        (BlockStartIndex(IndexOfBlock(calcRange.Index)), 0, new BlockRange[0]);
             }
 
-            int indexOfStartBlock = IndexOfBlock(calcRange.Index, searchMod);
-            int indexOfEndBlock
-                = IndexOfBlock(calcRange.Index + calcRange.Count - 1, indexOfStartBlock, searchMod);
+            int indexOfStartBlock = IndexOfBlock(calcRange.Index);
+            int indexOfEndBlock = IndexOfBlock(calcRange.Index + calcRange.Count - 1, indexOfStartBlock);
             int countOfBlocks = indexOfEndBlock - indexOfStartBlock + 1;
 
             return new MultyblockRange(indexOfStartBlock, countOfBlocks
@@ -223,17 +183,15 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// For example: if you want to get ReverseMultyblockRange of array with one block with 100 element,
         /// you will must write this: structureObject.ReverseMultyblockRange(99, 100);
         /// </param>
-        /// <param name="searchMod">SearchMod is way to find needed data.</param>
         /// <returns>Return reverse MultyblockRange object provides information about reverse overlapping of specified range and block.</returns>
-        public MultyblockRange ReverseMultyblockRange
-            (Range calcRange, SearchMod searchMod = SearchMod.BinarySearch)
+        public MultyblockRange ReverseMultyblockRange(Range calcRange)
         {
             if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
                 throw new ArgumentOutOfRangeException();
 
             int reverseIndex = (calcRange.Index == 0 && calcRange.Count == 0)
                 ? 0 : calcRange.Index - calcRange.Count + 1;
-            var range = MultyblockRange(new Range(reverseIndex, calcRange.Count), searchMod);
+            var range = MultyblockRange(new Range(reverseIndex, calcRange.Count));
 
             int indexOfStartBlock = range.IndexOfStartBlock + range.Count - 1;
             if (indexOfStartBlock < 0)
@@ -363,19 +321,12 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <returns>Information about block, which contain specified index.</returns>
         private BlockInfo BinaryBlockInfo(int index, Range searchBlockRange)
         {
-            //TODO: check performance of code below:
-            //Task updationTask = new Task(TryToUpdateStructureInfo);
-            //TryToUpdateStructureInfo();
-
-            //If this function was called - we already have index in cached blocks
-            //Debug.Assert(ValidationManager.IsValidIndex(GetCachedElementCount(), index));
             if (!ValidationManager.IsValidIndex(GetCachedElementCount(), index))
                 throw new ArgumentOutOfRangeException("index");
 
             if (searchBlockRange.Count == 0)
             {
-                //TODO: it's not valid check now
-                //Debug.Assert(_blocksInfoList.IsValidIndex(searchBlockRange.Index));
+                Debug.Assert(_blocksInfoList.IsValidIndex(searchBlockRange.Index));
                 return new BlockInfo();
             }
 
@@ -451,11 +402,6 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <returns>Information about block, which contain specified index.</returns>
         private BlockInfo LinearBlockInfo(int index, Range searchBlockRange)
         {
-            if (index == 12288)
-            {
-                int a = 1;
-            }
-
             Debug.Assert(index >= GetCachedElementCount());
 
             if (!_blockCollection.IsValidRange(searchBlockRange))
@@ -525,54 +471,6 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
             }
 
             return _blocksInfoList[_indexOfFirstChangedBlock - 1];
-
-            //Get data of collection part we know about
-            /*int startIndexOfBlock;
-            if (_indexOfFirstChangedBlock < blockInfoListCount)
-            {
-                startIndexOfBlock = _indexOfFirstChangedBlock;
-
-                //It is cheaper than check existed blockInfos in time of putting
-                _blocksInfoList.RemoveRange(_indexOfFirstChangedBlock, blockInfoListCount - _indexOfFirstChangedBlock);
-            }
-            else
-            {
-                startIndexOfBlock = blockInfoListCount;
-                _indexOfFirstChangedBlock = NoBlockChanges;
-            }
-
-            if (startIndexOfBlock == 0)
-                _blocksInfoList.Add(new BlockInfo(0, 0, _blockCollection[0].Count));
-
-            return _blocksInfoList[startIndexOfBlock];*/
-
-            /*var countOfElements = 0;
-            var commonStartIndex = 0;
-            if (startIndexOfBlock >= 1)
-            {
-                var lastBlockWeKnowAbout = _blocksInfoList[startIndexOfBlock - 1];
-
-                countOfElements = lastBlockWeKnowAbout.CommonStartIndex + lastBlockWeKnowAbout.Count;
-                commonStartIndex = countOfElements;
-            }
-
-            //Put new data
-            for (int i = startIndexOfBlock; i <= indexOfNeededBlock; i++)
-            {
-                var blockCount = _blockCollection[i].Count;
-
-                _blocksInfoList.Add(new BlockInfo(i, commonStartIndex, blockCount));
-
-                commonStartIndex += blockCount;
-                countOfElements += blockCount;
-            }
-
-            if (indexOfNeededBlock == _blockCollection.Count - 1)
-                _indexOfFirstChangedBlock = NoBlockChanges;
-            else
-                _indexOfFirstChangedBlock = indexOfNeededBlock + 1;
-
-            return _blocksInfoList[indexOfNeededBlock];*/
         }
 
         //Support classes

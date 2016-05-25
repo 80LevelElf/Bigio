@@ -33,12 +33,14 @@ namespace Bigio
         /// <summary>
         /// The blocks object provides API for easy work with blocks.
         /// </summary>
+        [NonSerialized]
         private readonly BlockCollection<T> _blockCollection;
 
         /// <summary>
         /// It is main data container where we save information.
         /// It is cant be null. There is always one block even it is empty.
         /// </summary>
+        [NonSerialized]
         private int _count;
 
         //API
@@ -664,7 +666,7 @@ namespace Bigio
                 return;
             }
 
-            var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
+            var blockInfo = _blockStructure.BlockInfo(index);
 
             int blockSubindex = index - blockInfo.CommonStartIndex;
             var block = _blockCollection[blockInfo.IndexOfBlock];
@@ -735,7 +737,7 @@ namespace Bigio
             }
             else // Default case
             {
-                blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
+                blockInfo = _blockStructure.BlockInfo(index);
             }
 
             //Insert
@@ -867,7 +869,7 @@ namespace Bigio
             }
 
             //Validity of index check in BlockInfo
-            var blockInfo = _blockStructure.BlockInfo(index, SearchMod.LinearSearch);
+            var blockInfo = _blockStructure.BlockInfo(index);
 
             //Remove
             _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.CommonStartIndex);
@@ -919,7 +921,7 @@ namespace Bigio
         /// <param name="count">The number of elements to remove.</param>
         public void RemoveRange(int index, int count)
         {
-            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count), SearchMod.LinearSearch);
+            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
 
             int shift = 0;
             int indexOfBlock = multyblockRange.IndexOfStartBlock;

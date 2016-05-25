@@ -87,7 +87,7 @@ namespace PerformanceTests.EngineMeasuringTest
         {
             for (int i = 0; i < count; i++)
             {
-                blockStructure.BlockInfo(_random.Next(BlockCount*ElementsInBlockCount), SearchMod.BinarySearch);
+                blockStructure.BlockInfo(_random.Next(BlockCount*ElementsInBlockCount));
             }
         }
 
@@ -98,7 +98,7 @@ namespace PerformanceTests.EngineMeasuringTest
 
             for (int i = 0; i < count; i++)
             {
-                blockStructure.BlockInfo(_random.Next(BlockCount * ElementsInBlockCount), SearchMod.LinearSearch);
+                blockStructure.BlockInfo(_random.Next(BlockCount * ElementsInBlockCount));
             }
         }
 

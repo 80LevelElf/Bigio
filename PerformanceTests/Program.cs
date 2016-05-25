@@ -24,7 +24,7 @@ namespace PerformanceTests
                 list.Insert(_random.Next(list.Count), i);
             }
 
-            stopwatch.Stop();
+            list.Insert(1000000 - 1, 1);
             Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
@@ -50,10 +50,10 @@ namespace PerformanceTests
                 Task.Factory.StartNew(TestManager.TestIndexOf),
                 Task.Factory.StartNew(TestManager.TestLastIndexOf),
                 Task.Factory.StartNew(TestManager.TestAdd),
-                /*Task.Factory.StartNew(TestManager.TestInsertInRandomPosition),
+                Task.Factory.StartNew(TestManager.TestInsertInRandomPosition),
                 Task.Factory.StartNew(TestManager.TestInsertInMiddlePosition),
                 Task.Factory.StartNew(TestManager.TestInsertInStartPosition),
-                Task.Factory.StartNew(TestManager.TestInsertRangeInRandom),*/
+                Task.Factory.StartNew(TestManager.TestInsertRangeInRandom),
                 Task.Factory.StartNew(TestManager.TestAddRange),
                 Task.Factory.StartNew(TestManager.TestBinarySearch),
                 Task.Factory.StartNew(TestManager.TestFindLast),
