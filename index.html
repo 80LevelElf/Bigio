@@ -23,9 +23,699 @@
 <a id="what-is-bigio-used-for" class="anchor" href="#what-is-bigio-used-for" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What is Bigio used for?</h3>
 
 <p>Bigio is a several collections special adapted to store a lot of elements.
-Standart List and LinkedList is great choice for the most of cases, but they become useless if you have to work with thousands and millions of elements because of:<br>
+Standard List and LinkedList is great choice for the most of cases, but they become useless if you have to work with thousands and millions of elements because of:<br>
 1. Ineffective operations because of structure of List and LinkedList<br>
 2. Memory overhead of that system collections.<br></p>
+
+<h3>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting started</h3>
+
+<p>There is no nuget-package of Bigio library at this moment, because it still in active development.<br>
+If you want to use it you have to clone repository:<br>
+Just copy-past that in git client: <code>git clone https://github.com/80LevelElf/Bigio.git</code><br>
+Then open downloaded folder, move to 'bin' folder and copy 'Bigio.dll' file to your project working directory.<br>
+Then just <a href="https://msdn.microsoft.com/en-us/library/wkze6zky.aspx">specify reference</a> to Bigio.dll from needed projects.</p>
+
+<h3>
+<a id="structure-of-bigio" class="anchor" href="#structure-of-bigio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Structure of Bigio</h3>
+
+<p>At this moment Bigio consist of this main parts: <br>
+1. BigArray <br>
+2. BigQueue <br>
+3. BigStack <br>
+Click to move into separate wiki pages of each collection.</p>
+
+<h3>
+<a id="quck-start" class="anchor" href="#quck-start" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Quck start</h3>
+
+<p>All Bigio collections use familiar API and interfaces to make work with it easy. <br>
+API of 'BigList' quite similar to system 'List' API, for example: <br></p>
+
+<p>Insert million elements to random positions: <br></p>
+
+<pre><code>var list = new BigArray&lt;int&gt;();
+Random random = new Random();
+
+for (int i = 0; i &lt; 1000000; i++)
+{
+    list.Insert(random .Next(list.Count), i);
+}
+</code></pre>
+
+<p>After that we can find index of some element:</p>
+
+<pre><code>list.IndexOf(random.Next(list.Count));
+</code></pre>
+
+<p>Remove last entry of some element:</p>
+
+<pre><code>list.RemoveLast(random.Next(list.Count));
+</code></pre>
+
+<p>Or find first event element with LINQ(or <code>default(T)</code> if all elements are odd):</p>
+
+<pre><code>var firstEven = list.FirstOrDefault(i =&gt; i % 2 == 0);
+</code></pre>
+
+<h3>
+<a id="is-there-any-alternative-solutions" class="anchor" href="#is-there-any-alternative-solutions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Is there any alternative solutions?</h3>
+
+<p>Of course they are! The most famous alternative is <a href="https://powercollections.codeplex.com">Wintellect's Power Collections</a> of Wintellect company. It's great solution developed by clever people, but in most of cases Bigio will be faster:<br>
+<code>All search estimations measured for collections with 1.000.000 elements.</code><br>
+We compare <code>Bigio.BigArray&lt;T&gt;</code> and <code>PowerCollections.BigList&lt;T&gt;</code></p>
+
+<blockquote>
+<p><strong>Estimation much be different in different computers(depend on processor and count of cores inside it), compilers and the phases of the moon.</strong><br></p>
+</blockquote>
+
+<h5>
+<a id="search" class="anchor" href="#search" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Search:</h5>
+
+<p>IndexOf(item):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>100</td>
+<td>0</td>
+<td>0</td>
+<td>8</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>1</td>
+<td>28</td>
+<td>0</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>57</td>
+<td>2503</td>
+<td>62</td>
+</tr>
+</tbody>
+</table>
+
+<p>LastIndexOf(item):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>4</td>
+<td>229</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>438</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>8</td>
+<td>1117</td>
+<td>6</td>
+</tr>
+<tr>
+<td>10</td>
+<td>16</td>
+<td>2883</td>
+<td>15</td>
+</tr>
+</tbody>
+</table>
+
+<p>Find(predicate):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>100</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>3</td>
+<td>39</td>
+<td>6</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>398</td>
+<td>3126</td>
+<td>295</td>
+</tr>
+</tbody>
+</table>
+
+<p>FindLast(predicate):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>20</td>
+<td>275</td>
+<td>4</td>
+</tr>
+<tr>
+<td>2</td>
+<td>12</td>
+<td>790</td>
+<td>7</td>
+</tr>
+<tr>
+<td>5</td>
+<td>35</td>
+<td>1550</td>
+<td>17</td>
+</tr>
+<tr>
+<td>10</td>
+<td>142</td>
+<td>2669</td>
+<td>44</td>
+</tr>
+</tbody>
+</table>
+
+<p>FindAll(predicate):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>43</td>
+<td>228</td>
+<td>9</td>
+</tr>
+<tr>
+<td>5</td>
+<td>140</td>
+<td>1480</td>
+<td>75</td>
+</tr>
+<tr>
+<td>7</td>
+<td>309</td>
+<td>2669</td>
+<td>158</td>
+</tr>
+</tbody>
+</table>
+
+<h5>
+<a id="adding-and-insertions" class="anchor" href="#adding-and-insertions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Adding and insertions:</h5>
+
+<p>Add(item):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10000</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>13</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000000</td>
+<td>100</td>
+<td>59</td>
+<td>5</td>
+</tr>
+<tr>
+<td>10000000</td>
+<td>1162</td>
+<td>629</td>
+<td>58</td>
+</tr>
+<tr>
+<td>100000000</td>
+<td>12468</td>
+<td>6087</td>
+<td>588</td>
+</tr>
+</tbody>
+</table>
+
+<p>Insert(item) in the <strong>start</strong> position:</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>9</td>
+<td>1</td>
+<td>17</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>60</td>
+<td>17</td>
+<td>1579</td>
+</tr>
+<tr>
+<td>1000000</td>
+<td>642</td>
+<td>203</td>
+<td>until the end of time</td>
+</tr>
+<tr>
+<td>10000000</td>
+<td>7805</td>
+<td>2422</td>
+<td>until the end of time</td>
+</tr>
+</tbody>
+</table>
+
+<p>Insert(item) in the <strong>middle</strong> position:</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>0</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>12</td>
+<td>130</td>
+<td>3</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>83</td>
+<td>15385</td>
+<td>489</td>
+</tr>
+</tbody>
+</table>
+
+<p>Insert(item) in the <strong>random</strong> position:</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>12</td>
+<td>8</td>
+<td>7</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>110</td>
+<td>135</td>
+<td>1471</td>
+</tr>
+<tr>
+<td>1000000</td>
+<td>2095</td>
+<td>3001</td>
+<td>If you wait for the end - tell me the result</td>
+</tr>
+</tbody>
+</table>
+
+<p>AddRange(range):</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1000</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>19</td>
+<td>17</td>
+<td>14</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>154</td>
+<td>254</td>
+<td>127</td>
+</tr>
+<tr>
+<td>1000000</td>
+<td>1503</td>
+<td>2239</td>
+<td>1138</td>
+</tr>
+</tbody>
+</table>
+
+<p>InsertRange(range) in <strong>random</strong> position:</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>37</td>
+<td>78</td>
+<td>107</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>489</td>
+<td>673</td>
+<td>We'll never know</td>
+</tr>
+</tbody>
+</table>
+
+<h5>
+<a id="other" class="anchor" href="#other" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Other:</h5>
+
+<p>BinarySearch(item, 0, collectionLength)</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>0</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>6</td>
+<td>8</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>73</td>
+<td>107</td>
+<td>5</td>
+</tr>
+<tr>
+<td>100000</td>
+<td>908</td>
+<td>1197</td>
+<td>71</td>
+</tr>
+</tbody>
+</table>
+
+<p>Foreach throught full collection</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>63</td>
+<td>108</td>
+<td>25</td>
+</tr>
+<tr>
+<td>5</td>
+<td>810</td>
+<td>1508</td>
+<td>276</td>
+</tr>
+<tr>
+<td>10</td>
+<td>2701</td>
+<td>4593</td>
+<td>1141</td>
+</tr>
+</tbody>
+</table>
+
+<p>For throught full collection</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1046</td>
+<td>789</td>
+<td>23</td>
+</tr>
+<tr>
+<td>4</td>
+<td>12638</td>
+<td>7838</td>
+<td>232</td>
+</tr>
+</tbody>
+</table>
+
+<p>Reverse() all elements</p>
+
+<table>
+<thead>
+<tr>
+<th>Iterations</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1299</td>
+<td>0</td>
+</tr>
+<tr>
+<td>5</td>
+<td>24</td>
+<td>-</td>
+<td>19</td>
+</tr>
+<tr>
+<td>10</td>
+<td>69</td>
+<td>-</td>
+<td>46</td>
+</tr>
+<tr>
+<td>15</td>
+<td>150</td>
+<td>-</td>
+<td>94</td>
+</tr>
+</tbody>
+</table>
+
+<p>Memory estimation (memory size of process with only one collection):</p>
+
+<table>
+<thead>
+<tr>
+<th>Count of elements</th>
+<th>Bigio</th>
+<th>Wintellect</th>
+<th>Microsoft List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10000000</td>
+<td>59.8 Mb</td>
+<td>73.3 Mb</td>
+<td>106.3 Mb</td>
+</tr>
+<tr>
+<td>100000000</td>
+<td>620 Mb</td>
+<td>689.5 Mb</td>
+<td>641 Mb</td>
+</tr>
+<tr>
+<td>1000000000</td>
+<td>6 241 Mb</td>
+<td>6 955 Mb</td>
+<td>Out of memory</td>
+</tr>
+</tbody>
+</table>
+
+<p>As you can see Bigio give you much faster and smaller solution for big collection than PowerCollections.</p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/80LevelElf/Bigio">Bigio</a> is maintained by <a href="https://github.com/80LevelElf">80LevelElf</a>.</span>
