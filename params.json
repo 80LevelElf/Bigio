@@ -1,0 +1,6 @@
+{
+  "name": "Bigio",
+  "tagline": "Special .Net collections adapted for huge amount of elements",
+  "body": "### What is Bigio used for?\r\n\r\nBigio is a several collections special adapted to store a lot of elements.\r\nStandart List<T> and LinkedList<T> is great choice for the most of cases, but they become useless if you have to work with thousands and millions of elements because of:\r\n1. Ineffective operations because of structure of List<T> and LinkedList<T>\r\n2. Memory overhead of that system collections.",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
