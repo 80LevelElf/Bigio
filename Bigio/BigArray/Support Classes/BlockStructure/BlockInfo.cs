@@ -8,7 +8,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
     struct BlockInfo
     {
         /// <summary>
-        /// Create new instance of BlockInfo with specified data.
+        /// Create new instance of <see cref="BlockInfo"/> with specified data.
         /// </summary>
         /// <param name="indexOfBlock">Index of block inside block collection.</param>
         /// <param name="commonStartIndex">Common start index of current block.</param>
@@ -40,11 +40,11 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Check equal of current BlockInfo and other BlockIfo.
+        /// Check equal of current <see cref="BlockInfo"/> and other <see cref="BlockInfo"/>.
         /// </summary>
-        /// <param name="other">Other BlockInfo to check.</param>
-        /// <returns>If BlockInfos are the same in all data members
-        /// (IndexOfBlock, CommonStartIndex and Count) return true, otherwise return false.</returns>
+        /// <param name="other">Other <see cref="BlockInfo"/> to check.</param>
+        /// <returns>If <see cref="BlockInfos"/> are the same in all data members
+        /// (<see cref="IndexOfBlock"/>, <see cref="CommonStartIndex"/> and <see cref="Count"/>) return true, otherwise return false.</returns>
         public bool Equals(BlockInfo other)
         {
             return IndexOfBlock == other.IndexOfBlock && CommonStartIndex == other.CommonStartIndex && Count == other.Count;
@@ -57,8 +57,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
         /// <summary>
         /// Common start index of current block. For example:
-        /// if there is 2 blocks(both of 100 elements), then CommonStartIndex of first block is 0 and
-        /// CommonStartIndex of second block is 100(because it starts by 100 element).
+        /// if there is 2 blocks(both of 100 elements), then <see cref="CommonStartIndex"/> of first block is 0 and
+        /// <see cref="CommonStartIndex"/> of second block is 100(because it starts by 100 element).
         /// </summary>
         public int CommonStartIndex;
 

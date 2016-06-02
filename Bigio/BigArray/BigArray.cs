@@ -14,12 +14,12 @@ using Bigio.Common.Managers;
 namespace Bigio
 {
     /// <summary>
-    /// BigArray(T) provides collection of elements of T type, with indices of the items ranging from 0 to one less
-    /// than the count of items in the collection. BigArray(T) consist of blocks. Size of block more or equal 0 and less then
+    /// <see cref="BigArray"/> provides collection of elements of T type, with indices of the items ranging from 0 to one less
+    /// than the count of items in the collection. <see cref="BigArray"/> consist of blocks. Size of block more or equal 0 and less then
     /// MaxBlockSize. Because of architecture many actions(remove, insert, add) faster than their counterparts in List or LinedList, 
     /// but some operations might slower because of due to the nature of architecture and the overhead. 
-    /// It makes no sense to use it with a small number of items(less than 1000), because in that case List and LinkedList
-    /// most operations will be more efficient.
+    /// It makes no sense to use it with a small number of items(less than 5000-10000), because in that case List and LinkedList
+    /// operations will be more efficient.
     /// </summary>
     /// <typeparam name="T">Type of array elements.</typeparam>
     [Serializable]
@@ -38,7 +38,6 @@ namespace Bigio
 
         /// <summary>
         /// It is main data container where we save information.
-        /// It is cant be null. There is always one block even it is empty.
         /// </summary>
         [NonSerialized]
         private int _count;
@@ -46,20 +45,18 @@ namespace Bigio
         //API
 
         /// <summary>
-        /// Create a new instance of the BigArray(T) class that is empty 
-        /// and has one empty block with DefaultBlockSize capacity.
+        /// Create a new instance of the <see cref="BigArray{T}"/> class that is empty and has one empty block with <see cref="DefaultBlockSize"/> capacity.
         /// </summary>
-        public BigArray()
-            : this(new Collection<T>())
+        public BigArray() : this(new Collection<T>())
         {
         }
 
         /// <summary>
-        /// Create a new instance of the BigArray(T) class using elements from specified collection
-        /// and use InternalBlockList as internal block collection for storage blocks.
+        /// Create a new instance of the <see cref="BigArrayT{}"/> class using elements from specified collection
+        /// and use <see cref="InternalBlockList{T}"/> as internal block collection for storage blocks.
         /// </summary>
-        /// <param name="collection">Collection whitch use as base for new BigArray(T).
-        /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
+        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray"/>.
+        /// The <see cref="collection"/> it self can't be null, but it can contain elements that are null, if type T is a reference type.</param>
         public BigArray(ICollection<T> collection)
         {
             Initialize(collection);
@@ -69,13 +66,13 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Create a new instance of the BigArray(T) class using elements from specified collection
-        /// and blockCollection as internal collection for storage blocks.
+        /// Create a new instance of the <see cref="BigArray{T}"/> class using elements from specified <see cref="collection"/>
+        /// and <see cref="blockCollection"/> as internal collection for storage blocks.
         /// </summary>
-        /// <param name="collection">Collection whitch use as base for new BigArray(T).
-        /// The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type.</param>
-        /// <param name="blockCollection">Collection for storage blocks of BigArray(T). You can
-        /// defint you own collection for it to controll it. For example you can send BigArray(Block(T))
+        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.
+        /// The collection it self can't be null, but it can contain elements that are null, if type T is a reference type.</param>
+        /// <param name="blockCollection">Collection for storage blocks of <see cref="BigArray"/>. You can
+        /// defint you own collection for it to controll it. For example you can send BigArray{Block{T}}
         /// and have second level distribution.</param>
         public BigArray(ICollection<T> collection, IBigList<Block<T>> blockCollection)
         {
@@ -86,7 +83,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Add an object to the end of last block of the BigArray(T).
+        /// Add an object to the end of last block of the <see cref="BigArray{T}"/>.
         /// </summary>
         public void Add(T value)
         {
@@ -104,10 +101,10 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Adds the elements of the specified collection to the end of BigArray(T).
+        /// Adds the elements of the specified collection to the end of <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="collection">The collection whose elements should be added to the end of the BigArray(T).
-        ///  The collection it self cannot benull, but it can contain elements that are null, if type T is a reference type. </param>
+        /// <param name="collection">The collection whose elements should be added to the end of the <see cref="BigArray{T}"/>.
+        ///  The collection it self can't benull, but it can contain elements that are null, if type T is a reference type. </param>
         public void AddRange(ICollection<T> collection)
         {
             if (collection == null)
@@ -145,35 +142,34 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Returns a read-only wrapper based on current BigArray(T).
+        /// Returns a read-only wrapper based on current <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <returns>A ReadOnlyCollection(T) that acts as a read-only wrapper around the current BigArray(T).</returns>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> that acts as a read-only wrapper around the current <see cref="BigArray{T}"/>.</returns>
         public ReadOnlyCollection<T> AsReadOnly()
         {
             return new ReadOnlyCollection<T>(this);
         }
 
         /// <summary>
-        /// Searches the entire sorted BigArray(T) for an element using the default comparer and returns the zero-based index of the element.
+        /// Searches the entire sorted <see cref="BigArray{T}"/> for an element using the default comparer and returns the zero-based index of the element.
         /// </summary>
         /// <param name="item">The object to locate. The value can be null for reference types.</param>
-        /// <returns>The zero-based index of item in the sorted BigArray(T), ifitem is found; otherwise,
+        /// <returns>The zero-based index of item in the sorted <see cref="BigArray{T}"/>, if item is found; otherwise,
         ///  a negative number that is the bitwise complement of the index of the next element that is larger than item or,
-        ///  if there is no larger element, the bitwise complement of Count. </returns>
+        ///  if there is no larger element, the bitwise complement of <see cref="Count"/>. </returns>
         public int BinarySearch(T item)
         {
             return BinarySearch(0, Count, item, Comparer<T>.Default);
         }
 
         /// <summary>
-        /// Searches the entire sorted BigArray(T) for an element using the specified comparer and returns the zero-based index of the element.
+        /// Searches the entire sorted <see cref="BigArray{T}"/> for an element using the specified comparer and returns the zero-based index of the element.
         /// </summary>
         /// <param name="item">The object to locate. The value can be null for reference types.</param>
-        /// <param name="comparer">The IComparer(T) implementation to use when comparing elements.
-        ///-or- 
-        ///null to use the default comparer Comparer(T).Default.
+        /// <param name="comparer">The IComparer{T} implementation to use when comparing elements.
+        /// or null to use the default comparer Comparer{T}.Default.
         ///</param>
-        /// <returns>The zero-based index of item in the sorted BigArray(T), ifitem is found; otherwise,
+        /// <returns>The zero-based index of item in the sorted <see cref="BigArray{T}"/>, if item is found; otherwise,
         ///  a negative number that is the bitwise complement of the index of the next element that is larger than item or,
         ///  if there is no larger element, the bitwise complement of Count. </returns>
         public int BinarySearch(T item, IComparer<T> comparer)
@@ -182,15 +178,16 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Searches a range of elements in the sorted BigArray(T) for an element using the specified comparer and returns the zero-based index of the element.
+        /// Searches a range of elements in the sorted <see cref="BigArray{T}"/> for an element using the specified comparer and returns the zero-based index of the element.
         /// </summary>
         /// <param name="index">The zero-based starting index of the range to search.</param>
         /// <param name="count">The length of the range to search.</param>
         /// <param name="item">The object to locate. The value can be null for reference types.</param>
-        /// <param name="comparer">The IComparer(T) implementation to use when comparing elements, ornull to use the default comparer Comparer(T).Default.</param>
-        /// <returns>The zero-based index of item in the sorted BigArray(T), ifitem is found; otherwise,
+        /// <param name="comparer">The IComparer{T} implementation to use when comparing elements,
+        /// or null to use the default comparer Comparer{T}.Default.</param>
+        /// <returns>The zero-based index of item in the sorted <see cref="BigArray{T}"/>, ifitem is found; otherwise,
         ///  a negative number that is the bitwise complement of the index of the next element that is larger than item or,
-        ///  if there is no larger element, the bitwise complement of Count.</returns>
+        ///  if there is no larger element, the bitwise complement of <see cref="Count"/>.</returns>
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         {
             if (Count == 0 && index == 0 && count == 0)
@@ -244,7 +241,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Removes all elements from the BigArray(T).
+        /// Removes all elements from the <see cref="BigArray{T}"/>.
         /// </summary>
         public void Clear()
         {
@@ -253,7 +250,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Remove true if BigArray(T) contains value, otherwise return false.
+        /// Remove true if <see cref="BigArray{T}"/> contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Data to be checked.</param>
         public bool Contains(T item)
@@ -262,11 +259,11 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Converts the elements in the current BigArray(T) to another type, and returns a list containing the converted elements.
+        /// Converts the elements in the current <see cref="BigArray{T}"/> to another type, and returns a list containing the converted elements.
         /// </summary>
         /// <typeparam name="TOutput">The type of the elements of the target array.</typeparam>
-        /// <param name="converter">A Converter(TInput, TOutput) delegate that converts each element from one type to another type.</param>
-        /// <returns>A BigArray(T) of the target type containing the converted elements from the current BigArray(T).</returns>
+        /// <param name="converter">A Converter{TInput, TOutput} delegate that converts each element from one type to another type.</param>
+        /// <returns>A <see cref="BigArray{T}"/> of the target type containing the converted elements from the current <see cref="BigArray{T}"/>.</returns>
         public BigArray<TOutput> ConvertAll<TOutput>(Converter<T, TOutput> converter)
         {
             if (converter == null)
@@ -282,9 +279,9 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Copies the entire BigArray(T) to a compatible one-dimensional array, starting at the beginning of the target array.
+        /// Copies the entire <see cref="BigArray{T}"/> to a compatible one-dimensional array, starting at the beginning of the target array.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from BigArray(T).
+        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from <see cref="BigArray{T}"/>.
         ///  The Array must have zero-based indexing.</param>
         public void CopyTo(T[] array)
         {
@@ -295,23 +292,23 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Copies the entire BigArray(T) to a compatible one-dimensional array
+        /// Copies the entire <see cref="BigArray{T}"/> to a compatible one-dimensional array
         /// , starting at the specified index of the target array.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from BigArray(T).
+        /// <param name="array">The one-dimensional array that is the destination of the elements copied from <see cref="BigArray{T}"/>.
         ///  The Array must have zero-based indexing. </param>
-        /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
+        /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(T[] array, int arrayIndex)
         {
             CopyTo(0, array, arrayIndex, Count);
         }
 
         /// <summary>
-        /// Copies a range of elements from the BigArray(T) to a compatible one-dimensional array,
-        ///  starting at the specified index of the target array.
+        /// Copies a range of elements from the <see cref="BigArray{T}"/> to a compatible one-dimensional array,
+        /// starting at the specified index of the target array.
         /// </summary>
-        /// <param name="index">The zero-based index in the source BigArray(T) at which copying begins.</param>
-        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from BigArray(T). 
+        /// <param name="index">The zero-based index in the source <see cref="BigArray{T}"/> at which copying begins.</param>
+        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from <see cref="BigArray{T}"/>. 
         /// The Array must have zero-based indexing.</param>
         /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         /// <param name="count">The number of elements to copy.</param>
@@ -341,10 +338,10 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Determines whether the BigArray(T) contains elements that match the conditions defined by the specified predicate.
+        /// Determines whether the <see cref="BigArray{T}"/> contains elements that match the conditions defined by the specified predicate.
         /// </summary>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the elements to search for.</param>
-        /// <returns>True if the BigArray(T) contains one or more elements that match the conditions defined by the specified predicate; otherwise false. </returns>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the elements to search for.</param>
+        /// <returns>True if the <see cref="BigArray{T}"/> contains one or more elements that match the conditions defined by the specified predicate; otherwise false.</returns>
         public bool Exists(Predicate<T> match)
         {
             //This value was approximately estimated by practical way
@@ -358,11 +355,11 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
-        ///  and returns the first occurrence within the entire BigArray(T).
+        /// and returns the first occurrence within the entire <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns>The first element that matches the conditions defined by the specified predicate, if found;
-        ///  otherwise, the default value for type T. </returns>
+        /// otherwise, the default value for type T. </returns>
         public T Find(Predicate<T> match)
         {
             if (match == null)
@@ -387,9 +384,9 @@ namespace Bigio
         /// <summary>
         /// Retrieves all the elements that match the conditions defined by the specified predicate.
         /// </summary>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the elements to search for.</param>
-        /// <returns>A BigArray(T) containing all the elements that match the conditions defined by the specified predicate,
-        ///  if found; otherwise, an empty BigArray(T).</returns>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the elements to search for.</param>
+        /// <returns>A <see cref="BigArray{T}"/> containing all the elements that match the conditions defined by the specified predicate,
+        /// if found; otherwise, an empty <see cref="BigArray{T}"/>.</returns>
         public BigArray<T> FindAll(Predicate<T> match, bool isSaveOrder = false)
         {
             if (match == null)
@@ -409,12 +406,17 @@ namespace Bigio
             }
             else
             {
+                object locker = new object();
+
                 Parallel.ForEach(_blockCollection, block =>
                 {
                     var findData = block.FindAll(match);
 
-                    if (findData.Count != 0)
-                        resultArray.AddRange(findData);
+                    lock (locker)
+                    {
+                        if (findData.Count != 0)
+                            resultArray.AddRange(findData);
+                    }
                 });
             }
 
@@ -423,9 +425,9 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
-        ///  and returns the zero-based index of the first occurrence within the entire BigArray(T).
+        /// and returns the zero-based index of the first occurrence within the entire <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the first occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
         public int FindIndex(Predicate<T> match)
         {
@@ -434,11 +436,11 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
-        ///  and returns the zero-based index of the first occurrence within the range of elements in the BigArray(T)
-        ///  that extends from the specified index to the last element.
+        /// and returns the zero-based index of the first occurrence within the range of elements in the <see cref="BigArray{T}"/>
+        /// that extends from the specified index to the last element.
         /// </summary>
         /// <param name="index">The zero-based starting index of the search.</param>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the first occurrence of an element that matches the conditions defined by match, if found; otherwise, –1. </returns>
         public int FindIndex(int index, Predicate<T> match)
         {
@@ -447,11 +449,11 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
-        ///  and returns the zero-based index of the first occurrence within the range of elements in the BigArray(T)
+        ///  and returns the zero-based index of the first occurrence within the range of elements in the <see cref="BigArray{T}"/>
         ///  that starts at the specified index and contains the specified number of elements.
         /// </summary>
-        /// <param name="index">The zero-based starting index of the search. </param>
-        /// <param name="count">The number of elements in the section to search. </param>
+        /// <param name="index">The zero-based starting index of the search.</param>
+        /// <param name="count">The number of elements in the section to search.</param>
         /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the first occurrence of an element that matches the conditions defined by match,
         ///  if found; otherwise, –1. </returns>
@@ -478,9 +480,9 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
-        ///  and returns the last occurrence within the entire BigArray(T).
+        ///  and returns the last occurrence within the entire <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns>The last element that matches the conditions defined by the specified predicate, if found; otherwise, the default value for type T.</returns>
         public T FindLast(Predicate<T> match)
         {
@@ -502,9 +504,9 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate,
-        ///  and returns the zero-based index of the last occurrence within the entire BigArray(T).
+        ///  and returns the zero-based index of the last occurrence within the entire <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the last occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
         public int FindLastIndex(Predicate<T> match)
         {
@@ -514,10 +516,10 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the last 
-        /// occurrence within the range of elements in the BigArray(T) that extends from the first element to the specified index.
+        /// occurrence within the range of elements in the <see cref="BigArray{T}"/> that extends from the first element to the specified index.
         /// </summary>
         /// <param name="index">The zero-based starting index of the backward search.</param>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns>The zero-based index of the last occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
         public int FindLastIndex(int index, Predicate<T> match)
         {
@@ -526,11 +528,11 @@ namespace Bigio
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the 
-        /// last occurrence within the range of elements in the BigArray(T) that contains the specified number of elements and ends at the specified index.
+        /// last occurrence within the range of elements in the <see cref="BigArray{T}"/> that contains the specified number of elements and ends at the specified index.
         /// </summary>
         /// <param name="index">The zero-based starting index of the backward search.</param>
         /// <param name="count">The number of elements to search.</param>
-        /// <param name="match">The Predicate(T) delegate that defines the conditions of the element to search for.</param>
+        /// <param name="match">The Predicate{T} delegate that defines the conditions of the element to search for.</param>
         /// <returns></returns>
         public int FindLastIndex(int index, int count, Predicate<T> match)
         {
@@ -555,7 +557,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through the BigArray(T).
+        /// Returns an enumerator that iterates through the <see cref="BigArray{T}"/>.
         /// </summary>
         public IEnumerator<T> GetEnumerator()
         {
@@ -563,9 +565,9 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Creates a shallow copy of a range of elements in the source BigArray(T).
+        /// Creates a shallow copy of a range of elements in the source <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="index">The zero-based BigArray(T) index at which the range starts.</param>
+        /// <param name="index">The zero-based <see cref="BigArray{T}"/> index at which the range starts.</param>
         /// <param name="count">The number of elements in the range.</param>
         /// <returns></returns>
         public BigArray<T> GetRange(int index, int count)
@@ -599,10 +601,10 @@ namespace Bigio
         }
 
         /// <summary>
-        /// If value conatins in BigArray(T) returns index of this value, otherwise return -1.
+        /// If value conatins in <see cref="BigArray{T}"/> returns index of this value, otherwise return -1.
         /// </summary>
         /// <param name="item">Data, the location of which is necessary to calculate</param>
-        /// <returns>The zero-based index of the first occurrence of item within the entire BigArray(T), if found; otherwise, –1.</returns>
+        /// <returns>The zero-based index of the first occurrence of item within the entire <see cref="BigArray{T}"/>, if found; otherwise, –1.</returns>
         public int IndexOf(T item)
         {
             return IndexOf(item, 0, Count);
@@ -610,13 +612,13 @@ namespace Bigio
 
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the first
-        ///  occurrence within the range of elements in the BigArray(T) that extends from the 
+        /// occurrence within the range of elements in the <see cref="BigArray{T}"/> that extends from the 
         /// specified index to the last element.
         /// </summary>
-        /// <param name="item">The object to locate in the BigArray(T). The value can benull for reference types.</param>
+        /// <param name="item">The object to locate in the <see cref="BigArray{T}"/>. The value can benull for reference types.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns>The zero-based index of the first occurrence of item within the range of elements 
-        /// in the BigArray(T) that extends fromindex to the last element, if found; otherwise, –1.</returns>
+        /// in the <see cref="BigArray{T}"/> that extends fromindex to the last element, if found; otherwise, –1.</returns>
         public int IndexOf(T item, int index)
         {
             return IndexOf(item, index, Count - index);
@@ -624,14 +626,14 @@ namespace Bigio
 
         /// <summary>
         ///  Searches for the specified object and returns the zero-based index of the first occurrence
-        ///  within the range of elements in the BigArray(T) that starts at the specified index
+        ///  within the range of elements in the <see cref="BigArray{T}"/> that starts at the specified index
         ///  and contains the specified number of elements.
         /// </summary>
-        /// <param name="item">The object to locate in the BigArray(T). The value can benull for reference types.</param>
+        /// <param name="item">The object to locate in the <see cref="BigArray{T}"/>. The value can benull for reference types.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list. </param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns>The zero-based index of the first occurrence of item within the range of elements
-        ///  in the BigArray(T) that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
+        ///  in the <see cref="BigArray{T}"/> that starts atindex and contains count number of elements, if found; otherwise, –1. </returns>
         public int IndexOf(T item, int index, int count)
         {
             if (!this.IsValidRange(index, count))
@@ -654,9 +656,9 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Inserts an element into the BigArray(T) at the specified index.
+        /// Inserts an element into the <see cref="BigArray{T}"/> at the specified index.
         /// </summary>
-        /// <param name="index">Index of DistibutedArray(T) where the value will be.</param>
+        /// <param name="index">Index of <see cref="DistibutedArray{T}"/> where the value will be.</param>
         /// <param name="item">The data to be placed.</param>
         public void Insert(int index, T item)
         {
@@ -714,11 +716,11 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Inserts the elements of a collection into the BigArray(T) at the specified index.
+        /// Inserts the elements of a collection into the <see cref="BigArray{T}"/> at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index at which the new elements should be inserted. </param>
-        /// <param name="collection">The collection whose elements should be inserted into the BigArray(T).
-        ///  The collection it self cannot be null, but it can contain elements that are null, if type T is a reference type. </param>
+        /// <param name="collection">The collection whose elements should be inserted into the <see cref="BigArray{T}"/>.
+        ///  The collection it self can't be null, but it can contains elements that are null, if type T is a reference type. </param>
         public void InsertRange(int index, ICollection<T> collection)
         {
             //Validity of index and count check in BlockInfo
@@ -750,10 +752,10 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Searches for the specified object and returns the zero-based index of the last occurrence within the entire BigArray(T).
+        /// Searches for the specified object and returns the zero-based index of the last occurrence within the entire <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="item">The object to locate in the BigArray(T). The value can benull for reference types.</param>
-        /// <returns>The zero-based index of the last occurrence of item within the entire the BigArray(T), if found; otherwise, –1.</returns>
+        /// <param name="item">The object to locate in the <see cref="BigArray{T}"/>. The value can benull for reference types.</param>
+        /// <returns>The zero-based index of the last occurrence of item within the entire the <see cref="BigArray{T}"/>, if found; otherwise, –1.</returns>
         public int LastIndexOf(T item)
         {
             int index = (Count == 0) ? 0 : Count - 1;
@@ -762,12 +764,12 @@ namespace Bigio
 
         /// <summary>
         /// Searches for the specified object and returns the zero-based index of the last occurrence
-        /// within the range of elements in the BigArray(T) that extends from the first element to the specified index.
+        /// within the range of elements in the <see cref="BigArray{T}"/> that extends from the first element to the specified index.
         /// </summary>
-        /// <param name="item">The object to locate in the BigArray(T). The value can benull for reference types.</param>
+        /// <param name="item">The object to locate in the <see cref="BigArray{T}"/>. The value can benull for reference types.</param>
         /// <param name="index">The zero-based starting index of the backward search.</param>
         /// <returns>The zero-based index of the last occurrence of item within the range of 
-        /// elements in the BigArray(T) that extends from the first element toindex, if found; otherwise, –1. </returns>
+        /// elements in the <see cref="BigArray{T}"/> that extends from the first element toindex, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index)
         {
             return LastIndexOf(item, index, index + 1);
@@ -775,13 +777,13 @@ namespace Bigio
 
         /// <summary>
         /// Searches for the specified object and returns the zero-based index
-        ///  of the last occurrence within the range of elements in the BigArray(T) that contains the specified 
+        ///  of the last occurrence within the range of elements in the <see cref="BigArray{T}"/> that contains the specified 
         /// number of elements and ends at the specified index.
         /// </summary>
-        /// <param name="item">The object to locate in the BigArray(T). The value can benull for reference types.</param>
+        /// <param name="item">The object to locate in the <see cref="BigArray{T}"/>. The value can benull for reference types.</param>
         /// <param name="index">The zero-based starting index of the backward search. </param>
         /// <param name="count">The number of elements in the section to search. </param>
-        /// <returns>The zero-based index of the last occurrence of item within the range of elements in the BigArray(T)
+        /// <returns>The zero-based index of the last occurrence of item within the range of elements in the <see cref="BigArray{T}"/>
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
@@ -804,7 +806,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Rebalance BigArray(T) to every block have DefaultBlockSize elements.
+        /// Rebalance internal data strucuture to make data parts less fragmented.
         /// </summary>
         public void Rebalance()
         {
@@ -819,12 +821,12 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Removes the first occurrence of a specific object from the BigArray(T).
+        /// Removes the first occurrence of a specific object from the <see cref="BigArray{T}"/>.
         /// </summary>
-        /// <param name="item">The object to remove from the BigArray(T).
+        /// <param name="item">The object to remove from the <see cref="BigArray{T}"/>.
         /// The value can be null for reference types.</param>
         /// <returns>True if item is successfully removed; otherwise, false.
-        ///  This method also returns false if item was not found in the BigArray(T).</returns>
+        /// This method also returns false if item was not found in the <see cref="BigArray{T}"/>.</returns>
         public bool Remove(T item)
         {
             for (int i = 0; i < _blockCollection.Count; i++)
@@ -852,12 +854,13 @@ namespace Bigio
                     return true;
                 }
             }
+
             //If there is not value in this distributed array
             return false;
         }
 
         /// <summary>
-        /// Removes the element at the specified index of the BigArray(T).
+        /// Removes the element at the specified index of the <see cref="BigArray{T}"/>.
         /// </summary>
         /// <param name="index">The zero-based index of the element to remove.</param>
         public void RemoveAt(int index)
@@ -915,7 +918,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Removes a range of elements from the BigArray(T).
+        /// Removes a range of elements from the <see cref="BigArray{T}"/>.
         /// </summary>
         /// <param name="index">The zero-based starting index of the range of elements to remove.</param>
         /// <param name="count">The number of elements to remove.</param>
@@ -961,7 +964,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Reverses the order of the elements in the entire BigArray(T).
+        /// Reverses the order of the elements in the entire <see cref="BigArray{T}"/>.
         /// </summary>
         public void Reverse()
         {
@@ -974,9 +977,9 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Copies the elements of the BigArray(T) to a new array.
+        /// Copies the elements of the <see cref="BigArray{T}"/> to a new array.
         /// </summary>
-        /// <returns>An array containing copies of the elements of the BigArray(T).</returns>
+        /// <returns>An array containing copies of the elements of the <see cref="BigArray{T}"/>.</returns>
         public T[] ToArray()
         {
             var array = new T[Count];
@@ -994,7 +997,7 @@ namespace Bigio
         /// <summary>
         /// Gets or sets the element at the specified index.
         /// </summary>
-        /// <param name="index">The zero-based index of the element to get or set. </param>
+        /// <param name="index">The zero-based index of the element to get or set.</param>
         public T this[int index]
         {
             get
@@ -1012,7 +1015,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Get the number of elements actually contained in the BigArray(T).
+        /// Get the number of elements actually contained in the <see cref="BigArray{T}"/>.
         /// </summary>
         public int Count
         {
@@ -1028,7 +1031,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Default size of one BigArray(T) block. 
+        /// Default size of one <see cref="BigArray{T}"/> block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
         /// </summary>
         public int DefaultBlockSize
@@ -1060,15 +1063,15 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Gets a value indicating whether the BigArray(T) is read-only.
+        /// Gets a value indicating whether the <see cref="BigArray{T}"/> is read-only.
         /// </summary>
         public bool IsReadOnly { get; private set; }
 
         //Support functions
         /// <summary>
-        /// Execute preliminary initialization of BigArray's internal data.
+        /// Execute preliminary initialization of <see cref="BigArray{T}"/>'s internal data.
         /// </summary>
-        /// <param name="collection">Collection to initialize BigArray with it.</param>
+        /// <param name="collection">Collection to initialize <see cref="BigArray{T}"/> with it.</param>
         private void Initialize(ICollection<T> collection)
         {
             IsReadOnly = false;

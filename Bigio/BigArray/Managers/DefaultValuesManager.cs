@@ -18,8 +18,8 @@ namespace Bigio.BigArray.Managers
         }
 
         /// <summary>
-        /// Through this field you can set or get global value of DefaultBlockSize.
-        /// All new objects will have this value of DefaultBlockSize field.
+        /// Through this field you can set or get global value of <see cref="DefaultBlockSize"/>.
+        /// All new objects will have this size of <see cref="DefaultBlockSize"/>.
         /// </summary>
         public static int DefaultBlockSize
         {
@@ -38,8 +38,8 @@ namespace Bigio.BigArray.Managers
         }
 
         /// <summary>
-        /// Through this field you can set or get global value of MaxBlockSize.
-        /// All new objects will have this value of MaxBlockSize field.
+        /// Through this field you can set or get global value of <see cref="MaxBlockSize"/>.
+        /// All new objects will have this value of <see cref="MaxBlockSize"/> field.
         /// </summary>
         public static int MaxBlockSize
         {

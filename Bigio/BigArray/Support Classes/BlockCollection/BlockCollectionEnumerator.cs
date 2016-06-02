@@ -6,14 +6,14 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
     public partial class BlockCollection<T>
     {
         /// <summary>
-        /// Enumerates the elements of a BlockCollection(T).
+        /// Enumerates the elements of a <see cref="BlockCollection{T}"/>.
         /// </summary>
         class BlockCollectionEnumerator : IEnumerator<Block<T>>
         {
             //Data
 
             /// <summary>
-            /// Parent BlockCollection to enumerate.
+            /// Parent <see cref="BlockCollection{T}"/> to enumerate.
             /// </summary>
             private readonly BlockCollection<T> _parent;
 
@@ -25,7 +25,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             //API
 
             /// <summary>
-            /// Supports a iteration over a BlockCollection(T).
+            /// Supports a iteration over a <see cref="BlockCollection{T}"/>.
             /// </summary>
             /// <param name="parent"></param>
             public BlockCollectionEnumerator(BlockCollection<T> parent)
@@ -46,7 +46,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             /// Advances the enumerator to the next element of the collection.
             /// </summary>
             /// <returns>
-            /// true if the enumerator was successfully advanced to the next element; false if the enumerator has passed the end of the collection.
+            /// True if the enumerator was successfully advanced to the next element; false if the enumerator has passed the end of the collection.
             /// </returns>
             public bool MoveNext()
             {

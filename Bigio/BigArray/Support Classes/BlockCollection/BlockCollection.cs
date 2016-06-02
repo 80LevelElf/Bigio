@@ -10,8 +10,7 @@ using Bigio.Common.Managers;
 namespace Bigio.BigArray.Support_Classes.BlockCollection
 {
     /// <summary>
-    /// BlockCollection is collection of blocks which abstracts you from internal work with block 
-    /// collection.
+    /// BlockCollection is collection of blocks which abstracts you from internal work with block collection.
     /// </summary>
     /// <typeparam name="T">Type of block elements.</typeparam>
     public partial class BlockCollection<T> : ICollection<Block<T>>
@@ -20,7 +19,6 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
 
         /// <summary>
         /// Collection with blocks provides the main data object in the Blocks class.
-        /// It contain at least one block(this block can be empty).
         /// </summary>
         private readonly IBigList<Block<T>> _blocks;
 
@@ -38,6 +36,8 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
 
         /// <summary>
         /// Create a new instance of <see cref="BlockCollection{T}"/> class.
+        /// <see cref="MaxBlockSize"/> and <see cref="DefaultBlockSize"/> initialize from default values of
+        /// <see cref="DefaultValuesManager.MaxBlockSize"/> and <see cref="DefaultValuesManager.DefaultBlockSize"/> 
         /// </summary>
         public BlockCollection()
         {
@@ -60,9 +60,9 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// <summary>
         /// Create a new instance of <see cref="BlockCollection"/> and get blocks from specify <see cref="collection"/>
         /// </summary>
-        /// <param name="collection">Collection whitch use as base for new BigArray(T).
+        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.
         /// The collection it self cannot be null and cant contain null blocks
-        /// , if type T is a reference type. </param>
+        /// , if type T is a reference type.</param>
         public BlockCollection(ICollection<T> collection) : this()
         {
             _blocks = new InternalBlockList<Block<T>>();
@@ -70,13 +70,11 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Create a new instance of Blocks(T) class.
+        /// Create a new instance of <see cref="Blocks{T}"/> class.
         /// </summary>
         /// <param name="blockCollection">Collection to set it as internal block collection
         /// for controll of it. It can't be null.</param>
-        /// <param name="collection">Collection whitch use as base for new BigArray(T).
-        /// The collection it self cannot be null and cant contain null blocks
-        /// , if type T is a reference type.</param>
+        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.
         public BlockCollection(IBigList<Block<T>> blockCollection, ICollection<T> collection) : this()
         {
             if (blockCollection == null)
@@ -87,13 +85,12 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Add new block to the end of collection of blocks of the BlockCollection(T).
+        /// Add new block to the end of collection of blocks of the <see cref="BlockCollection{T}"/>.
         /// If your block is too big, function will try to divite it into blocks.
-        /// If the block is empty, function wont add it. 
-        /// it(If you want to do it, you will must to use AddNewBlock function).
+        /// If the block is empty, function won't add it(If you want to do it, you will must to use <see cref="AddNewBlock"/> function).
         /// If block is too big, it will be divide into several blocks.
         /// </summary>
-        /// <param name="block">Block to add. Block cant be null.</param>
+        /// <param name="block">Block to add.</param>
         public void Add(Block<T> block)
         {
             if (block == null)
@@ -103,13 +100,13 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Add new block to the end of collection of blocks of the BlockCollection(T).
+        /// Add new block to the end of collection of blocks of the <see cref="BlockCollection{T}"/>.
         /// If your block is too big, function will try to divite it into blocks.
         /// If the block is empty, function wont add it. 
-        /// it(If you want to do it, you will must to use AddNewBlock function).
-        /// If block is too big, it will be divide into several blocks.
+        /// it(If you want to do it, you will must to use <see cref="AddNewBlock"/> function).
+        /// If block is too big, it will be divided into several blocks.
         /// </summary>
-        /// <param name="block">Block to add. Block cant be null.</param>
+        /// <param name="block">Block to add.</param>
         public void Add(ICollection<T> block)
         {
             if (block == null)
@@ -120,13 +117,13 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
 
         /// <summary>
         /// Add data starting with index of block to the end of collection 
-        /// of blocks of the BlockCollection(T) as new blocks.
+        /// of blocks of the <see cref="BlockCollection{T}"/> as new blocks.
         /// If your block is too big, function will try to divite it into blocks.
         /// If the block is empty, function wont add it. 
-        /// it(If you want to do it, you will must to use AddNewBlock function).
-        /// If block is too big, it will be divide into several blocks.
+        /// it(If you want to do it, you will must to use <see cref="AddNewBlock"/> function).
+        /// If block is too big, it will be divided into several blocks.
         /// </summary>
-        /// <param name="block">Block to add. Block cant be null.</param>
+        /// <param name="block">Block to add.</param>
         /// <param name="blockSubindex">The zero-based index in block at which copying begins.</param>
         public void Add(ICollection<T> block, int blockSubindex)
         {
@@ -135,13 +132,13 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
 
         /// <summary>
         /// Add data from specified range of block to the end of collection
-        /// of blocks of the BlockCollection(T) as new blocks.
+        /// of blocks of the <see cref="BlockCollection{T}"/> as new blocks.
         /// If your block is too big, function will try to divite it into blocks.
         /// If the block is empty, function wont add it. 
-        /// it(If you want to do it, you will must to use AddNewBlock function).
-        /// If block is too big, it will be divide into several blocks.
+        /// it(If you want to do it, you will must to use <see cref="AddNewBlock"/> function).
+        /// If block is too big, it will be divided into several blocks.
         /// </summary>
-        /// <param name="block">Block to add. Block cant be null.</param>
+        /// <param name="block">Block to add.</param>
         /// <param name="blockSubindex">The zero-based index in block at which copying begins.</param>
         /// <param name="blockCount">The number of elements of block to copy.</param>
         public void Add(ICollection<T> block, int blockSubindex, int blockCount)
@@ -151,9 +148,9 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Add new empty block as last block. New block will have DefaultBlockSize capacity.
+        /// Add new empty block as last block. New block will have <see cref="DefaultBlockSize"/> capacity.
         /// You need to use this function istead of Add(emptyBlock) because if
-        /// block is empty Add() function dont add it in the BlockCollection. 
+        /// block is empty Add() function don't add it in the BlockCollection. 
         /// If block is too big, it will be divide into several blocks.
         /// </summary>
         public void AddNewBlock()
@@ -162,13 +159,13 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Adds the blocks of the specified collection to the end of the BlockCollection.
+        /// Adds the blocks of the specified collection to the end of the <see cref="BlockCollection"/>.
         /// If block is too big, it will be divide into several blocks.
-        /// All blocks in the range cant be null, but block can be empty
-        /// (in this way function dont add block in the BlockCollection).
+        /// All blocks in the range can't be null, but block can be empty
+        /// (in this way function don't add block in the <see cref="BlockCollection"/>).
         /// </summary>
         /// <param name="range">The collection of blocks whose elements should be added 
-        /// to the end of the BlockCollection(T).
+        /// to the end of the <see cref="BlockCollection{T}"/>.
         /// The collection itself cannot benull and cant contain null elements.</param>
         public void AddRange(ICollection<Block<T>> range)
         {
@@ -183,7 +180,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Remove all blocks from the BlockCollection(T).
+        /// Remove all blocks from the <see cref="BlockCollection{}"/>.
         /// </summary>
         public void Clear()
         {
@@ -191,7 +188,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Remove true if BlockCollection(T) contains value, otherwise return false.
+        /// Remove true if <see cref="BlockCollection{}"/> contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Block to be checked.</param>
         public bool Contains(Block<T> item)
@@ -200,12 +197,12 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Copies the entire BlockCollection(T) to a compatible one-dimensional array
-        /// , starting at the specified index of the target array.
+        /// Copies the entire <see cref="BlockCollection{}"/> to a compatible one-dimensional array
+        /// , starting at the specified <see cref="arrayIndex"/> of the target array.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the blocks copied from BlockCollection(T).
-        ///  The Array must have zero-based indexing. </param>
-        /// <param name="arrayIndex">The zero-based index in array at which copying begins. </param>
+        /// <param name="array">The one-dimensional Array that is the destination of the blocks copied from <see cref="BlockCollection{}"/>.
+        ///  The <see cref="array"/> must have zero-based indexing. </param>
+        /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(Block<T>[] array, int arrayIndex)
         {
             if (array == null)
@@ -232,22 +229,22 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Inserts an element into the BigArray(T) at the specified index.
+        /// Inserts an element into the <see cref="BigArray{T}"/> at the specified index.
         /// If your block is too big, function will try to divite it into blocks.
         /// If the block is empty, function will insert it. 
         /// it(If you want to do it, you will must to use InsertNewBlock function).
         /// </summary>
         /// <param name="index">Index of collection of block where the new block will be.</param>
-        /// <param name="block">Block to insert.</param>
+        /// <param name="block">Block to be inserted.</param>
         public void Insert(int index, Block<T> block)
         {
             InsertRange(index, DivideIntoBlocks(block));
         }
 
         /// <summary>
-        /// Insert new empty block at the specified idex. New block will have DefaultBlockSize capacity.
-        /// You need to use this function istead of Insert(index, emptyBlock) because if
-        /// block is empty, Insert() function wont add it in the BlockCollection. 
+        /// Insert new empty block at the specified idex. New block will have <see cref="DefaultBlockSize"/> capacity.
+        /// You need to use this function istead of <see cref="Insert"/>(index, emptyBlock) because if
+        /// block is empty, <see cref="Insert"/> function wont add it in the <see cref="BlockCollection"/>. 
         /// </summary>
         /// <param name="index"></param>
         public void InsertNewBlock(int index)
@@ -256,13 +253,13 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Inserts the elements of a block range into the block collection at the specified index.
+        /// Inserts the elements of a block range into the block collection at the specified <see cref="index"/>.
         /// If block is too big, it will be divide into several blocks.
         /// All blocks in the range cant be null, but block can be empty
-        /// (in this way function dont insert block in the BlockCollection).
+        /// (in this way function dont insert block in the <see cref="BlockCollection"/>).
         /// </summary>
         /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="range">The range whose elements should be inserted into the block collection.
+        /// <param name="range">The range whose elements should be inserted into the <see cref="BlockCollection{T}"/>.
         ///  The range it self cannot be null, and cant contain null blocks.</param>
         public void InsertRange(int index, ICollection<Block<T>> range)
         {
@@ -285,18 +282,18 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Removes the first occurrence of a specific block from the BlockCollection(T).
+        /// Removes the first occurrence of a specific block from the <see cref="BlockCollection{T}"/>.
         /// </summary>
-        /// <param name="block">The object to remove from the BigArray(T).</param>
+        /// <param name="block">The object to remove from the <see cref="BigArray{T}"/>.</param>
         /// <returns>True if item is successfully removed; otherwise, false.
-        ///  This method also returns false if item was not found in the BlockCollection(T).</returns>
+        ///  This method also returns false if item was not found in the <see cref="BlockCollection{T}"/>.</returns>
         public bool Remove(Block<T> block)
         {
             return _blocks.Remove(block);
         }
 
         /// <summary>
-        /// Removes the block at the specified index of the _blocks.
+        /// Removes the block at the specified index of the <see cref="BlockCollection{T}"/>.
         /// </summary>
         /// <param name="index">The zero-based index of the block to remove.</param>
         public void RemoveAt(int index)
@@ -308,7 +305,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Reverses the order of the blocks in the entire BlocksCollection.
+        /// Reverses the order of the blocks in the entire <see cref="BlockCollection{T}"/>.
         /// </summary>
         public void Reverse()
         {
@@ -316,10 +313,10 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// If count of elements of block at specified index more or equal to MaxBlockSize,
-        /// it will be divide into the new blocks with DefaultBlockSize size.
+        /// If count of elements of block at specified index more or equal to <see cref="MaxBlockSize"/>,
+        /// it will be divide into the new blocks with <see cref="DefaultBlockSize"/> size.
         /// </summary>
-        /// <param name="index">Index of block to divide.</param>
+        /// <param name="index">Index of block to be divided.</param>
         public void TryToDivideBlock(int index)
         {
             if (!this.IsValidIndex(index))
@@ -344,11 +341,12 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         //Support functions
+
         /// <summary>
-        /// Divide specified collection into blocks with DefaultBlockSize size.
+        /// Divide specified collection into blocks with <see cref="DefaultBlockSize"/> size.
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
+        /// <returns>Blocks constructed on the basis of the collection with <see cref="DefaultBlockSize"/> size.</returns>
         private ICollection<Block<T>> DivideIntoBlocks(ICollection<T> collection)
         {
             if (collection == null)
@@ -362,15 +360,14 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
 
         /// <summary>
         /// Divide specified range of collection
-        /// (starts at the specified index and contaies specified count of elements)
-        /// into blocks with DefaultBlockSize size.
+        /// (starts at the specified <see cref="collectionIndex"/> and contaies specified count of elements)
+        /// into blocks with <see cref="DefaultBlockSize"/> size.
         /// </summary>
         /// <param name="collection">Collection, which must be divided.</param>
-        /// <param name="collectionIndex">The zero-based starting index of the collection of elements to divide.</param>
-        /// <param name="countToDivide">The number of elements of the collection to divide.</param>
-        /// <returns>Blocks constructed on the basis of the collection with DefaultBlockSize size.</returns>
-        private IList<Block<T>> DivideIntoBlocks
-            (ICollection<T> collection, int collectionIndex, int countToDivide)
+        /// <param name="collectionIndex">The zero-based starting index of the <see cref="collection"/> of elements to divide.</param>
+        /// <param name="countToDivide">The number of elements of the <see cref="collection"/> to divide.</param>
+        /// <returns>Blocks constructed on the basis of the collection with <see cref="DefaultBlockSize"/> size.</returns>
+        private IList<Block<T>> DivideIntoBlocks(ICollection<T> collection, int collectionIndex, int countToDivide)
         {
             if (collection == null)
                 throw new ArgumentNullException("collection");
@@ -418,9 +415,9 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Execute preliminary initialization of BlockCollection's internal data.
+        /// Execute preliminary initialization of <see cref="BlockCollection{T}"/>'s internal data.
         /// </summary>
-        /// <param name="collection">Collection to initialize BlockCollection with it.</param>
+        /// <param name="collection">Collection to initialize <see cref="BlockCollection{T}"/> with it.</param>
         private void Initialize(ICollection<T> collection)
         {
             if (collection == null)
@@ -438,6 +435,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         //Data
+
         /// <summary>
         /// Gets or sets the block at the specified index.
         /// </summary>
@@ -462,7 +460,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Default size of one BigArray(T) block. 
+        /// Default size of one <see cref="BigArray{T}"/> block. 
         /// Because of the way memory allocation is most effective that it is a power of 2.
         /// </summary>
         public int DefaultBlockSize
