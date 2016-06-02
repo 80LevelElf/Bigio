@@ -70,11 +70,11 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Create a new instance of <see cref="Blocks{T}"/> class.
+        /// Create a new instance of <see cref="Block{T}"/> class.
         /// </summary>
         /// <param name="blockCollection">Collection to set it as internal block collection
         /// for controll of it. It can't be null.</param>
-        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.
+        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.</param>
         public BlockCollection(IBigList<Block<T>> blockCollection, ICollection<T> collection) : this()
         {
             if (blockCollection == null)
@@ -180,7 +180,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Remove all blocks from the <see cref="BlockCollection{}"/>.
+        /// Remove all blocks from the <see cref="BlockCollection{T}"/>.
         /// </summary>
         public void Clear()
         {
@@ -188,7 +188,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Remove true if <see cref="BlockCollection{}"/> contains value, otherwise return false.
+        /// Remove true if <see cref="BlockCollection{T}"/> contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Block to be checked.</param>
         public bool Contains(Block<T> item)
@@ -197,10 +197,10 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         }
 
         /// <summary>
-        /// Copies the entire <see cref="BlockCollection{}"/> to a compatible one-dimensional array
+        /// Copies the entire <see cref="BlockCollection{T}"/> to a compatible one-dimensional array
         /// , starting at the specified <see cref="arrayIndex"/> of the target array.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the blocks copied from <see cref="BlockCollection{}"/>.
+        /// <param name="array">The one-dimensional Array that is the destination of the blocks copied from <see cref="BlockCollection{T}"/>.
         ///  The <see cref="array"/> must have zero-based indexing. </param>
         /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(Block<T>[] array, int arrayIndex)

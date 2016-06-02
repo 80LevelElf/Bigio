@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bigio.Common.Managers;
 
 namespace Bigio.Common.Classes
 {

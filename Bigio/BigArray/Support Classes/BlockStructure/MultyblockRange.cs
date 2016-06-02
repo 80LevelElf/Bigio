@@ -99,7 +99,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         }
 
         /// <summary>
-        /// Zero-based index of the start block in <see cref="BlockCollection{T}"/>.
+        /// Zero-based index of the start block in <see cref="Bigio.BigArray.Support_Classes.BlockCollection"/>.
         /// </summary>
         public int IndexOfStartBlock
         {

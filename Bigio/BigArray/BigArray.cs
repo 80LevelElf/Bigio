@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Bigio.BigArray.Interfaces;
+using Bigio.BigArray.Internal_Block_Collections;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.BigArray.Support_Classes.BlockStructure;
 using Bigio.Common.Classes;
@@ -52,7 +53,7 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Create a new instance of the <see cref="BigArrayT{}"/> class using elements from specified collection
+        /// Create a new instance of the <see cref="BigArray{T}"/> class using elements from specified collection
         /// and use <see cref="InternalBlockList{T}"/> as internal block collection for storage blocks.
         /// </summary>
         /// <param name="collection">Collection whitch use as base for new <see cref="BigArray"/>.
@@ -385,6 +386,7 @@ namespace Bigio
         /// Retrieves all the elements that match the conditions defined by the specified predicate.
         /// </summary>
         /// <param name="match">The Predicate{T} delegate that defines the conditions of the elements to search for.</param>
+        /// <param name="isSaveOrder">If flag is true - return suitable elements in right order, otherwise - order doesn't matter.</param>
         /// <returns>A <see cref="BigArray{T}"/> containing all the elements that match the conditions defined by the specified predicate,
         /// if found; otherwise, an empty <see cref="BigArray{T}"/>.</returns>
         public BigArray<T> FindAll(Predicate<T> match, bool isSaveOrder = false)
@@ -658,7 +660,7 @@ namespace Bigio
         /// <summary>
         /// Inserts an element into the <see cref="BigArray{T}"/> at the specified index.
         /// </summary>
-        /// <param name="index">Index of <see cref="DistibutedArray{T}"/> where the value will be.</param>
+        /// <param name="index">Index of <see cref="BigArray{T}"/> where the value will be.</param>
         /// <param name="item">The data to be placed.</param>
         public void Insert(int index, T item)
         {

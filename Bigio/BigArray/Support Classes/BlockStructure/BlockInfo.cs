@@ -16,7 +16,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         public BlockInfo(int indexOfBlock, int commonStartIndex, int count)
         {
             IndexOfBlock = indexOfBlock;
-            this.CommonStartIndex = commonStartIndex;
+            CommonStartIndex = commonStartIndex;
             Count = count;
         }
 
