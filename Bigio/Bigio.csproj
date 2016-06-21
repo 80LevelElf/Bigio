@@ -47,6 +47,7 @@
     <Compile Include="BigArray\Support Classes\BlockCollection\Block.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\BlockCollection.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\BlockCollectionEnumerator.cs" />
+    <Compile Include="BigArray\Support Classes\BlockStructure\CachedCountInfo.cs" />
     <Compile Include="BigArray\Support Classes\BlockStructure\MultyblockRange.cs" />
     <Compile Include="BigQueue\BigQueue.cs" />
     <Compile Include="BigArray\Managers\DefaultValuesManager.cs" />

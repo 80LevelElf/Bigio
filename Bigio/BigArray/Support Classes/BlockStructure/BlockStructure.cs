@@ -18,7 +18,18 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <summary>
         /// We use this flag to show that all <see cref="BlockInfo(int)"/> in <see cref="_blocksInfoList"/> is up to date.
         /// </summary>
-        public const int NoBlockChanges = -1;
+        private const int NoBlockChanges = -1;
+
+        /// <summary>
+        /// We use this flag to show that <see cref="_cachedCountInfo"/> we use in <see cref="GetCachedElementCount"/> has invalid value
+        /// and need to be updated.
+        /// </summary>
+        private const int CountCacheInvalid = -2;
+
+        /// <summary>
+        /// It's a cached data about current count of cached element. We need it to get this information faster.
+        /// </summary>
+        private CachedCountInfo _cachedCountInfo = new CachedCountInfo(CountCacheInvalid, CountCacheInvalid);
 
         /// <summary>
         /// Parent <see cref="BlockCollection"/> to define structure of it.
@@ -39,6 +50,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         private int _indexOfFirstChangedBlock;
 
         //API
+
         /// <summary>
         /// Create new instance of <see cref="BlockStructure"/> describing specify <see cref="BlockCollection"/>
         /// </summary>
@@ -192,6 +204,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
 
             _indexOfFirstChangedBlock = _indexOfFirstChangedBlock == NoBlockChanges ?
                 blockIndex : Math.Min(_indexOfFirstChangedBlock, blockIndex);
+            _cachedCountInfo.CachedIndexOfFirstChangedBlock = CountCacheInvalid;
         }
 
         /// <summary>
@@ -210,6 +223,8 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 //non-existent block.
                 if (_indexOfFirstChangedBlock >= blockIndex)
                     _indexOfFirstChangedBlock = NoBlockChanges;
+
+                _cachedCountInfo.CachedIndexOfFirstChangedBlock = CountCacheInvalid;
 
                 return;
             }
@@ -425,22 +440,46 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// <returns>Count of cached elements.</returns>
         private int GetCachedElementCount()
         {
+            //Maybe we already know answer
+            if (_cachedCountInfo.CachedIndexOfFirstChangedBlock == _indexOfFirstChangedBlock)
+                return _cachedCountInfo.CachedCount;
+
             if (_indexOfFirstChangedBlock == NoBlockChanges)
             {
                 if (BlockCollection.Count == 0)
+                {
+                    _cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
+                    _cachedCountInfo.CachedCount = 0;
+
                     return 0;
+                }
 
                 //BlockCollection and _blocksInfoList must be equal at this point
                 Debug.Assert(BlockCollection.Count == _blocksInfoList.Count);
 
-                return GetCountByEndBlock(_blocksInfoList[_blocksInfoList.Count - 1]);
+                var cachedCountOfLastBlock = GetCountByEndBlock(_blocksInfoList[_blocksInfoList.Count - 1]);
+
+                _cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
+                _cachedCountInfo.CachedCount = cachedCountOfLastBlock;
+
+                return cachedCountOfLastBlock;
             }
 
             var indexOfFirstChangedBlock = Math.Min(_indexOfFirstChangedBlock, _blocksInfoList.Count);
             if (indexOfFirstChangedBlock == 0)
-                return 0;
+            {
+                _cachedCountInfo.CachedIndexOfFirstChangedBlock = 0;
+                _cachedCountInfo.CachedCount = 0;
 
-            return GetCountByEndBlock(_blocksInfoList[indexOfFirstChangedBlock - 1]);
+                return 0;
+            }
+
+            var cachedCount = GetCountByEndBlock(_blocksInfoList[indexOfFirstChangedBlock - 1]);
+
+            _cachedCountInfo.CachedIndexOfFirstChangedBlock = indexOfFirstChangedBlock;
+            _cachedCountInfo.CachedCount = cachedCount;
+
+            return cachedCount;
         }
 
         /// <summary>
