@@ -11,14 +11,17 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
     [TestFixture]
     public static class BlockCollectionTest
     {
+        private const int MaxBlockSize = 4096;
+        private const int DefaultBlockSize = 1024;
+
         [Test]
         public static void AddAndInsert()
         {
             var blockCollection = new BlockCollection<int>();
-            blockCollection.Add(new Block<int> { 1 });
-            blockCollection.Insert(0, new Block<int> { 0 });
-            blockCollection.Insert(2, new Block<int> { 2 });
-            blockCollection.Add(new Block<int> { 3 });
+            blockCollection.Add(new Block<int>(DefaultBlockSize) { 1 });
+            blockCollection.Insert(0, new Block<int>(DefaultBlockSize) { 0 });
+            blockCollection.Insert(2, new Block<int>(DefaultBlockSize) { 2 });
+            blockCollection.Add(new Block<int>(DefaultBlockSize) { 3 });
 
             var checkArray = new[] { 0, 1, 2, 3 };
             Assert.AreEqual(blockCollection.Count, checkArray.Length);
@@ -35,9 +38,9 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
                 (blockCollection.Insert, 0, null));
 
             Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentOutOfRangeException, int, Block<int>>
-                (blockCollection.Insert, -1, new Block<int>()));
+                (blockCollection.Insert, -1, new Block<int>(DefaultBlockSize)));
             Assert.IsTrue(ExceptionManager.IsThrowActionException<ArgumentOutOfRangeException, int, Block<int>>
-                (blockCollection.Insert, blockCollection.Count + 1, new Block<int>()));
+                (blockCollection.Insert, blockCollection.Count + 1, new Block<int>(DefaultBlockSize)));
         }
 
         [Test]
@@ -46,10 +49,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             var blockCollection = new BlockCollection<int>();
 
             //Add
-            blockCollection.AddNewBlock();
+            blockCollection.AddNewBlock(0);
             Assert.AreEqual(blockCollection.Count, 1);
             //Add
-            blockCollection.AddNewBlock();
+            blockCollection.AddNewBlock(1);
             Assert.AreEqual(blockCollection.Count, 2);
             //Insert
             blockCollection.InsertNewBlock(1);
@@ -62,21 +65,21 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             var blockCollection = new BlockCollection<int>();
             blockCollection.AddRange(new List<Block<int>>
             {
-                new Block<int> {1},
-                new Block<int> {2}
+                new Block<int>(DefaultBlockSize) {1},
+                new Block<int>(DefaultBlockSize) {2}
             });
             blockCollection.InsertRange(0, new List<Block<int>>
             {
-                new Block<int> {0}
+                new Block<int>(DefaultBlockSize) {0}
             });
             blockCollection.AddRange(new List<Block<int>>
             {
-                new Block<int> {3}
+                new Block<int>(DefaultBlockSize) {3}
             });
             blockCollection.InsertRange(4, new List<Block<int>>
             {
-                new Block<int> {4},
-                new Block<int> {5}
+                new Block<int>(DefaultBlockSize) {4},
+                new Block<int>(DefaultBlockSize) {5}
             });
 
             var checkArray = new[] { 0, 1, 2, 3, 4, 5 };
@@ -120,16 +123,16 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             Assert.IsTrue(blockCollection.Contains(blockCollection[0]));
             Assert.IsTrue(blockCollection.Contains(blockCollection[blockCollection.Count - 1]));
 
-            Assert.IsFalse(blockCollection.Contains(new Block<int>()));
+            Assert.IsFalse(blockCollection.Contains(new Block<int>(DefaultBlockSize)));
         }
 
         [Test]
         public static void CopyTo()
         {
             var blockCollection = new BlockCollection<int>();
-            blockCollection.Add(new Block<int> {0, 1, 2});
-            blockCollection.Add(new Block<int> {3, 4, 5});
-            blockCollection.Add(new Block<int> {6, 7, 8});
+            blockCollection.Add(new Block<int>(DefaultBlockSize) { 0, 1, 2 });
+            blockCollection.Add(new Block<int>(DefaultBlockSize) { 3, 4, 5 });
+            blockCollection.Add(new Block<int>(DefaultBlockSize) { 6, 7, 8 });
 
             //Without shift
             var array1 = new Block<int>[3];
@@ -192,7 +195,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 
             Assert.IsTrue(blockCollection.Remove(blockCollection[0]));
             Assert.IsTrue(blockCollection.Remove(blockCollection[blockCollection.Count - 1]));
-            Assert.IsFalse(blockCollection.Remove(new Block<int>()));
+            Assert.IsFalse(blockCollection.Remove(new Block<int>(DefaultBlockSize)));
         }
 
         [Test]
@@ -223,10 +226,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
         public static void TryToDivideBlock()
         {
             var blockCollection = new BlockCollection<int>();
-            blockCollection.AddNewBlock();
+            blockCollection.AddNewBlock(0);
 
-            //Fill block 2 time
-            for (int i = 0; i < blockCollection.MaxBlockSize * 2; i++)
+            //Fill block 2 times
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 blockCollection[0].Add(i);
             }
@@ -235,8 +238,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 
             blockCollection.TryToDivideBlock(0);
 
-            Assert.AreEqual(blockCollection.Count,
-                2 * blockCollection.MaxBlockSize / blockCollection.DefaultBlockSize);
+            Assert.AreEqual(blockCollection.Count, 2 * MaxBlockSize / DefaultBlockSize);
         }
 
         //Support functions
@@ -245,7 +247,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             var blockCollection = new BlockCollection<int>();
             for (int i = 0; i < countOfBlocks; i++)
             {
-                blockCollection.Add(new Block<int> { i });
+                blockCollection.Add(new Block<int>(DefaultBlockSize) { i });
             }
 
             return blockCollection;

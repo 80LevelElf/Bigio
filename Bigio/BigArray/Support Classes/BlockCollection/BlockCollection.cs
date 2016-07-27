@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Bigio.BigArray.Interfaces;
-using Bigio.BigArray.Internal_Block_Collections;
-using Bigio.BigArray.Managers;
+using Bigio.BigArray.Support_Classes.Balancer;
 using Bigio.Common.Managers;
 
 namespace Bigio.BigArray.Support_Classes.BlockCollection
@@ -22,66 +20,36 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// </summary>
         private readonly IBigList<Block<T>> _blocks;
 
-        /// <summary>
-        /// Internal value of <see cref="DefaultBlockSize"/>.
-        /// </summary>
-        private int _defaultBlockSize;
-
-        /// <summary>
-        /// Internal value of <see cref="MaxBlockSize"/>.
-        /// </summary>
-        private int _maxBlockSize;
+        private readonly IBalancer _balancer;
 
         //API
 
-        /// <summary>
-        /// Create a new instance of <see cref="BlockCollection{T}"/> class.
-        /// <see cref="MaxBlockSize"/> and <see cref="DefaultBlockSize"/> initialize from default values of
-        /// <see cref="DefaultValuesManager.MaxBlockSize"/> and <see cref="DefaultValuesManager.DefaultBlockSize"/> 
-        /// </summary>
-        public BlockCollection()
+        public BlockCollection(IBalancer balancer, IBigList<Block<T>> internalBlockCollection)
         {
-            _blocks = new InternalBlockList<Block<T>>();
+            _balancer = balancer;
+            _blocks = internalBlockCollection;
 
-            MaxBlockSize = DefaultValuesManager.MaxBlockSize;
-            DefaultBlockSize = DefaultValuesManager.DefaultBlockSize;
             IsReadOnly = false;
         }
 
-        /// <summary>
-        /// Create a new instance of <see cref="BlockCollection{T}"/> class and use <see cref="blockCollection"/> as block collection.
-        /// </summary>
-        /// <param name="blockCollection">Collection to set it as internal block collection for controll of it. It can't be null.</param>
-        public BlockCollection(IBigList<Block<T>> blockCollection) : this(blockCollection, new Collection<T>())
+        public BlockCollection(IBalancer balancer) : this(balancer, new InternalBlockList<Block<T>>())
         {
             
         }
 
-        /// <summary>
-        /// Create a new instance of <see cref="BlockCollection"/> and get blocks from specify <see cref="collection"/>
-        /// </summary>
-        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.
-        /// The collection it self cannot be null and cant contain null blocks
-        /// , if type T is a reference type.</param>
-        public BlockCollection(ICollection<T> collection) : this()
+        public BlockCollection(IBigList<Block<T>> internalBlockCollection) : this(new FixedBalancer(), internalBlockCollection)
         {
-            _blocks = new InternalBlockList<Block<T>>();
-            Initialize(collection);
+            
         }
 
-        /// <summary>
-        /// Create a new instance of <see cref="Block{T}"/> class.
-        /// </summary>
-        /// <param name="blockCollection">Collection to set it as internal block collection
-        /// for controll of it. It can't be null.</param>
-        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.</param>
-        public BlockCollection(IBigList<Block<T>> blockCollection, ICollection<T> collection) : this()
+        public BlockCollection() : this(new FixedBalancer(), new InternalBlockList<Block<T>>())
         {
-            if (blockCollection == null)
-                throw new ArgumentOutOfRangeException("blockCollection");
+            
+        }
 
-            _blocks = blockCollection;
-            Initialize(collection);
+        public BlockCollection(BlockCollection<T> blockCollection) : this(blockCollection._balancer, blockCollection._blocks)
+        {
+            
         }
 
         /// <summary>
@@ -153,9 +121,9 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// block is empty Add() function don't add it in the BlockCollection. 
         /// If block is too big, it will be divide into several blocks.
         /// </summary>
-        public void AddNewBlock()
+        public void AddNewBlock(int indexOfBlock)
         {
-            _blocks.Add(new Block<T>(DefaultBlockSize));
+            _blocks.Add(new Block<T>(_balancer.GetDefaultBlockSize(indexOfBlock)));
         }
 
         /// <summary>
@@ -246,10 +214,10 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// You need to use this function istead of <see cref="Insert"/>(index, emptyBlock) because if
         /// block is empty, <see cref="Insert"/> function wont add it in the <see cref="BlockCollection"/>. 
         /// </summary>
-        /// <param name="index"></param>
-        public void InsertNewBlock(int index)
+        /// <param name="indexOfBlock"></param>
+        public void InsertNewBlock(int indexOfBlock)
         {
-            _blocks.Insert(index, new Block<T>(DefaultBlockSize));
+            _blocks.Insert(indexOfBlock, new Block<T>(_balancer.GetNewBlockSize(indexOfBlock)));
         }
 
         /// <summary>
@@ -316,18 +284,18 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// If count of elements of block at specified index more or equal to <see cref="MaxBlockSize"/>,
         /// it will be divide into the new blocks with <see cref="DefaultBlockSize"/> size.
         /// </summary>
-        /// <param name="index">Index of block to be divided.</param>
-        public void TryToDivideBlock(int index)
+        /// <param name="indexOfBlock">Index of block to be divided.</param>
+        public void TryToDivideBlock(int indexOfBlock)
         {
-            if (!this.IsValidIndex(index))
-                throw new ArgumentOutOfRangeException("index");
+            if (!this.IsValidIndex(indexOfBlock))
+                throw new ArgumentOutOfRangeException("indexOfBlock");
 
-            int count = _blocks[index].Count;
-            if (count >= MaxBlockSize)
+            int count = _blocks[indexOfBlock].Count;
+            if (count >= _balancer.GetMaxBlockSize(indexOfBlock))
             {
-                var newBlocks = DivideIntoBlocks(_blocks[index]);
-                RemoveAt(index);
-                InsertRange(index, newBlocks);
+                var newBlocks = DivideIntoBlocks(_blocks[indexOfBlock]);
+                RemoveAt(indexOfBlock);
+                InsertRange(indexOfBlock, newBlocks);
             }
         }
 
@@ -337,7 +305,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         public void AddFirstBlockIfThereIsNeeded()
         {
             if (Count == 0)
-                AddNewBlock();
+                AddNewBlock(_balancer.GetNewBlockSize(0));
         }
 
         //Support functions
@@ -375,55 +343,35 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             if (!collection.IsValidRange(collectionIndex, countToDivide))
                 throw new ArgumentOutOfRangeException();
 
-            //Calculate blocks count
-            int countOfBlocks = countToDivide / DefaultBlockSize;
-            if (countToDivide % DefaultBlockSize != 0)
-                countOfBlocks++;
+            List<Block<T>> blockList = new List<Block<T>>();
 
-            var blocks = new Block<T>[countOfBlocks];
+            int alreadyProcessedCount = 0;
 
-            //Transfer data from collection to new blocks
-            var item = collection.GetEnumerator();
+            var collectionEnumerator = collection.GetEnumerator();
             for (int i = 0; i < collectionIndex; i++) //Move item to the index position
             {
-                item.MoveNext();
+                collectionEnumerator.MoveNext();
             }
 
-            for (int i = 0; i < countOfBlocks; i++)
+            for (int i = 0; alreadyProcessedCount != countToDivide; i++)
             {
-                //Calculate curent block size
-                int currentBlockSize;
-                if (i != countOfBlocks - 1)
-                    currentBlockSize = DefaultBlockSize;
-                else
-                    currentBlockSize = countToDivide - (i * DefaultBlockSize);
+                int currentBlockSize = _balancer.GetNewBlockSize(i);
 
-                //Declare new block
-                blocks[i] = new Block<T>(DefaultBlockSize);
+                Block<T> newBlock = new Block<T>(currentBlockSize);
+                blockList.Add(newBlock);
 
-                //Transfer data
+                currentBlockSize = Math.Min(currentBlockSize, countToDivide - alreadyProcessedCount);
+
                 for (int j = 0; j < currentBlockSize; j++)
                 {
-                    item.MoveNext();
-
-                    T insertion = item.Current;
-                    blocks[i].Add(insertion);
+                    collectionEnumerator.MoveNext();
+                    newBlock.Add(collectionEnumerator.Current);
                 }
+
+                alreadyProcessedCount += currentBlockSize;
             }
 
-            return blocks;
-        }
-
-        /// <summary>
-        /// Execute preliminary initialization of <see cref="BlockCollection{T}"/>'s internal data.
-        /// </summary>
-        /// <param name="collection">Collection to initialize <see cref="BlockCollection{T}"/> with it.</param>
-        private void Initialize(ICollection<T> collection)
-        {
-            if (collection == null)
-                throw new ArgumentNullException("collection");
-
-            AddRange(DivideIntoBlocks(collection));
+            return blockList;
         }
 
         private void AddDividedBlockRange(ICollection<Block<T>> range)
@@ -459,50 +407,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             }
         }
 
-        /// <summary>
-        /// Default size of one <see cref="BigArray{T}"/> block. 
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int DefaultBlockSize
-        {
-            get
-            {
-                return _defaultBlockSize;
-            }
-            set
-            {
-                if (value < 0)
-                    throw new ArgumentOutOfRangeException("value");
-
-                if (value > MaxBlockSize)
-                    throw new ArgumentOutOfRangeException("value", "DefaultBlockSize cant be more than MaxBlockSize");
-
-                _defaultBlockSize = value;
-            }
-        }
-
         public bool IsReadOnly { get; private set; }
-
-        /// <summary>
-        /// The size of any block never will be more than this number.
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int MaxBlockSize
-        {
-            get
-            {
-                return _maxBlockSize;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-
-                _maxBlockSize = value;
-            }
-        }
     }
 }
 

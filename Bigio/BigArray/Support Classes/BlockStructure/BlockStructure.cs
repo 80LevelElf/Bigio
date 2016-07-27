@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Bigio.BigArray.Interfaces;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.Common.Classes;
 using Bigio.Common.Managers;
@@ -49,14 +50,21 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// </summary>
         private int _indexOfFirstChangedBlock;
 
+        /// <summary>
+        /// Balancer for determination of blocks size
+        /// </summary>
+        private readonly IBalancer _balancer;
+
         //API
 
         /// <summary>
         /// Create new instance of <see cref="BlockStructure"/> describing specify <see cref="BlockCollection"/>
         /// </summary>
+        /// <param name="balancer"></param>
         /// <param name="blockCollection"><see cref="BlockCollection"/> to descibe.</param>
-        public BlockStructure(BlockCollection<T> blockCollection)
+        public BlockStructure(IBalancer balancer, BlockCollection<T> blockCollection)
         {
+            _balancer = balancer;
             BlockCollection = blockCollection;
 
             _blocksInfoList = new List<BlockInfo>(blockCollection.Count);
@@ -329,8 +337,18 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
                 if (index == startBlockInfo.CommonStartIndex)
                     suggestingBlockPosition = startBlockInfo.IndexOfBlock;
                 else
-                    suggestingBlockPosition = indexOfStartBlock
-                                            + (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
+                {
+                    if (_balancer.IsBlockSizesEqual())
+                    {
+                        //Because all blocks ~ equal we can determine approximate place of needed block
+                        suggestingBlockPosition = indexOfStartBlock
+                            + (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
+                    }
+                    else
+                    {
+                        suggestingBlockPosition = (indexOfStartBlock + indexOfEndBlock) / 2;
+                    }
+                }
 
                 //Compare
                 var newBlockPosition = (int)suggestingBlockPosition;

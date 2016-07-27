@@ -11,31 +11,34 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
     [TestFixture]
     public static class BigArrayTest
     {
+        private const int MaxBlockSize = 4096;
+        private const int DefaultBlockSize = 1024;
+
         [Test]
         public static void AddAndIsert()
         {
             var distributedArray = new BigArray<int>();
-            var size = distributedArray.MaxBlockSize*2;
+            var size = MaxBlockSize * 2;
 
-            for (int i = size/4; i < size/2; i++)
+            for (int i = size / 4; i < size / 2; i++)
             {
                 distributedArray.Add(i);
             }
-            Assert.AreEqual(distributedArray.Count, size/4);
+            Assert.AreEqual(distributedArray.Count, size / 4);
 
-            for (int i = 0; i < size/4; i++)
+            for (int i = 0; i < size / 4; i++)
             {
                 distributedArray.Insert(i, i);
             }
             Assert.AreEqual(distributedArray.Count, size / 2);
 
-            for (int i = size/2; i < size*3/4; i++)
+            for (int i = size / 2; i < size * 3 / 4; i++)
             {
                 distributedArray.Add(i);
             }
             Assert.AreEqual(distributedArray.Count, size * 3 / 4);
 
-            for (int i = size*3/4; i < size; i++)
+            for (int i = size * 3 / 4; i < size; i++)
             {
                 distributedArray.Insert(i, i);
             }
@@ -60,7 +63,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void AddRangeAndInsertRange()
         {
             var distributedArray = new BigArray<int>();
-            var size = distributedArray.MaxBlockSize * 2;
+            var size = MaxBlockSize * 2;
 
             var array1 = new int[size / 4];
             var array2 = new int[size / 4];
@@ -68,30 +71,30 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             var array4 = new int[size / 4];
 
             //1
-            for (int i = size/4; i < size/2; i++)
+            for (int i = size / 4; i < size / 2; i++)
             {
-                array1[i - size/4] = i;
+                array1[i - size / 4] = i;
             }
             distributedArray.AddRange(array1);
             Assert.AreEqual(distributedArray.Count, size / 4);
             //2
-            for (int i = 0; i < size/4; i++)
+            for (int i = 0; i < size / 4; i++)
             {
                 array2[i] = i;
             }
             distributedArray.InsertRange(0, array2);
             Assert.AreEqual(distributedArray.Count, size / 2);
             //3
-            for (int i = size/2; i < size*3/4; i++)
+            for (int i = size / 2; i < size * 3 / 4; i++)
             {
-                array3[i - size/2] = i;
+                array3[i - size / 2] = i;
             }
             distributedArray.AddRange(array3);
-            Assert.AreEqual(distributedArray.Count, size *3 / 4);
+            Assert.AreEqual(distributedArray.Count, size * 3 / 4);
             //4
-            for (int i = size*3/4; i < size; i++)
+            for (int i = size * 3 / 4; i < size; i++)
             {
-                array4[i - size*3/4] = i;
+                array4[i - size * 3 / 4] = i;
             }
             distributedArray.InsertRange(distributedArray.Count, array4);
             Assert.AreEqual(distributedArray.Count, size);
@@ -140,7 +143,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         [Test]
         public static void Contains()
         {
-            var distributedArray = new BigArray<int> {1};
+            var distributedArray = new BigArray<int> { 1 };
 
             Assert.IsFalse(distributedArray.Contains(0));
             Assert.IsTrue(distributedArray.Contains(1));
@@ -153,14 +156,14 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         [Test]
         public static void CopyTo()
         {
-            var distibutedArray = new BigArray<int> {1,2,3};
+            var distibutedArray = new BigArray<int> { 1, 2, 3 };
             var array = new int[8];
 
             distibutedArray.CopyTo(array);
             distibutedArray.CopyTo(array, 3);
             distibutedArray.CopyTo(1, array, 6, 2);
 
-            var resultArray = new[] {1, 2, 3, 1, 2, 3, 2, 3};
+            var resultArray = new[] { 1, 2, 3, 1, 2, 3, 2, 3 };
 
             var emptyArray = new BigArray<int>();
             emptyArray.CopyTo(array);
@@ -235,23 +238,23 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void FindIndex()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            for (int i = 0; i < MaxBlockSize * 2; i++) //For mistakes with duplicate elements
             {
                 distributedArray.Add(i);
             }
 
             //If MaxBlockSize is change, we need to change this code
-            Assert.AreEqual(distributedArray.MaxBlockSize, distributedArray.MaxBlockSize);
+            Assert.AreEqual(MaxBlockSize, MaxBlockSize);
 
             Assert.AreEqual(distributedArray.FindIndex(IsEqual5000), 5000);
             Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
             Assert.AreEqual(distributedArray.FindIndex(IsEqual128000), -1);
             Assert.AreEqual(distributedArray.FindIndex(5001, 1000, IsEqual5000), -1);
-            
+
             var emptyArray = new BigArray<int>();
             Assert.AreEqual(emptyArray.FindIndex(IsEqual0), -1);
 
@@ -282,17 +285,17 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void FindLastIndex()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            for (int i = 0; i < MaxBlockSize * 2; i++) //For mistakes with duplicate elements
             {
                 distributedArray.Add(i);
             }
 
             //If MaxBlockSize is change, we need to change this code
-            Assert.AreEqual(distributedArray.MaxBlockSize, distributedArray.MaxBlockSize);
+            Assert.AreEqual(MaxBlockSize, MaxBlockSize);
 
             Assert.AreEqual(distributedArray.FindLastIndex(IsEqual5000), 13192);
             Assert.AreEqual(distributedArray.FindLastIndex(4999, 5000, IsEqual5000), -1);
@@ -331,7 +334,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void Foreach()
         {
             var distributedArray = new BigArray<int>();
-            int size = 4 * distributedArray.MaxBlockSize;
+            int size = 4 * MaxBlockSize;
 
             for (int i = 0; i < size; i++)
             {
@@ -354,8 +357,8 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void GetRange()
         {
             var distributedArray = new BigArray<int>();
-            int size = 4 * distributedArray.MaxBlockSize;
-            int rangeCount = distributedArray.DefaultBlockSize;
+            int size = 4 * MaxBlockSize;
+            int rangeCount = DefaultBlockSize;
 
             //Fill array
             for (int i = 0; i < size; i++)
@@ -388,7 +391,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void Indexer()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize * 2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
@@ -404,17 +407,17 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void IndexOf()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            for (int i = 0; i < MaxBlockSize * 2; i++) //For mistakes with duplicate elements
             {
                 distributedArray.Add(i);
             }
 
             //If MaxBlockSize is change, we need to change this code
-            Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
+            Assert.AreEqual(MaxBlockSize, 4096);
 
             Assert.AreEqual(distributedArray.IndexOf(5000), 5000);
             Assert.AreEqual(distributedArray.IndexOf(0, 1, 5000), -1);
@@ -447,17 +450,17 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void LastIndexOf()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++) //For mistakes with duplicate elements
+            for (int i = 0; i < MaxBlockSize * 2; i++) //For mistakes with duplicate elements
             {
                 distributedArray.Add(i);
             }
 
             //If MaxBlockSize is change, we need to change this code
-            Assert.AreEqual(distributedArray.MaxBlockSize, 4096);
+            Assert.AreEqual(MaxBlockSize, 4096);
 
             Assert.AreEqual(distributedArray.LastIndexOf(5000), 13192);
             Assert.AreEqual(distributedArray.LastIndexOf(5000, 4999, 5000), -1);
@@ -491,7 +494,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         {
             var distributedArray = new BigArray<int>();
 
-            int size = 4 * distributedArray.MaxBlockSize;
+            int size = 4 * MaxBlockSize;
             var checkList = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
@@ -500,27 +503,27 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             }
 
             //Remove last element of first block
-            Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize - 1));
-            checkList.Remove(distributedArray.MaxBlockSize - 1);
+            Assert.IsTrue(distributedArray.Remove(MaxBlockSize - 1));
+            checkList.Remove(MaxBlockSize - 1);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //Remove first element of second block
-            Assert.IsTrue(distributedArray.Remove(distributedArray.MaxBlockSize));
-            checkList.Remove(distributedArray.MaxBlockSize);
+            Assert.IsTrue(distributedArray.Remove(MaxBlockSize));
+            checkList.Remove(MaxBlockSize);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             Assert.IsTrue(distributedArray.Remove(0));
             checkList.Remove(0);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
-            Assert.IsTrue(distributedArray.Remove(distributedArray.Count-1));
+            Assert.IsTrue(distributedArray.Remove(distributedArray.Count - 1));
             checkList.Remove(checkList.Count - 1);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //Try to remove nonexistent elements
             Assert.IsFalse(distributedArray.Remove(0));
             Assert.IsFalse(distributedArray.Remove(size));
-            Assert.IsFalse(distributedArray.Remove(distributedArray.MaxBlockSize));
+            Assert.IsFalse(distributedArray.Remove(MaxBlockSize));
             Assert.IsFalse(distributedArray.Remove(-1));
 
             CheckEqual(distributedArray, checkList);
@@ -531,7 +534,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         {
             var distributedArray = new BigArray<int>();
 
-            int size = 4 * distributedArray.MaxBlockSize;
+            int size = 4 * MaxBlockSize;
             var checkList = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
@@ -540,13 +543,13 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             }
 
             //Remove last element of first block
-            distributedArray.RemoveAt(distributedArray.MaxBlockSize - 1);
-            checkList.RemoveAt(distributedArray.MaxBlockSize - 1);
+            distributedArray.RemoveAt(MaxBlockSize - 1);
+            checkList.RemoveAt(MaxBlockSize - 1);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             //Remove first element of second block
-            distributedArray.RemoveAt(distributedArray.MaxBlockSize + 1);
-            checkList.RemoveAt(distributedArray.MaxBlockSize + 1);
+            distributedArray.RemoveAt(MaxBlockSize + 1);
+            checkList.RemoveAt(MaxBlockSize + 1);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             distributedArray.RemoveAt(0);
@@ -572,7 +575,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void RemoveLast()
         {
             var distributedArray = new BigArray<int>();
-            int size = 4*distributedArray.MaxBlockSize;
+            int size = 4 * MaxBlockSize;
 
             var checkList = new List<int>(size);
             //Add
@@ -599,7 +602,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         {
             var distributedArray = new BigArray<int>();
 
-            int size = 4 * distributedArray.MaxBlockSize;
+            int size = 4 * MaxBlockSize;
             var checkList = new List<int>(size);
             for (int i = 0; i < size; i++)
             {
@@ -608,8 +611,8 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             }
 
             //Remove elements from different blocks
-            distributedArray.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
-            checkList.RemoveRange(distributedArray.MaxBlockSize / 2, distributedArray.MaxBlockSize);
+            distributedArray.RemoveRange(MaxBlockSize / 2, MaxBlockSize);
+            checkList.RemoveRange(MaxBlockSize / 2, MaxBlockSize);
             Assert.AreEqual(distributedArray.Count, checkList.Count);
 
             distributedArray.RemoveRange(0, 1);
@@ -643,7 +646,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void Reverse()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
@@ -673,7 +676,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
         public static void ToArray()
         {
             var distributedArray = new BigArray<int>();
-            for (int i = 0; i < distributedArray.MaxBlockSize*2; i++)
+            for (int i = 0; i < MaxBlockSize * 2; i++)
             {
                 distributedArray.Add(i);
             }
@@ -704,7 +707,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
 
         private static bool IsMultipleOf2(int number)
         {
-            return number%2 == 0;
+            return number % 2 == 0;
         }
 
         private static void CheckEqual<T>(IList<T> first, IList<T> second)

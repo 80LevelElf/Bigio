@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using Bigio.BigArray.Managers;
+using Bigio.BigArray.Support_Classes.Balancer;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.BigArray.Support_Classes.BlockStructure;
 
@@ -17,7 +17,7 @@ namespace PerformanceTests.EngineMeasuringTest
         private const int BILLIARD = MILLION * THOUSAND;
 
         private const int BlockCount = 1000;
-        private static readonly int ElementsInBlockCount = DefaultValuesManager.DefaultBlockSize;
+        private static readonly int ElementsInBlockCount = 1024;
         private static readonly Random _random = new Random();
         private static object _writeResultLocker = new object();
 
@@ -43,7 +43,7 @@ namespace PerformanceTests.EngineMeasuringTest
 
         private static Block<int> GetFilledBlock(int size)
         {
-            var block = new Block<int>();
+            var block = new Block<int>(ElementsInBlockCount);
             for (int i = 0; i < size; i++)
             {
                 block.Add(i);
@@ -61,7 +61,7 @@ namespace PerformanceTests.EngineMeasuringTest
                 blockCollection.Add(GetFilledBlock(ElementsInBlockCount));
             }
 
-            var blockStructure = new BlockStructure<int>(blockCollection);
+            var blockStructure = new BlockStructure<int>(new FixedBalancer(),  blockCollection);
 
             //Prepare measure engine
             var method = GetMethodInfo(arguments.MethodName);

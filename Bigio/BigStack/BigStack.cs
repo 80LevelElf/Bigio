@@ -123,14 +123,6 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Rebalance internal data strucuture to make data parts less fragmented.
-        /// </summary>
-        public void Rebalance()
-        {
-            _array.Rebalance();
-        }
-
-        /// <summary>
         /// Copies the <see cref="BigStack{T}"/> to a new array.
         /// </summary>
         /// <returns>A new array containing copies of the elements of the <see cref="BigStack{T}"/>.</returns>

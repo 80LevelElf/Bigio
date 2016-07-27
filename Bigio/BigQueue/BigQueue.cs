@@ -38,49 +38,6 @@ namespace Bigio
             }
         }
 
-        /// <summary>
-        /// Default size of one <see cref="BigQueue{T}"/> block. 
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int DefaultBlockSize
-        {
-            get
-            {
-                return _array.DefaultBlockSize;
-            }
-            set
-            {
-                _array.DefaultBlockSize = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="BigQueue{T}"/> is read-only.
-        /// </summary>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return _array.IsReadOnly;
-            }
-        }
-
-        /// <summary>
-        /// The size of any block never will be more than this number.
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int MaxBlockSize
-        {
-            get
-            {
-                return _array.MaxBlockSize;
-            }
-            set
-            {
-                _array.MaxBlockSize = value;
-            }
-        }
-
         //API
 
         /// <summary>
@@ -180,14 +137,6 @@ namespace Bigio
             }
 
             return _array[0];
-        }
-
-        /// <summary>
-        /// Rebalance internal data strucuture to make data parts less fragmented.
-        /// </summary>
-        public void Rebalance()
-        {
-            _array.Rebalance();
         }
     }
 }

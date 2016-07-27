@@ -39,9 +39,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BigArray\BigArray.cs" />
+    <Compile Include="BigArray\BigArrayConfiguration.cs" />
     <Compile Include="BigArray\BigArrayEnumerator.cs" />
+    <Compile Include="BigArray\Interfaces\IBalancer.cs" />
     <Compile Include="BigArray\Interfaces\IBigList.cs" />
-    <Compile Include="BigArray\Internal Block Collections\InternalBlockList.cs" />
+    <Compile Include="BigArray\Support Classes\Balancer\FixedBalancer.cs" />
+    <Compile Include="BigArray\Support Classes\BlockCollection\InternalBlockList.cs" />
     <Compile Include="BigArray\Support Classes\BlockStructure\BlockInfo.cs" />
     <Compile Include="BigArray\Support Classes\BlockStructure\BlockStructure.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\Block.cs" />
@@ -50,7 +53,6 @@
     <Compile Include="BigArray\Support Classes\BlockStructure\CachedCountInfo.cs" />
     <Compile Include="BigArray\Support Classes\BlockStructure\MultyblockRange.cs" />
     <Compile Include="BigQueue\BigQueue.cs" />
-    <Compile Include="BigArray\Managers\DefaultValuesManager.cs" />
     <Compile Include="BigStack\BigStack.cs" />
     <Compile Include="Common\Classes\Range.cs" />
     <Compile Include="Common\Managers\ValidationManager.cs" />

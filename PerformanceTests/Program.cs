@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Bigio;
 using PerformanceTests.EngineMeasuringTest;
@@ -12,16 +13,22 @@ namespace PerformanceTests
     {
         static void StopwatchEstimation()
         {
+            int[] arr = new int[10000000];
+
+            for (int i = 0; i < 10000000; i++)
+            {
+                arr[i] = i;
+            }
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             //Write some test code here
             var list = new BigArray<int>();
-            Random _random = new Random();
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10; i++)
             {
-                list.Insert(_random.Next(list.Count), i);
+                list.AddRange(arr);
             }
 
             Console.WriteLine(stopwatch.ElapsedMilliseconds);

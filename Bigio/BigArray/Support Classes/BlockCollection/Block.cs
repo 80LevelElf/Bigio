@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Bigio.BigArray.Managers;
 
 namespace Bigio.BigArray.Support_Classes.BlockCollection
 {
@@ -13,14 +12,6 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
         /// Create new instance of Block with specified capacity.
         /// </summary>
         public Block(int capacity) : base(capacity)
-        {
-            
-        }
-
-        /// <summary>
-        /// Create new instance of Block. There is <see cref="DefaultValuesManager.DefaultBlockSize"/> as capacity of it.
-        /// </summary>
-        public Block() : base(DefaultValuesManager.DefaultBlockSize)
         {
             
         }

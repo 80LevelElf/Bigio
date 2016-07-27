@@ -1,5 +1,5 @@
 ﻿using System;
-using Bigio.BigArray.Managers;
+using Bigio.BigArray.Support_Classes.Balancer;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.BigArray.Support_Classes.BlockStructure;
 using Bigio.Common.Classes;
@@ -14,7 +14,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
         //API
         static BlockStructureTests()
         {
-            BlockSize = DefaultValuesManager.DefaultBlockSize;
+            BlockSize = 1024;
             TestStructure = CteareTestStructure();
         }
 
@@ -148,7 +148,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
 
             for (int i = 0; i < CountOfBlocks; i++)
             {
-                var block = new Block<int>();
+                var block = new Block<int>(BlockSize);
                 for (int element = 0; element < BlockSize; element++)
                 {
                     block.Add(element);
@@ -157,7 +157,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             }
 
             //Create block structure
-            return new BlockStructure<int>(blockCollection);
+            return new BlockStructure<int>(new FixedBalancer(),  blockCollection);
         }
 
         //Data

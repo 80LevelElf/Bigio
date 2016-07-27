@@ -5,8 +5,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Bigio.BigArray;
 using Bigio.BigArray.Interfaces;
-using Bigio.BigArray.Internal_Block_Collections;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.BigArray.Support_Classes.BlockStructure;
 using Bigio.Common.Classes;
@@ -32,10 +32,16 @@ namespace Bigio
         private readonly BlockStructure<T> _blockStructure;
 
         /// <summary>
-        /// The blocks object provides API for easy work with blocks.
+        /// The blocks object provides API for easy work with blocks
         /// </summary>
         [NonSerialized]
         private readonly BlockCollection<T> _blockCollection;
+
+        /// <summary>
+        /// Balancer for determination of blocks size
+        /// </summary>
+        [NonSerialized]
+        private readonly IBalancer _balancer;
 
         /// <summary>
         /// It is main data container where we save information.
@@ -46,41 +52,43 @@ namespace Bigio
         //API
 
         /// <summary>
-        /// Create a new instance of the <see cref="BigArray{T}"/> class that is empty and has one empty block with <see cref="DefaultBlockSize"/> capacity.
+        /// Create new empty instance of <see cref="BigArray{T}"/> with default configuration.
         /// </summary>
-        public BigArray() : this(new Collection<T>())
+        public BigArray() : this(BigArrayConfiguration<T>.DefaultConfiguration)
         {
+            
         }
 
         /// <summary>
-        /// Create a new instance of the <see cref="BigArray{T}"/> class using elements from specified collection
-        /// and use <see cref="InternalBlockList{T}"/> as internal block collection for storage blocks.
+        /// Create new empty instance of <see cref="BigArray{T}"/> with specified <paramref name="configuration"/>.
         /// </summary>
-        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray"/>.
-        /// The <see cref="collection"/> it self can't be null, but it can contain elements that are null, if type T is a reference type.</param>
-        public BigArray(ICollection<T> collection)
+        /// <param name="configuration">Configation object of new array.</param>
+        public BigArray(BigArrayConfiguration<T> configuration)
         {
-            Initialize(collection);
-
-            _blockCollection = new BlockCollection<T>(collection);
-            _blockStructure = new BlockStructure<T>(_blockCollection);
+            _balancer = configuration.Balancer;
+            _blockCollection = new BlockCollection<T>(_balancer, configuration.BlockCollection);
+            _blockStructure = new BlockStructure<T>(_balancer, _blockCollection);
         }
 
         /// <summary>
-        /// Create a new instance of the <see cref="BigArray{T}"/> class using elements from specified <see cref="collection"/>
-        /// and <see cref="blockCollection"/> as internal collection for storage blocks.
+        /// Create new empty instance of <see cref="BigArray{T}"/> with default configuration and fill it by elements
+        /// from <paramref name="collection"/>.
         /// </summary>
-        /// <param name="collection">Collection whitch use as base for new <see cref="BigArray{T}"/>.
-        /// The collection it self can't be null, but it can contain elements that are null, if type T is a reference type.</param>
-        /// <param name="blockCollection">Collection for storage blocks of <see cref="BigArray"/>. You can
-        /// defint you own collection for it to controll it. For example you can send BigArray{Block{T}}
-        /// and have second level distribution.</param>
-        public BigArray(ICollection<T> collection, IBigList<Block<T>> blockCollection)
+        /// <param name="collection">Copy all elements from this collection to the new <see cref="BigArray{T}"/></param>
+        public BigArray(ICollection<T> collection) : this(BigArrayConfiguration<T>.DefaultConfiguration, collection)
         {
-            Initialize(collection);
+            
+        }
 
-            _blockCollection = new BlockCollection<T>(blockCollection, collection);
-            _blockStructure = new BlockStructure<T>(_blockCollection);
+        /// <summary>
+        /// Create new instance of <see cref="BigArray{T}"/> with specified <paramref name="configuration"/> and fill it by elements
+        /// from <paramref name="collection"/>
+        /// </summary>
+        /// <param name="configuration">Configation object of new array.</param>
+        /// <param name="collection">Copy all elements from this collection to the new <see cref="BigArray{T}"/></param>
+        public BigArray(BigArrayConfiguration<T> configuration, ICollection<T> collection) : this(configuration)
+        {
+            AddRange(collection);
         }
 
         /// <summary>
@@ -89,10 +97,10 @@ namespace Bigio
         public void Add(T value)
         {
             int indexOfBlock = _blockCollection.Count - 1;
-            if (_blockCollection.Count == 0 || _blockCollection[indexOfBlock].Count >= MaxBlockSize)
+            if (_blockCollection.Count == 0 || _blockCollection[indexOfBlock].Count >= _balancer.GetMaxBlockSize(indexOfBlock))
             {
-                _blockCollection.AddNewBlock();
                 indexOfBlock++;
+                _blockCollection.AddNewBlock(indexOfBlock);
             }
 
             _blockCollection[indexOfBlock].Add(value);
@@ -120,7 +128,7 @@ namespace Bigio
 
             //Transfer data to the last block while it is possible
             var sizeOfTransferToLastBlock = 0;
-            var emptySize = MaxBlockSize - lastBlock.Count;
+            var emptySize = _balancer.GetMaxBlockSize(lastBlockIndex) - lastBlock.Count;
             
             if (emptySize != 0)
             {
@@ -673,10 +681,11 @@ namespace Bigio
             var blockInfo = _blockStructure.BlockInfo(index);
 
             int blockSubindex = index - blockInfo.CommonStartIndex;
+            int indexOfBlock = blockInfo.IndexOfBlock;
             var block = _blockCollection[blockInfo.IndexOfBlock];
 
-            bool isMaxSize = (block.Count == MaxBlockSize);
-            bool isNeedToAddPreviosBlock = (blockSubindex == 0 && blockInfo.Count >= DefaultBlockSize);
+            bool isMaxSize = (block.Count == _balancer.GetMaxBlockSize(indexOfBlock));
+            bool isNeedToAddPreviosBlock = (blockSubindex == 0 && blockInfo.Count >= _balancer.GetDefaultBlockSize(indexOfBlock));
 
             if (isMaxSize)
             {
@@ -701,7 +710,7 @@ namespace Bigio
                 bool isPrevBlockFull = false;
 
                 if (!isStartBlock)
-                    isPrevBlockFull = (_blockCollection[blockInfo.IndexOfBlock].Count == MaxBlockSize);
+                    isPrevBlockFull = (_blockCollection[blockInfo.IndexOfBlock].Count == _balancer.GetMaxBlockSize(indexOfBlock));
 
                 if (isStartBlock || isPrevBlockFull)
                 {
@@ -805,21 +814,6 @@ namespace Bigio
 
             //If there is no needed value
             return -1;
-        }
-
-        /// <summary>
-        /// Rebalance internal data strucuture to make data parts less fragmented.
-        /// </summary>
-        public void Rebalance()
-        {
-            var divideBlocks = new BlockCollection<T>(this);
-
-            _blockCollection.Clear();
-            _blockCollection.AddRange(divideBlocks);
-
-            //We must do it because we have changed count of elements in blocks
-            if (_blockCollection.Count != 0)
-                _blockStructure.DataChanged(0);
         }
 
         /// <summary>
@@ -1033,52 +1027,9 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Default size of one <see cref="BigArray{T}"/> block. 
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int DefaultBlockSize
-        {
-            get
-            {
-                return _blockCollection.DefaultBlockSize;
-            }
-            set
-            {
-                _blockCollection.DefaultBlockSize = value;
-            }
-        }
-
-        /// <summary>
-        /// The size of any block never will be more than this number.
-        /// Because of the way memory allocation is most effective that it is a power of 2.
-        /// </summary>
-        public int MaxBlockSize
-        {
-            get
-            {
-                return _blockCollection.MaxBlockSize;
-            }
-            set
-            {
-                _blockCollection.MaxBlockSize = value;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether the <see cref="BigArray{T}"/> is read-only.
         /// </summary>
         public bool IsReadOnly { get; private set; }
-
-        //Support functions
-        /// <summary>
-        /// Execute preliminary initialization of <see cref="BigArray{T}"/>'s internal data.
-        /// </summary>
-        /// <param name="collection">Collection to initialize <see cref="BigArray{T}"/> with it.</param>
-        private void Initialize(ICollection<T> collection)
-        {
-            IsReadOnly = false;
-            Count = collection.Count;
-        }
 
         //Debug functions
 #if DEBUG
