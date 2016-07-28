@@ -3,6 +3,9 @@ using Bigio.BigArray.Interfaces;
 
 namespace Bigio.BigArray.Support_Classes.Balancer
 {
+    /// <summary>
+    /// Balancer with fixed size of <see cref="DefaultBlockSize"/> and <see cref="MaxBlockSize"/>
+    /// </summary>
     public class FixedBalancer : IBalancer
     {
         /// <summary>

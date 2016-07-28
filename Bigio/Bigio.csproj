@@ -43,6 +43,8 @@
     <Compile Include="BigArray\BigArrayEnumerator.cs" />
     <Compile Include="BigArray\Interfaces\IBalancer.cs" />
     <Compile Include="BigArray\Interfaces\IBigList.cs" />
+    <Compile Include="BigArray\Support Classes\Balancer\AbstractFunctionBalancer.cs" />
+    <Compile Include="BigArray\Support Classes\Balancer\SlowGrowBalancer.cs" />
     <Compile Include="BigArray\Support Classes\Balancer\FixedBalancer.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\InternalBlockList.cs" />
     <Compile Include="BigArray\Support Classes\BlockStructure\BlockInfo.cs" />
