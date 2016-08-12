@@ -1,9 +1,9 @@
 Bigio is a simple set of several collections for big data.
 Because of architecture this collections work faster with big data than system List or LinkedList.
-You can use it very easy – just add dll file (it is very small) of Bigio to your project.
+You can use it very easy â€“ just add dll file (it is very small) of Bigio to your project.
 
 This code distributed with BSD license:
-Copyright (c) 2013-2014, Salakhutdinov Rustam
+Copyright (c) 2013-2016, Salakhutdinov Rustam
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
