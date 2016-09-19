@@ -221,17 +221,12 @@ namespace Bigio
 
                 //Compare
                 int compareResult = comparer.Compare(item, middleValue);
-                switch (compareResult)
-                {
-                    case -1:
-                        endIndex = middlePosition - 1;
-                        break;
-                    case 0:
-                        return middlePosition;
-                    case 1:
-                        startIndex = middlePosition + 1;
-                        break;
-                }
+				if (compareResult < 0)
+					endIndex = middlePosition - 1;
+				else if(compareResult > 0)
+					startIndex = middlePosition + 1;
+				else // = 
+					return middlePosition;
             }
             //If there is no such item specify the location where the element should be
             if (endIndex == -1) // if we need first element
