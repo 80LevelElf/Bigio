@@ -20,19 +20,19 @@ namespace Bigio.BigArray.Support_Classes.Balancer
         /// </summary>
         protected abstract int MaxExistentIndex { get;}
 
-        public int GetNewBlockSize(int indexOfBlock)
+        public virtual int GetNewBlockSize(int indexOfBlock)
         {
             return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)];
         }
 
-        public int GetDefaultBlockSize(int indexOfBlock)
+        public virtual int GetDefaultBlockSize(int indexOfBlock)
         {
-            return GetNewBlockSize(indexOfBlock);
+            return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)];
         }
 
-        public int GetMaxBlockSize(int indexOfBlock)
+        public virtual int GetMaxBlockSize(int indexOfBlock)
         {
-            return GetNewBlockSize(indexOfBlock)*4;
+            return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)] * 4;
         }
 
         public bool IsBlockSizesEqual()
