@@ -100,7 +100,7 @@ namespace Bigio
             if (_blockCollection.Count == 0 || _blockCollection[indexOfBlock].Count >= _balancer.GetMaxBlockSize(indexOfBlock))
             {
                 indexOfBlock++;
-                _blockCollection.AddNewBlock(indexOfBlock);
+                _blockCollection.AddNewBlock();
             }
 
             _blockCollection[indexOfBlock].Add(value);

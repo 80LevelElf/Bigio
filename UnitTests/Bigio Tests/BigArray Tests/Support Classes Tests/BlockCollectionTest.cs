@@ -49,10 +49,10 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
             var blockCollection = new BlockCollection<int>();
 
             //Add
-            blockCollection.AddNewBlock(0);
+            blockCollection.AddNewBlock();
             Assert.AreEqual(blockCollection.Count, 1);
             //Add
-            blockCollection.AddNewBlock(1);
+            blockCollection.AddNewBlock();
             Assert.AreEqual(blockCollection.Count, 2);
             //Insert
             blockCollection.InsertNewBlock(1);
@@ -226,7 +226,7 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests.Support_Classes_Tests
         public static void TryToDivideBlock()
         {
             var blockCollection = new BlockCollection<int>();
-            blockCollection.AddNewBlock(0);
+            blockCollection.AddNewBlock();
 
             //Fill block 2 times
             for (int i = 0; i < MaxBlockSize * 2; i++)

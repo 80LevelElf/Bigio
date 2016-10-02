@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bigio.BigArray.Support_Classes.BlockStructure
+﻿namespace Bigio.BigArray.Support_Classes.BlockStructure
 {
     /// <summary>
     /// BlockInfo is object with iformation about block and its location.
@@ -43,7 +41,7 @@ namespace Bigio.BigArray.Support_Classes.BlockStructure
         /// Check equal of current <see cref="BlockInfo"/> and other <see cref="BlockInfo"/>.
         /// </summary>
         /// <param name="other">Other <see cref="BlockInfo"/> to check.</param>
-        /// <returns>If <see cref="BlockInfos"/> are the same in all data members
+        /// <returns>If <see cref="BlockInfo"/>s are the same in all data members
         /// (<see cref="IndexOfBlock"/>, <see cref="CommonStartIndex"/> and <see cref="Count"/>) return true, otherwise return false.</returns>
         public bool Equals(BlockInfo other)
         {
