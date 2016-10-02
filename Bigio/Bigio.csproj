@@ -47,19 +47,19 @@
     <Compile Include="BigArray\Support Classes\Balancer\SlowGrowBalancer.cs" />
     <Compile Include="BigArray\Support Classes\Balancer\FixedBalancer.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\InternalBlockList.cs" />
-    <Compile Include="BigArray\Support Classes\BlockStructure\BlockInfo.cs" />
-    <Compile Include="BigArray\Support Classes\BlockStructure\BlockStructure.cs" />
+    <Compile Include="BigArray\Support Classes\ArrayMap\BlockInfo.cs" />
+    <Compile Include="BigArray\Support Classes\ArrayMap\ArrayMap.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\Block.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\BlockCollection.cs" />
     <Compile Include="BigArray\Support Classes\BlockCollection\BlockCollectionEnumerator.cs" />
-    <Compile Include="BigArray\Support Classes\BlockStructure\CachedCountInfo.cs" />
-    <Compile Include="BigArray\Support Classes\BlockStructure\MultyblockRange.cs" />
+    <Compile Include="BigArray\Support Classes\ArrayMap\CachedCountInfo.cs" />
+    <Compile Include="BigArray\Support Classes\ArrayMap\MultyblockRange.cs" />
     <Compile Include="BigQueue\BigQueue.cs" />
     <Compile Include="BigStack\BigStack.cs" />
     <Compile Include="Common\Classes\Range.cs" />
     <Compile Include="Common\Managers\ValidationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BigArray\Support Classes\BlockStructure\BlockRange.cs" />
+    <Compile Include="BigArray\Support Classes\ArrayMap\BlockRange.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

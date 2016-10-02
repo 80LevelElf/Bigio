@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Bigio.BigArray.Support_Classes.ArrayMap;
 using Bigio.BigArray.Support_Classes.Balancer;
 using Bigio.BigArray.Support_Classes.BlockCollection;
-using Bigio.BigArray.Support_Classes.BlockStructure;
 
 namespace PerformanceTests.EngineMeasuringTest
 {
-    public static class BlockStructureTest
+    public static class ArrayMapTests
     {
         private const int HUNDRED = 100;
         private const int THOUSAND = 1000;
@@ -23,7 +23,7 @@ namespace PerformanceTests.EngineMeasuringTest
 
         private static readonly string _logFilePath;
 
-        static BlockStructureTest()
+        static ArrayMapTests()
         {
             if (!Directory.Exists("logs"))
                 Directory.CreateDirectory("logs");
@@ -61,7 +61,7 @@ namespace PerformanceTests.EngineMeasuringTest
                 blockCollection.Add(GetFilledBlock(ElementsInBlockCount));
             }
 
-            var blockStructure = new BlockStructure<int>(new FixedBalancer(),  blockCollection);
+            var blockStructure = new ArrayMap<int>(new FixedBalancer(),  blockCollection);
 
             //Prepare measure engine
             var method = GetMethodInfo(arguments.MethodName);
@@ -83,28 +83,28 @@ namespace PerformanceTests.EngineMeasuringTest
             }
         }
 
-        private static void BinarySearch(BlockStructure<int> blockStructure, int count)
+        private static void BinarySearch(ArrayMap<int> arrayMap, int count)
         {
             for (int i = 0; i < count; i++)
             {
-                blockStructure.BlockInfo(_random.Next(BlockCount*ElementsInBlockCount));
+                arrayMap.BlockInfo(_random.Next(BlockCount*ElementsInBlockCount));
             }
         }
 
-        private static void LinearSearch(BlockStructure<int> blockStructure, int count)
+        private static void LinearSearch(ArrayMap<int> arrayMap, int count)
         {
             //To prevent using BinarySearch
-            blockStructure.DataChanged(0);
+            arrayMap.DataChanged(0);
 
             for (int i = 0; i < count; i++)
             {
-                blockStructure.BlockInfo(_random.Next(BlockCount * ElementsInBlockCount));
+                arrayMap.BlockInfo(_random.Next(BlockCount * ElementsInBlockCount));
             }
         }
 
         private static MethodInfo GetMethodInfo(string methodName)
         {
-            Type thisType = typeof (BlockStructureTest);
+            Type thisType = typeof (ArrayMapTests);
             return thisType.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
         }
 

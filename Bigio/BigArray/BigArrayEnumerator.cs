@@ -107,7 +107,7 @@ namespace Bigio
             /// <param name="index">The zero-based index of the element to point to.</param>
             public void MoveToIndex(int index)
             {
-                var blockInfo = Array._blockStructure.BlockInfo(index);
+                var blockInfo = Array._arrayMap.BlockInfo(index);
 
                 _indexInCurrentBlock = index - blockInfo.CommonStartIndex;
                 _currentBlockIndex = blockInfo.IndexOfBlock;

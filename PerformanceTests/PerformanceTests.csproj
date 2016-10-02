@@ -44,13 +44,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EngineMeasuringTest\BlockStructureTest.cs" />
+    <Compile Include="EngineMeasuringTest\ArrayMapTests.cs" />
     <Compile Include="MeasureEngine.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestArguments.cs" />
     <Compile Include="TestResult.cs" />
     <Compile Include="СomparativeTests\CallFlag.cs" />
+    <Compile Include="СomparativeTests\IntTestEngine.cs" />
+    <Compile Include="СomparativeTests\StringTestEngine.cs" />
     <Compile Include="СomparativeTests\TestEngine.cs" />
     <Compile Include="СomparativeTests\TestManager.cs" />
   </ItemGroup>

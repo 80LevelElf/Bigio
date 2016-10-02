@@ -34,38 +34,39 @@ namespace PerformanceTests
             Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
-        static void StartBlockStructureTest()
+        static void StartArrayMapTest()
         {
-            Console.WriteLine("BlockStructure performance test");
+            Console.WriteLine("ArrayMap performance test");
             var threads = new List<Task>()
             {
-                Task.Factory.StartNew(BlockStructureTest.TestBinarySearch),
-                Task.Factory.StartNew(BlockStructureTest.TestLinearSearch),
+                Task.Factory.StartNew(ArrayMapTests.TestBinarySearch),
+                Task.Factory.StartNew(ArrayMapTests.TestLinearSearch),
             };
 
             Task.WaitAll(threads.ToArray());
         }
 
-        static void StartСomparativeTests()
+        static void StartСomparativeTests<T>()
         {
-            Console.WriteLine("Сomparative estimation of Bigio BigArray, Wintellect BigList and .Net List");
+            Console.WriteLine("Comparative estimation of Bigio BigArray, Wintellect BigList and .Net List");
+			Console.WriteLine("Type: " + typeof(T).Name);
             var threads = new List<Task>()
             {
-                Task.Factory.StartNew(TestManager.TestFor),
-                Task.Factory.StartNew(TestManager.TestForeach),
-                Task.Factory.StartNew(TestManager.TestIndexOf),
-                Task.Factory.StartNew(TestManager.TestLastIndexOf),
-                Task.Factory.StartNew(TestManager.TestAdd),
-                Task.Factory.StartNew(TestManager.TestInsertInRandomPosition),
-                Task.Factory.StartNew(TestManager.TestInsertInMiddlePosition),
-                Task.Factory.StartNew(TestManager.TestInsertInStartPosition),
-                Task.Factory.StartNew(TestManager.TestInsertRangeInRandom),
-                Task.Factory.StartNew(TestManager.TestAddRange),
-                Task.Factory.StartNew(TestManager.TestBinarySearch),
-                Task.Factory.StartNew(TestManager.TestFindLast),
-                Task.Factory.StartNew(TestManager.TestFind),
-                Task.Factory.StartNew(TestManager.TestFindAll),
-                Task.Factory.StartNew(TestManager.TestReverse),
+				Task.Factory.StartNew(TestManager<T>.TestFor),
+				Task.Factory.StartNew(TestManager<T>.TestForeach),
+				Task.Factory.StartNew(TestManager<T>.TestIndexOf),
+				Task.Factory.StartNew(TestManager<T>.TestLastIndexOf),
+				Task.Factory.StartNew(TestManager<T>.TestAdd),
+				Task.Factory.StartNew(TestManager<T>.TestInsertInRandomPosition),
+				Task.Factory.StartNew(TestManager<T>.TestInsertInMiddlePosition),
+				Task.Factory.StartNew(TestManager<T>.TestInsertInStartPosition),
+				Task.Factory.StartNew(TestManager<T>.TestInsertRangeInRandom),
+				Task.Factory.StartNew(TestManager<T>.TestAddRange),
+				Task.Factory.StartNew(TestManager<T>.TestBinarySearch),
+				Task.Factory.StartNew(TestManager<T>.TestFindLast),
+				Task.Factory.StartNew(TestManager<T>.TestFind),
+                //Task.Factory.StartNew(TestManager<T>.TestFindAll),
+                //Task.Factory.StartNew(TestManager<T>.TestReverse),
             };
 
             Task.WaitAll(threads.ToArray());
@@ -73,7 +74,7 @@ namespace PerformanceTests
 
         static void Main(string[] args)
         {
-            StartСomparativeTests();
+            StartСomparativeTests<string>();
             Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
         }

@@ -5,11 +5,10 @@ using System.Reflection;
 
 namespace PerformanceTests.СomparativeTests
 {
-    public class TestEngine<TList> where TList : IList<int>
+    public abstract class TestEngine<TList, T> where TList : IList<T>
     {
         private readonly TList _list;
         private const int DEFAULT_LIST_SIZE = 1000000;
-        private readonly int[] _sampleArray = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         private readonly Random _random = new Random();
 
         /// <summary>
@@ -17,6 +16,10 @@ namespace PerformanceTests.СomparativeTests
         /// such as InsertRange, AddRange and so far. So we need to call this methods with reflection
         /// </summary>
         private readonly Dictionary<string, MethodInfo> _usingReflectionMethods = new Dictionary<string, MethodInfo>();
+
+	    protected abstract T GetValue(int i);
+
+	    protected abstract List<T> GetSampleList();
 
         public TestEngine()
         {
@@ -77,7 +80,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < size; i++)
             {
-                _list.Add(i);
+                _list.Add(GetValue(i));
             }
         }
 
@@ -85,7 +88,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < elementCount; i++)
             {
-                _list.Add(i);
+                _list.Add(GetValue(i));
             }
         }
 
@@ -93,7 +96,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < elementCount; i++)
             {
-                _list.Insert(0, i);
+                _list.Insert(0, GetValue(i));
             }
         }
 
@@ -101,7 +104,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < elementCount; i++)
             {
-                _list.Insert(_list.Count / 2, i);
+                _list.Insert(_list.Count / 2, GetValue(i));
             }
         }
 
@@ -109,24 +112,25 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < elementCount; i++)
             {
-                _list.Insert(_random.Next(_list.Count), i);
+                _list.Insert(_random.Next(_list.Count), GetValue(i));
             }
         }
 
         protected void For(int count)
-        { 
+        {
+	        T temp;
             for (int i = 0; i < count; i++)
             {
                 for (int j = 0; j < _list.Count; j++)
                 {
-                    _list[j] ++;
+	                temp = _list[j];
                 }
             }
         }
 
         protected void Foreach(int count)
         {
-            int temp = 0;
+            T temp;
             for (int i = 0; i < count; i++)
             {
                 foreach (var item in _list)
@@ -140,7 +144,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < elementCount; i++)
             {
-                _list.IndexOf(i);
+                _list.IndexOf(GetValue(i));
             }
         }
 
@@ -148,7 +152,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < count; i++)
             {
-                method.Invoke(_list, new object[]{_random.Next(_list.Count), _sampleArray.ToList()});
+                method.Invoke(_list, new object[]{ _random.Next(_list.Count), GetSampleList()});
             }
         }
 
@@ -156,7 +160,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < count; i++)
             {
-                method.Invoke(_list, new object[] { _sampleArray.ToList() });
+                method.Invoke(_list, new object[] { GetSampleList() });
             }
         }
 
@@ -164,7 +168,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < count; i++)
             {
-                method.Invoke(_list, new object[] { i });
+                method.Invoke(_list, new object[] { GetValue(i) });
             }
         }
 
@@ -175,9 +179,9 @@ namespace PerformanceTests.СomparativeTests
             for (int i = 0; i < count; i++)
             {
                 var copyOfI = i;
-                Predicate<int> predicate = item => item == copyOfI;
+                Predicate<T> predicate = item => item.Equals(GetValue(copyOfI));
 
-                var result = (IEnumerable<int>)method.Invoke(_list, is2Args ? new object[] { predicate, false } : new object[] { predicate });
+                var result = (IEnumerable<T>)method.Invoke(_list, is2Args ? new object[] { predicate, false } : new object[] { predicate });
                 result.ToList(); //Because Wintellect use lazy evaluation in FindAll
             }
         }
@@ -187,9 +191,9 @@ namespace PerformanceTests.СomparativeTests
             for (int i = 0; i < count; i++)
             {
                 var copyOfI = i;
-                Predicate<int> predicate = item => item == copyOfI;
+				Predicate<T> predicate = item => item.Equals(GetValue(copyOfI));
 
-                method.Invoke(_list, new object[] { predicate });
+				method.Invoke(_list, new object[] { predicate });
             }
         }
 
@@ -198,9 +202,9 @@ namespace PerformanceTests.СomparativeTests
             for (int i = 0; i < count; i++)
             {
                 var copyOfI = i;
-                Predicate<int> predicate = item => item == copyOfI;
+				Predicate<T> predicate = item => item.Equals(GetValue(copyOfI));
 
-                method.Invoke(_list, new object[] { predicate });
+				method.Invoke(_list, new object[] { predicate });
             }
         }
 
@@ -216,7 +220,7 @@ namespace PerformanceTests.СomparativeTests
         {
             for (int i = 0; i < count; i++)
             {
-                method.Invoke(_list, new object[] { i });
+                method.Invoke(_list, new object[] { GetValue(i) });
             }
         }
 

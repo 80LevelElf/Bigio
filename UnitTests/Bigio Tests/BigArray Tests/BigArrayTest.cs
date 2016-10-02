@@ -251,7 +251,9 @@ namespace UnitTests.Bigio_Tests.BigArray_Tests
             Assert.AreEqual(MaxBlockSize, MaxBlockSize);
 
             Assert.AreEqual(distributedArray.FindIndex(IsEqual5000), 5000);
-            Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
+			Assert.AreEqual(distributedArray.FindIndex(5001, IsEqual5000), -1);
+			Assert.AreEqual(distributedArray.FindIndex(MaxBlockSize * 2 - 1, IsEqual5000), -1);
+			Assert.AreEqual(distributedArray.FindIndex(0, 4999, IsEqual5000), -1);
             Assert.AreEqual(distributedArray.FindIndex(IsEqual128000), -1);
             Assert.AreEqual(distributedArray.FindIndex(5001, 1000, IsEqual5000), -1);
 

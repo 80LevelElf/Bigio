@@ -7,7 +7,7 @@ using Wintellect.PowerCollections;
 
 namespace PerformanceTests.СomparativeTests
 {
-    public static class TestManager
+    public static class TestManager<T>
     {
         private const int HUNDRED = 100;
         private const int THOUSAND = 1000;
@@ -164,19 +164,37 @@ namespace PerformanceTests.СomparativeTests
             }
         }
 
-        private static TestEngine<BigArray<int>> GetBigioEngine()
+        private static TestEngine<BigArray<T>, T> GetBigioEngine()
         {
-            return new TestEngine<BigArray<int>>();
+	        if (typeof (T) == typeof (int))
+				return new IntTestEngine<BigArray<int>>() as TestEngine<BigArray<T>, T>;
+
+			if (typeof (T) == typeof (string))
+				return new StringTestEngine<BigArray<string>>() as TestEngine<BigArray<T>, T>;
+
+			throw new InvalidOperationException("Unknown TestEngine type!");
         }
 
-        private static TestEngine<BigList<int>> GetWintellectEngine()
+        private static TestEngine<BigList<T>, T> GetWintellectEngine()
         {
-            return new TestEngine<BigList<int>>();
-        }
+			if (typeof(T) == typeof(int))
+				return new IntTestEngine<BigList<int>>() as TestEngine<BigList<T>, T>;
 
-        private static TestEngine<List<int>> GetListEngine()
+			if (typeof(T) == typeof(string))
+				return new StringTestEngine<BigList<string>>() as TestEngine<BigList<T>, T>;
+
+			throw new InvalidOperationException("Unknown TestEngine type!");
+		}
+
+        private static TestEngine<List<T>, T> GetListEngine()
         {
-            return new TestEngine<List<int>>();
-        }
+			if (typeof(T) == typeof(int))
+				return new IntTestEngine<List<int>>() as TestEngine<List<T>, T>;
+
+			if (typeof(T) == typeof(string))
+				return new StringTestEngine<List<string>>() as TestEngine<List<T>, T>;
+
+			throw new InvalidOperationException("Unknown TestEngine type!");
+		}
     }
 }

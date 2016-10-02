@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="Bigio Tests\BigArray Tests\BigArrayEnumeratorTest.cs" />
     <Compile Include="Bigio Tests\BigArray Tests\Support Classes Tests\BlockCollectionTest.cs" />
-    <Compile Include="Bigio Tests\BigArray Tests\Support Classes Tests\BlockStructureTests.cs" />
+    <Compile Include="Bigio Tests\BigArray Tests\Support Classes Tests\ArrayMapTests.cs" />
     <Compile Include="Bigio Tests\BigArray Tests\BigArrayTest.cs" />
     <Compile Include="Bigio Tests\Common Tests\Managers Tests\ValidationManagerTest.cs" />
     <Compile Include="Managers\ExceptionManager.cs" />

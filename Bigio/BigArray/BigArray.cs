@@ -7,8 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bigio.BigArray;
 using Bigio.BigArray.Interfaces;
+using Bigio.BigArray.Support_Classes.ArrayMap;
 using Bigio.BigArray.Support_Classes.BlockCollection;
-using Bigio.BigArray.Support_Classes.BlockStructure;
 using Bigio.Common.Classes;
 using Bigio.Common.Managers;
 
@@ -29,7 +29,7 @@ namespace Bigio
         //Data
 
         [NonSerialized]
-        private readonly BlockStructure<T> _blockStructure;
+        private readonly ArrayMap<T> _arrayMap;
 
         /// <summary>
         /// The blocks object provides API for easy work with blocks
@@ -67,7 +67,7 @@ namespace Bigio
         {
             _balancer = configuration.Balancer;
             _blockCollection = new BlockCollection<T>(_balancer, configuration.BlockCollection);
-            _blockStructure = new BlockStructure<T>(_balancer, _blockCollection);
+            _arrayMap = new ArrayMap<T>(_balancer, _blockCollection);
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Bigio
             }
 
             _blockCollection[indexOfBlock].Add(value);
-            _blockStructure.DataChanged(indexOfBlock);
+            _arrayMap.DataChanged(indexOfBlock);
 
             Count++;
         }
@@ -147,7 +147,7 @@ namespace Bigio
                 _blockCollection.Add(collection, sizeOfTransferToLastBlock);
 
             Count += collection.Count;
-            _blockStructure.DataChanged(lastBlockIndex);
+            _arrayMap.DataChanged(lastBlockIndex);
         }
 
         /// <summary>
@@ -369,20 +369,7 @@ namespace Bigio
             if (match == null)
                 throw new ArgumentNullException("match");
 
-            var multyblockRange = _blockStructure.MultyblockRange(new Range(0, Count));
-
-            int indexOfBlock = multyblockRange.IndexOfStartBlock;
-            foreach (var blockRange in multyblockRange.Ranges)
-            {
-                int findIndexResult = _blockCollection[indexOfBlock++]
-                    .FindIndex(blockRange.Subindex, blockRange.Count, match);
-
-                if (findIndexResult != -1)
-                    return this[blockRange.CommonStartIndex + findIndexResult];
-            }
-
-            //If there is not needed item
-            return default(T);
+	        return this.FirstOrDefault(i => match(i));
         }
 
         /// <summary>
@@ -436,7 +423,7 @@ namespace Bigio
         /// <returns>The zero-based index of the first occurrence of an element that matches the conditions defined by match, if found; otherwise, –1.</returns>
         public int FindIndex(Predicate<T> match)
         {
-            return FindIndex(0, Count, match);
+	        return FindIndex(0, Count, match);
         }
 
         /// <summary>
@@ -467,7 +454,7 @@ namespace Bigio
             if (match == null)
                 throw new ArgumentNullException("match");
 
-            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
+            var multyblockRange = _arrayMap.MultyblockRange(new Range(index, count));
 
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
             foreach (var blockRange in multyblockRange.Ranges)
@@ -491,7 +478,7 @@ namespace Bigio
         /// <returns>The last element that matches the conditions defined by the specified predicate, if found; otherwise, the default value for type T.</returns>
         public T FindLast(Predicate<T> match)
         {
-            var range = _blockStructure.ReverseMultyblockRange(new Range(Count - 1, Count));
+            var range = _arrayMap.ReverseMultyblockRange(new Range(Count - 1, Count));
 
             //Find it
             int indexOfBlock = range.IndexOfStartBlock;
@@ -544,7 +531,7 @@ namespace Bigio
             if (match == null)
                 throw new ArgumentNullException("match");
 
-            var range = _blockStructure.ReverseMultyblockRange(new Range(index, count));
+            var range = _arrayMap.ReverseMultyblockRange(new Range(index, count));
 
             //Find it
             int indexOfBlock = range.IndexOfStartBlock;
@@ -644,7 +631,7 @@ namespace Bigio
             if (!this.IsValidRange(index, count))
                 throw new ArgumentOutOfRangeException();
 
-            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
+            var multyblockRange = _arrayMap.MultyblockRange(new Range(index, count));
 
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
             foreach (var blockRange in multyblockRange.Ranges)
@@ -673,7 +660,7 @@ namespace Bigio
                 return;
             }
 
-            var blockInfo = _blockStructure.BlockInfo(index);
+            var blockInfo = _arrayMap.BlockInfo(index);
 
             int blockSubindex = index - blockInfo.CommonStartIndex;
             int indexOfBlock = blockInfo.IndexOfBlock;
@@ -685,7 +672,7 @@ namespace Bigio
             if (isMaxSize)
             {
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
-                _blockStructure.DataChanged(blockInfo.IndexOfBlock);
+                _arrayMap.DataChanged(blockInfo.IndexOfBlock);
                 Insert(index, item);
                 return;
             }
@@ -695,7 +682,7 @@ namespace Bigio
             {
                 _blockCollection[blockInfo.IndexOfBlock].Insert(blockSubindex, item);
                 _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
-                _blockStructure.DataChanged(blockInfo.IndexOfBlock);
+                _arrayMap.DataChanged(blockInfo.IndexOfBlock);
             }
             //Try to add to the previous block
             else
@@ -715,7 +702,7 @@ namespace Bigio
                 }
 
                 _blockCollection[blockInfo.IndexOfBlock - 1].Add(item);
-                _blockStructure.DataChanged(blockInfo.IndexOfBlock - 1);
+                _arrayMap.DataChanged(blockInfo.IndexOfBlock - 1);
             }
 
             Count++;
@@ -745,7 +732,7 @@ namespace Bigio
             }
             else // Default case
             {
-                blockInfo = _blockStructure.BlockInfo(index);
+                blockInfo = _arrayMap.BlockInfo(index);
             }
 
             //Insert
@@ -754,7 +741,7 @@ namespace Bigio
             _blockCollection.TryToDivideBlock(blockInfo.IndexOfBlock);
 
             Count += collection.Count;
-            _blockStructure.DataChanged(blockInfo.IndexOfBlock);
+            _arrayMap.DataChanged(blockInfo.IndexOfBlock);
         }
 
         /// <summary>
@@ -793,7 +780,7 @@ namespace Bigio
         ///  that containscount number of elements and ends at index, if found; otherwise, –1. </returns>
         public int LastIndexOf(T item, int index, int count)
         {
-            var reverseMultyblockRange = _blockStructure.ReverseMultyblockRange(new Range(index, count));
+            var reverseMultyblockRange = _arrayMap.ReverseMultyblockRange(new Range(index, count));
 
             //Find it
             int indexOfBlock = reverseMultyblockRange.IndexOfStartBlock;
@@ -834,11 +821,11 @@ namespace Bigio
                     if (block.Count == 0)
                     {
                         _blockCollection.RemoveAt(i);
-                        _blockStructure.DataChangedAfterBlockRemoving(i);
+                        _arrayMap.DataChangedAfterBlockRemoving(i);
                     }
                     else
                     {
-                        _blockStructure.DataChanged(i); 
+                        _arrayMap.DataChanged(i); 
                     }
 
                     Count--;
@@ -863,7 +850,7 @@ namespace Bigio
             }
 
             //Validity of index check in BlockInfo
-            var blockInfo = _blockStructure.BlockInfo(index);
+            var blockInfo = _arrayMap.BlockInfo(index);
 
             //Remove
             _blockCollection[blockInfo.IndexOfBlock].RemoveAt(index - blockInfo.CommonStartIndex);
@@ -872,11 +859,11 @@ namespace Bigio
             if (_blockCollection[blockInfo.IndexOfBlock].Count == 0)
             {
                 _blockCollection.RemoveAt(blockInfo.IndexOfBlock);
-                _blockStructure.DataChangedAfterBlockRemoving(blockInfo.IndexOfBlock);
+                _arrayMap.DataChangedAfterBlockRemoving(blockInfo.IndexOfBlock);
             }
             else
             {
-                _blockStructure.DataChanged(blockInfo.IndexOfBlock);
+                _arrayMap.DataChanged(blockInfo.IndexOfBlock);
             }
 
             Count--;
@@ -898,11 +885,11 @@ namespace Bigio
             if (lastBlock.Count == 0)
             {
                 _blockCollection.RemoveAt(indexOfLastBlock);
-                _blockStructure.DataChangedAfterBlockRemoving(indexOfLastBlock);
+                _arrayMap.DataChangedAfterBlockRemoving(indexOfLastBlock);
             }
             else
             {
-                _blockStructure.DataChanged(indexOfLastBlock);
+                _arrayMap.DataChanged(indexOfLastBlock);
             }
 
             Count--;
@@ -915,7 +902,7 @@ namespace Bigio
         /// <param name="count">The number of elements to remove.</param>
         public void RemoveRange(int index, int count)
         {
-            var multyblockRange = _blockStructure.MultyblockRange(new Range(index, count));
+            var multyblockRange = _arrayMap.MultyblockRange(new Range(index, count));
 
             int shift = 0;
             int indexOfBlock = multyblockRange.IndexOfStartBlock;
@@ -950,7 +937,7 @@ namespace Bigio
                 indexOfBlock++;
             }
 
-            _blockStructure.DataChangedAfterBlockRemoving(multyblockRange.IndexOfStartBlock);
+            _arrayMap.DataChangedAfterBlockRemoving(multyblockRange.IndexOfStartBlock);
             Count -= count;
         }
 
@@ -994,13 +981,13 @@ namespace Bigio
             get
             {
                 //Check for exceptions in BlockInfo()
-                var blockInfo = _blockStructure.BlockInfo(index);
+                var blockInfo = _arrayMap.BlockInfo(index);
                 return _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.CommonStartIndex];
             }
             set
             {
                 //Check for exceptions in BlockInfo()
-                var blockInfo = _blockStructure.BlockInfo(index);
+                var blockInfo = _arrayMap.BlockInfo(index);
                 _blockCollection[blockInfo.IndexOfBlock][index - blockInfo.CommonStartIndex] = value;
             }
         }

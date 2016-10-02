@@ -1,1 +1,1 @@
-1) Rewrite BlockCollection to make it use template and reflection instead of IBigList<Block<T>> blockCollection
+1) Add multythread copies of Search methods
