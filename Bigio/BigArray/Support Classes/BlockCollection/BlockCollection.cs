@@ -412,7 +412,7 @@ namespace Bigio.BigArray.Support_Classes.BlockCollection
             }
         }
 
-        public bool IsReadOnly { get; }
+        public bool IsReadOnly { get; set; }
     }
 }
 

@@ -65,8 +65,8 @@ namespace PerformanceTests
 				Task.Factory.StartNew(TestManager<T>.TestBinarySearch),
 				Task.Factory.StartNew(TestManager<T>.TestFindLast),
 				Task.Factory.StartNew(TestManager<T>.TestFind),
-                //Task.Factory.StartNew(TestManager<T>.TestFindAll),
-                //Task.Factory.StartNew(TestManager<T>.TestReverse),
+                Task.Factory.StartNew(TestManager<T>.TestFindAll),
+                Task.Factory.StartNew(TestManager<T>.TestReverse),
             };
 
             Task.WaitAll(threads.ToArray());
