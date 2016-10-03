@@ -369,7 +369,16 @@ namespace Bigio
             if (match == null)
                 throw new ArgumentNullException("match");
 
-	        return this.FirstOrDefault(i => match(i));
+	        foreach (var block in _blockCollection)
+	        {
+		        int index = block.FindIndex(match);
+		        if (index != -1)
+			        return block[index];
+	        }
+
+	        return default(T);
+
+	        //return this.FirstOrDefault(i => match(i));
         }
 
         /// <summary>
