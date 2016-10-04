@@ -55,6 +55,8 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// </summary>
         private readonly IBalancer _balancer;
 
+	    private readonly object _locker = new object();
+
         //API
 
         /// <summary>
@@ -107,13 +109,16 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// It use to get better performance.</param>
         public BlockInfo BlockInfo(int index, Range searchBlockRange)
         {
-            if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
-                throw new ArgumentOutOfRangeException("searchBlockRange");
+	        lock (_locker)
+	        {
+				if (!ValidationManager.IsValidRange(_blockCollection.Count, searchBlockRange))
+					throw new ArgumentOutOfRangeException("searchBlockRange");
 
-            if (index < GetCachedElementCount())
-                return BinaryBlockInfo(index, searchBlockRange);
+				if (index < GetCachedElementCount())
+					return BinaryBlockInfo(index, searchBlockRange);
 
-            return LinearBlockInfo(index, searchBlockRange);
+				return LinearBlockInfo(index, searchBlockRange);
+	        }
         }
 
         /// <summary>
@@ -124,21 +129,24 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <returns>Return MultyblockRange object provides information about overlapping of specified <see cref="calcRange"/> and block.</returns>
         public MultyblockRange MultyblockRange(Range calcRange)
         {
-            //If user want to select empty block
-            if (calcRange.Count == 0)
-            {
-                return (calcRange.Index == 0)
-                    ? new MultyblockRange(0, 0, new BlockRange[0])
-                    : new MultyblockRange
-                        (BlockInfo(calcRange.Index).CommonStartIndex, 0, new BlockRange[0]);
-            }
+	        lock (_locker)
+	        {
+				//If user want to select empty block
+				if (calcRange.Count == 0)
+				{
+					return (calcRange.Index == 0)
+						? new MultyblockRange(0, 0, new BlockRange[0])
+						: new MultyblockRange
+							(BlockInfo(calcRange.Index).CommonStartIndex, 0, new BlockRange[0]);
+				}
 
-            int indexOfStartBlock = BlockInfo(calcRange.Index).IndexOfBlock;
-            int indexOfEndBlock = BlockInfo(calcRange.Index + calcRange.Count - 1, indexOfStartBlock).IndexOfBlock;
-            int countOfBlocks = indexOfEndBlock - indexOfStartBlock + 1;
+				int indexOfStartBlock = BlockInfo(calcRange.Index).IndexOfBlock;
+				int indexOfEndBlock = BlockInfo(calcRange.Index + calcRange.Count - 1, indexOfStartBlock).IndexOfBlock;
+				int countOfBlocks = indexOfEndBlock - indexOfStartBlock + 1;
 
-            return new MultyblockRange(indexOfStartBlock, countOfBlocks
-                , CalculateMultyblockRanges(calcRange, indexOfStartBlock, indexOfEndBlock));
+				return new MultyblockRange(indexOfStartBlock, countOfBlocks
+					, CalculateMultyblockRanges(calcRange, indexOfStartBlock, indexOfEndBlock));
+	        }
         }
 
         /// <summary>
@@ -157,30 +165,33 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <see cref="calcRange"/> and block.</returns>
         public MultyblockRange ReverseMultyblockRange(Range calcRange)
         {
-            if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
-                throw new ArgumentOutOfRangeException();
+	        lock (_locker)
+	        {
+				if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
+					throw new ArgumentOutOfRangeException();
 
-            int reverseIndex = (calcRange.Index == 0 && calcRange.Count == 0)
-                ? 0 : calcRange.Index - calcRange.Count + 1;
-            var range = MultyblockRange(new Range(reverseIndex, calcRange.Count));
+				int reverseIndex = (calcRange.Index == 0 && calcRange.Count == 0)
+					? 0 : calcRange.Index - calcRange.Count + 1;
+				var range = MultyblockRange(new Range(reverseIndex, calcRange.Count));
 
-            int indexOfStartBlock = range.IndexOfStartBlock + range.Count - 1;
-            if (indexOfStartBlock < 0)
-                indexOfStartBlock = 0;
+				int indexOfStartBlock = range.IndexOfStartBlock + range.Count - 1;
+				if (indexOfStartBlock < 0)
+					indexOfStartBlock = 0;
 
-            //Reverse all block in range
-            var reverseBlockRanges = new BlockRange[range.Count];
-            int counter = 0;
-            foreach (var blockRange in range.Ranges)
-            {
-                var reverseBlockRange = new BlockRange(blockRange.Subindex + blockRange.Count - 1
-                    , blockRange.Count, blockRange.CommonStartIndex);
+				//Reverse all block in range
+				var reverseBlockRanges = new BlockRange[range.Count];
+				int counter = 0;
+				foreach (var blockRange in range.Ranges)
+				{
+					var reverseBlockRange = new BlockRange(blockRange.Subindex + blockRange.Count - 1
+						, blockRange.Count, blockRange.CommonStartIndex);
 
-                reverseBlockRanges[range.Count - counter - 1] = reverseBlockRange;
-                counter++;
-            }
+					reverseBlockRanges[range.Count - counter - 1] = reverseBlockRange;
+					counter++;
+				}
 
-            return new MultyblockRange(indexOfStartBlock, range.Count, reverseBlockRanges);
+				return new MultyblockRange(indexOfStartBlock, range.Count, reverseBlockRanges);
+	        }
         }
 
         /// <summary>
@@ -190,14 +201,20 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         {
             private set
             {
-                if (value == null)
-                    throw new ArgumentNullException("value");
+	            lock (_locker)
+	            {
+					if (value == null)
+						throw new ArgumentNullException("value");
 
-                _blockCollection = value;
+					_blockCollection = value;
+	            }
             }
             get
             {
-                return _blockCollection;
+	            lock (_locker)
+	            {
+					return _blockCollection;
+	            }
             }
         }
 
@@ -207,12 +224,15 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// </summary>
         public void DataChanged(int blockIndex)
         {
-            Debug.Assert(blockIndex < _blockCollection.Count);
-            Debug.Assert(blockIndex >= 0);
+	        lock (_locker)
+	        {
+				Debug.Assert(blockIndex < _blockCollection.Count);
+				Debug.Assert(blockIndex >= 0);
 
-            _indexOfFirstChangedBlock = _indexOfFirstChangedBlock == NoBlockChanges ?
-                blockIndex : Math.Min(_indexOfFirstChangedBlock, blockIndex);
-            _cachedCountInfo.CachedIndexOfFirstChangedBlock = CountCacheInvalid;
+				_indexOfFirstChangedBlock = _indexOfFirstChangedBlock == NoBlockChanges ?
+					blockIndex : Math.Min(_indexOfFirstChangedBlock, blockIndex);
+				_cachedCountInfo.CachedIndexOfFirstChangedBlock = CountCacheInvalid;
+	        }
         }
 
         /// <summary>
@@ -223,21 +243,24 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// </summary>
         public void DataChangedAfterBlockRemoving(int blockIndex)
         {
-            //If we removed last block(and block with blockIndex did't exists) or several last blocks
-            if (blockIndex >= _blockCollection.Count)
-            {
-                //If there was only changes in last block(which already didn't exsist) then we up to date now
-                //Note: also we need to do it, because otherwise _indexOfFirstChangedBlock will be contains index of
-                //non-existent block.
-                if (_indexOfFirstChangedBlock >= blockIndex)
-                    _indexOfFirstChangedBlock = NoBlockChanges;
+	        lock (_locker)
+	        {
+				//If we removed last block(and block with blockIndex did't exists) or several last blocks
+				if (blockIndex >= _blockCollection.Count)
+				{
+					//If there was only changes in last block(which already didn't exsist) then we up to date now
+					//Note: also we need to do it, because otherwise _indexOfFirstChangedBlock will be contains index of
+					//non-existent block.
+					if (_indexOfFirstChangedBlock >= blockIndex)
+						_indexOfFirstChangedBlock = NoBlockChanges;
 
-                _cachedCountInfo.CachedIndexOfFirstChangedBlock = CountCacheInvalid;
+					_cachedCountInfo.CachedIndexOfFirstChangedBlock = CountCacheInvalid;
 
-                return;
-            }
+					return;
+				}
 
-            DataChanged(blockIndex);
+				DataChanged(blockIndex);
+	        }
         }
 
         /// <summary>
@@ -250,36 +273,39 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         private IEnumerable<BlockRange> CalculateMultyblockRanges
             (Range calcRange, int indexOfStartBlock, int indexOfEndBlock)
         {
-            var infoOfStartBlock = _blocksInfoList[indexOfStartBlock];
-            var currentStartIndex = infoOfStartBlock.CommonStartIndex;
-            var currentEndIndex = infoOfStartBlock.CommonStartIndex;
-            var endIndex = calcRange.Index + calcRange.Count - 1;
+	        lock (_locker)
+	        {
+				var infoOfStartBlock = _blocksInfoList[indexOfStartBlock];
+				var currentStartIndex = infoOfStartBlock.CommonStartIndex;
+				var currentEndIndex = infoOfStartBlock.CommonStartIndex;
+				var endIndex = calcRange.Index + calcRange.Count - 1;
 
-            for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
-            {
-                var block = _blockCollection[i];
-                currentEndIndex += block.Count;
+				for (int i = indexOfStartBlock; i <= indexOfEndBlock; i++)
+				{
+					var block = _blockCollection[i];
+					currentEndIndex += block.Count;
 
-                bool isLeftOverlap = (calcRange.Index <= currentStartIndex && currentStartIndex <= endIndex);
-                bool isRightOverlap = (calcRange.Index <= currentEndIndex && currentEndIndex <= endIndex);
-                bool isContain = (currentStartIndex <= calcRange.Index && endIndex <= currentEndIndex);
+					bool isLeftOverlap = (calcRange.Index <= currentStartIndex && currentStartIndex <= endIndex);
+					bool isRightOverlap = (calcRange.Index <= currentEndIndex && currentEndIndex <= endIndex);
+					bool isContain = (currentStartIndex <= calcRange.Index && endIndex <= currentEndIndex);
 
-                // if ranges overlap
-                if (isLeftOverlap || isRightOverlap || isContain)
-                {
-                    bool isRangeStartInThisBlock = calcRange.Index >= currentStartIndex;
-                    bool isRangeEndInThisBlock = endIndex >= currentEndIndex;
+					// if ranges overlap
+					if (isLeftOverlap || isRightOverlap || isContain)
+					{
+						bool isRangeStartInThisBlock = calcRange.Index >= currentStartIndex;
+						bool isRangeEndInThisBlock = endIndex >= currentEndIndex;
 
-                    int startSubindex = (isRangeStartInThisBlock) ? calcRange.Index - currentStartIndex : 0;
-                    int rangeCount = (isRangeEndInThisBlock) ? block.Count - startSubindex
-                        : endIndex - currentStartIndex - startSubindex + 1;
+						int startSubindex = (isRangeStartInThisBlock) ? calcRange.Index - currentStartIndex : 0;
+						int rangeCount = (isRangeEndInThisBlock) ? block.Count - startSubindex
+							: endIndex - currentStartIndex - startSubindex + 1;
 
-                    if (rangeCount >= 0)
-                        yield return new BlockRange(startSubindex, rangeCount, currentStartIndex);
-                }
+						if (rangeCount >= 0)
+							yield return new BlockRange(startSubindex, rangeCount, currentStartIndex);
+					}
 
-                currentStartIndex += block.Count;
-            }
+					currentStartIndex += block.Count;
+				}
+	        }
         }
 
         /// <summary>
@@ -291,84 +317,87 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <returns>Information about block, which contain specified index.</returns>
         private BlockInfo BinaryBlockInfo(int index, Range searchBlockRange)
         {
-            if (!ValidationManager.IsValidIndex(GetCachedElementCount(), index))
-                throw new ArgumentOutOfRangeException("index");
+	        lock (_locker)
+	        {
+				if (!ValidationManager.IsValidIndex(GetCachedElementCount(), index))
+					throw new ArgumentOutOfRangeException("index");
 
-            if (searchBlockRange.Count == 0)
-            {
-                Debug.Assert(_blocksInfoList.IsValidIndex(searchBlockRange.Index));
-                return new BlockInfo();
-            }
+				if (searchBlockRange.Count == 0)
+				{
+					Debug.Assert(_blocksInfoList.IsValidIndex(searchBlockRange.Index));
+					return new BlockInfo();
+				}
 
-            //We use some kind if binary search to find block with specified idex
+				//We use some kind if binary search to find block with specified idex
 
-            int indexOfStartBlock = searchBlockRange.Index;
+				int indexOfStartBlock = searchBlockRange.Index;
 
-            int indexOfLastCachedBlock = GetCachedBlockCount() - 1;
-            if (indexOfLastCachedBlock == -1)
-                indexOfLastCachedBlock = 0;
-            int indexOfEndBlock = Math.Min(indexOfStartBlock + searchBlockRange.Count - 1, indexOfLastCachedBlock);
+				int indexOfLastCachedBlock = GetCachedBlockCount() - 1;
+				if (indexOfLastCachedBlock == -1)
+					indexOfLastCachedBlock = 0;
+				int indexOfEndBlock = Math.Min(indexOfStartBlock + searchBlockRange.Count - 1, indexOfLastCachedBlock);
 
-            // In code below we check is index in range. We don't do it before cycle 
-            // to get better performance(suggestingPosition often is right and in this way we get
-            // very bad performance)
-            bool isIndexInCheckRange = false;
+				// In code below we check is index in range. We don't do it before cycle 
+				// to get better performance(suggestingPosition often is right and in this way we get
+				// very bad performance)
+				bool isIndexInCheckRange = false;
 
-            while (indexOfStartBlock <= indexOfEndBlock)
-            {
-                //Calc middle position
-                var startBlockInfo = _blocksInfoList[indexOfStartBlock];
-                var endBlockInfo = _blocksInfoList[indexOfEndBlock];
+				while (indexOfStartBlock <= indexOfEndBlock)
+				{
+					//Calc middle position
+					var startBlockInfo = _blocksInfoList[indexOfStartBlock];
+					var endBlockInfo = _blocksInfoList[indexOfEndBlock];
 
-                double startIndex = startBlockInfo.CommonStartIndex;
-                double endIndex = endBlockInfo.CommonStartIndex + endBlockInfo.Count - 1;
-                double countOfBlocks = endBlockInfo.IndexOfBlock - startBlockInfo.IndexOfBlock + 1;
+					double startIndex = startBlockInfo.CommonStartIndex;
+					double endIndex = endBlockInfo.CommonStartIndex + endBlockInfo.Count - 1;
+					double countOfBlocks = endBlockInfo.IndexOfBlock - startBlockInfo.IndexOfBlock + 1;
 
-                //We do it to check it only once 
-                if (!isIndexInCheckRange)
-                {
-                    if (index < startIndex || index > endIndex)
-                        throw new ArgumentOutOfRangeException("searchBlockRange");
+					//We do it to check it only once 
+					if (!isIndexInCheckRange)
+					{
+						if (index < startIndex || index > endIndex)
+							throw new ArgumentOutOfRangeException("searchBlockRange");
 
-                    isIndexInCheckRange = true;
-                }
+						isIndexInCheckRange = true;
+					}
 
-                double suggestingBlockPosition;
-                if (index == startBlockInfo.CommonStartIndex)
-                    suggestingBlockPosition = startBlockInfo.IndexOfBlock;
-                else
-                {
-                    if (_balancer.IsBlockSizesEqual())
-                    {
-                        //Because all blocks ~ equal we can determine approximate place of needed block
-                        suggestingBlockPosition = indexOfStartBlock
-                            + (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
-                    }
-                    else
-                    {
-                        suggestingBlockPosition = (indexOfStartBlock + indexOfEndBlock) / 2;
-                    }
-                }
+					double suggestingBlockPosition;
+					if (index == startBlockInfo.CommonStartIndex)
+						suggestingBlockPosition = startBlockInfo.IndexOfBlock;
+					else
+					{
+						if (_balancer.IsBlockSizesEqual())
+						{
+							//Because all blocks ~ equal we can determine approximate place of needed block
+							suggestingBlockPosition = indexOfStartBlock
+								+ (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
+						}
+						else
+						{
+							suggestingBlockPosition = (indexOfStartBlock + indexOfEndBlock) / 2;
+						}
+					}
 
-                //Compare
-                var newBlockPosition = (int)suggestingBlockPosition;
-                var blockInfo = _blocksInfoList[newBlockPosition];
-                int result = blockInfo.Compare(index);
-                switch (result)
-                {
-                    case -1:
-                        indexOfEndBlock = newBlockPosition - 1;
-                        break;
-                    case 0:
-                        return blockInfo;
-                    case 1:
-                        indexOfStartBlock = newBlockPosition + 1;
-                        break;
-                }
-            }
+					//Compare
+					var newBlockPosition = (int)suggestingBlockPosition;
+					var blockInfo = _blocksInfoList[newBlockPosition];
+					int result = blockInfo.Compare(index);
+					switch (result)
+					{
+						case -1:
+							indexOfEndBlock = newBlockPosition - 1;
+							break;
+						case 0:
+							return blockInfo;
+						case 1:
+							indexOfStartBlock = newBlockPosition + 1;
+							break;
+					}
+				}
 
-            //We should not reach this string!
-            throw new InvalidOperationException("There is no such index in specified range!");
+				//We should not reach this string!
+				throw new InvalidOperationException("There is no such index in specified range!");
+	        }
         }
 
         /// <summary>
@@ -380,45 +409,48 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <returns>Information about block, which contain specified index.</returns>
         private BlockInfo LinearBlockInfo(int index, Range searchBlockRange)
         {
-            Debug.Assert(index >= GetCachedElementCount());
+	        lock (_locker)
+	        {
+				Debug.Assert(index >= GetCachedElementCount());
 
-            if (!_blockCollection.IsValidRange(searchBlockRange))
-                throw new ArgumentOutOfRangeException("searchBlockRange");
+				if (!_blockCollection.IsValidRange(searchBlockRange))
+					throw new ArgumentOutOfRangeException("searchBlockRange");
 
-            //Move to start
-            var startBlock = GetStartBlockInfoForLinear();
-            if (startBlock.Compare(index) == 0)
-                return startBlock;
+				//Move to start
+				var startBlock = GetStartBlockInfoForLinear();
+				if (startBlock.Compare(index) == 0)
+					return startBlock;
 
-            int commonStartIndex = startBlock.CommonStartIndex + startBlock.Count;
+				int commonStartIndex = startBlock.CommonStartIndex + startBlock.Count;
 
-            Debug.Assert(startBlock.CommonStartIndex + startBlock.Count <= index);
+				Debug.Assert(startBlock.CommonStartIndex + startBlock.Count <= index);
 
-            //Start block must be last cached block info
-            Debug.Assert(startBlock.IndexOfBlock + 1 == _blocksInfoList.Count);
+				//Start block must be last cached block info
+				Debug.Assert(startBlock.IndexOfBlock + 1 == _blocksInfoList.Count);
 
-            //Add new blocks while we try to find needed block
-            for (int i = startBlock.IndexOfBlock + 1; i < searchBlockRange.Index + searchBlockRange.Count; i++)
-            {
-                var elementCount = _blockCollection[i].Count;
-                var newBlock = new BlockInfo(i, commonStartIndex, elementCount);
-                _blocksInfoList.Add(newBlock);
+				//Add new blocks while we try to find needed block
+				for (int i = startBlock.IndexOfBlock + 1; i < searchBlockRange.Index + searchBlockRange.Count; i++)
+				{
+					var elementCount = _blockCollection[i].Count;
+					var newBlock = new BlockInfo(i, commonStartIndex, elementCount);
+					_blocksInfoList.Add(newBlock);
 
-                //If there is needed block
-                if (index >= commonStartIndex && index < commonStartIndex + elementCount)
-                {
-                    if (i + 1 == _blockCollection.Count)
-                        _indexOfFirstChangedBlock = NoBlockChanges;
-                    else
-                        _indexOfFirstChangedBlock = i + 1;
+					//If there is needed block
+					if (index >= commonStartIndex && index < commonStartIndex + elementCount)
+					{
+						if (i + 1 == _blockCollection.Count)
+							_indexOfFirstChangedBlock = NoBlockChanges;
+						else
+							_indexOfFirstChangedBlock = i + 1;
 
-                    return newBlock;
-                }
+						return newBlock;
+					}
 
-                commonStartIndex += elementCount;
-            }
+					commonStartIndex += elementCount;
+				}
 
-            throw new ArgumentOutOfRangeException("index");
+				throw new ArgumentOutOfRangeException("index");
+	        }
         }
 
         /// <summary>
@@ -427,28 +459,31 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// </summary>
         private BlockInfo GetStartBlockInfoForLinear()
         {
-            var blockInfoListCount = _blocksInfoList.Count;
+	        lock (_locker)
+	        {
+				var blockInfoListCount = _blocksInfoList.Count;
 
-            Debug.Assert(_blockCollection.Count != 0); //it's must handled in LinearSearch
+				Debug.Assert(_blockCollection.Count != 0); //it's must handled in LinearSearch
 
-            //Remove obsolete blockInfos
-            if (_indexOfFirstChangedBlock < blockInfoListCount)
-                _blocksInfoList.RemoveRange(_indexOfFirstChangedBlock, blockInfoListCount - _indexOfFirstChangedBlock);
+				//Remove obsolete blockInfos
+				if (_indexOfFirstChangedBlock < blockInfoListCount)
+					_blocksInfoList.RemoveRange(_indexOfFirstChangedBlock, blockInfoListCount - _indexOfFirstChangedBlock);
 
-            Debug.Assert(_indexOfFirstChangedBlock == _blocksInfoList.Count);
+				Debug.Assert(_indexOfFirstChangedBlock == _blocksInfoList.Count);
 
-            //Add first block if we have to
-            if (_indexOfFirstChangedBlock == 0)
-            {
-                Debug.Assert(_blocksInfoList.Count == 0);
+				//Add first block if we have to
+				if (_indexOfFirstChangedBlock == 0)
+				{
+					Debug.Assert(_blocksInfoList.Count == 0);
 
-                _blocksInfoList.Add(new BlockInfo(0, 0, _blockCollection[0].Count));
-                _indexOfFirstChangedBlock = _blockCollection.Count == 1 ? NoBlockChanges : 1;
+					_blocksInfoList.Add(new BlockInfo(0, 0, _blockCollection[0].Count));
+					_indexOfFirstChangedBlock = _blockCollection.Count == 1 ? NoBlockChanges : 1;
 
-                return _blocksInfoList[0];
-            }
+					return _blocksInfoList[0];
+				}
 
-            return _blocksInfoList[_indexOfFirstChangedBlock - 1];
+				return _blocksInfoList[_indexOfFirstChangedBlock - 1];
+	        }
         }
 
         /// <summary>
@@ -458,46 +493,49 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <returns>Count of cached elements.</returns>
         private int GetCachedElementCount()
         {
-            //Maybe we already know answer
-            if (_cachedCountInfo.CachedIndexOfFirstChangedBlock == _indexOfFirstChangedBlock)
-                return _cachedCountInfo.CachedCount;
+	        lock (_locker)
+	        {
+				//Maybe we already know answer
+				if (_cachedCountInfo.CachedIndexOfFirstChangedBlock == _indexOfFirstChangedBlock)
+					return _cachedCountInfo.CachedCount;
 
-            if (_indexOfFirstChangedBlock == NoBlockChanges)
-            {
-                if (BlockCollection.Count == 0)
-                {
-                    _cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
-                    _cachedCountInfo.CachedCount = 0;
+				if (_indexOfFirstChangedBlock == NoBlockChanges)
+				{
+					if (BlockCollection.Count == 0)
+					{
+						_cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
+						_cachedCountInfo.CachedCount = 0;
 
-                    return 0;
-                }
+						return 0;
+					}
 
-                //BlockCollection and _blocksInfoList must be equal at this point
-                Debug.Assert(BlockCollection.Count == _blocksInfoList.Count);
+					//BlockCollection and _blocksInfoList must be equal at this point
+					Debug.Assert(BlockCollection.Count == _blocksInfoList.Count);
 
-                var cachedCountOfLastBlock = GetCountByEndBlock(_blocksInfoList[_blocksInfoList.Count - 1]);
+					var cachedCountOfLastBlock = GetCountByEndBlock(_blocksInfoList[_blocksInfoList.Count - 1]);
 
-                _cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
-                _cachedCountInfo.CachedCount = cachedCountOfLastBlock;
+					_cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
+					_cachedCountInfo.CachedCount = cachedCountOfLastBlock;
 
-                return cachedCountOfLastBlock;
-            }
+					return cachedCountOfLastBlock;
+				}
 
-            var indexOfFirstChangedBlock = Math.Min(_indexOfFirstChangedBlock, _blocksInfoList.Count);
-            if (indexOfFirstChangedBlock == 0)
-            {
-                _cachedCountInfo.CachedIndexOfFirstChangedBlock = 0;
-                _cachedCountInfo.CachedCount = 0;
+				var indexOfFirstChangedBlock = Math.Min(_indexOfFirstChangedBlock, _blocksInfoList.Count);
+				if (indexOfFirstChangedBlock == 0)
+				{
+					_cachedCountInfo.CachedIndexOfFirstChangedBlock = 0;
+					_cachedCountInfo.CachedCount = 0;
 
-                return 0;
-            }
+					return 0;
+				}
 
-            var cachedCount = GetCountByEndBlock(_blocksInfoList[indexOfFirstChangedBlock - 1]);
+				var cachedCount = GetCountByEndBlock(_blocksInfoList[indexOfFirstChangedBlock - 1]);
 
-            _cachedCountInfo.CachedIndexOfFirstChangedBlock = indexOfFirstChangedBlock;
-            _cachedCountInfo.CachedCount = cachedCount;
+				_cachedCountInfo.CachedIndexOfFirstChangedBlock = indexOfFirstChangedBlock;
+				_cachedCountInfo.CachedCount = cachedCount;
 
-            return cachedCount;
+				return cachedCount;
+	        }
         }
 
         /// <summary>
@@ -506,10 +544,13 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <returns>Real count of cached blocks we have</returns>
         private int GetCachedBlockCount()
         {
-            if (_indexOfFirstChangedBlock == NoBlockChanges)
-                return _blocksInfoList.Count;
+	        lock (_locker)
+	        {
+				if (_indexOfFirstChangedBlock == NoBlockChanges)
+					return _blocksInfoList.Count;
 
-            return _indexOfFirstChangedBlock;
+				return _indexOfFirstChangedBlock;
+	        }
         }
 
         /// <summary>
@@ -519,7 +560,10 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <returns>Count of elements in range of start block to specify <param name="endBlockInfo"></param></returns>
         private int GetCountByEndBlock(BlockInfo endBlockInfo)
         {
-            return endBlockInfo.CommonStartIndex + endBlockInfo.Count;
+	        lock (_locker)
+	        {
+				return endBlockInfo.CommonStartIndex + endBlockInfo.Count;
+	        }
         }
     }
 }
