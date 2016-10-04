@@ -27,11 +27,5 @@ namespace Bigio.BigArray.Interfaces
         /// <param name="indexOfBlock">Index of block in <see cref="BlockCollection{T}"/></param>
         /// <returns>Max size of specified block</returns>
         int GetMaxBlockSize(int indexOfBlock);
-
-        /// <summary>
-        /// Returns true if block in <see cref="BlockCollection{T}"/> is approximately equal, otherwise return false
-        /// </summary>
-        /// <returns>Returns true if block in <see cref="BlockCollection{T}"/> is approximately equal, otherwise return false</returns>
-        bool IsBlockSizesEqual();
     }
 }

@@ -79,10 +79,5 @@ namespace Bigio.BigArray.Support_Classes.Balancer
         {
             return MaxBlockSize;
         }
-
-        public bool IsBlockSizesEqual()
-        {
-            return true;
-        }
     }
 }

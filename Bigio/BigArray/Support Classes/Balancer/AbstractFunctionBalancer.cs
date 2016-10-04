@@ -34,10 +34,5 @@ namespace Bigio.BigArray.Support_Classes.Balancer
         {
             return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)] * 4;
         }
-
-        public bool IsBlockSizesEqual()
-        {
-            return false;
-        }
     }
 }

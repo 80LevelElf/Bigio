@@ -366,16 +366,8 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 						suggestingBlockPosition = startBlockInfo.IndexOfBlock;
 					else
 					{
-						if (_balancer.IsBlockSizesEqual())
-						{
-							//Because all blocks ~ equal we can determine approximate place of needed block
-							suggestingBlockPosition = indexOfStartBlock
-								+ (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
-						}
-						else
-						{
-							suggestingBlockPosition = (indexOfStartBlock + indexOfEndBlock) / 2;
-						}
+						suggestingBlockPosition = indexOfStartBlock
+							+ (index - startIndex) * countOfBlocks / (endIndex - startIndex + 1);
 					}
 
 					//Compare
