@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Bigio.BigArray.Interfaces;
 
 namespace Bigio.BigArray.Support_Classes.Balancer
@@ -12,27 +11,21 @@ namespace Bigio.BigArray.Support_Classes.Balancer
         /// <summary>
         /// Possible sizes of blocks, where index is index of block and value is count of elements
         /// </summary>
-        protected abstract List<int> PrecalculatedSizeList { get; }
-
-        /// <summary>
-        /// Index of last block which is really exists in <see cref="PrecalculatedSizeList"/>. If we want to get size of block with bigger index - 
-        /// returns index of last existent block.
-        /// </summary>
-        protected abstract int MaxExistentIndex { get;}
+        protected abstract int[] PrecalculatedSizeArray { get; }
 
         public virtual int GetNewBlockSize(int indexOfBlock)
         {
-            return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)];
+			return PrecalculatedSizeArray[Math.Min(indexOfBlock, PrecalculatedSizeArray.Length)];
         }
 
         public virtual int GetDefaultBlockSize(int indexOfBlock)
         {
-            return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)];
+			return PrecalculatedSizeArray[Math.Min(indexOfBlock, PrecalculatedSizeArray.Length)];
         }
 
         public virtual int GetMaxBlockSize(int indexOfBlock)
         {
-            return PrecalculatedSizeList[Math.Min(indexOfBlock, MaxExistentIndex)] * 4;
+			return PrecalculatedSizeArray[Math.Min(indexOfBlock, PrecalculatedSizeArray.Length)] * 4;
         }
     }
 }

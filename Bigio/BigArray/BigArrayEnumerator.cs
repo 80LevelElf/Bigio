@@ -69,6 +69,7 @@ namespace Bigio
             /// </summary>
             public void Dispose()
             {
+				Reset();
             }
 
             /// <summary>

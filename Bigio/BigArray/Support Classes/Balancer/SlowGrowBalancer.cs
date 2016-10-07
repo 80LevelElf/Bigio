@@ -9,44 +9,38 @@ namespace Bigio.BigArray.Support_Classes.Balancer
     /// </summary>
     public class SlowGrowBalancer : AbstractFunctionBalancer
     {
-        private static List<int> StaticPrecalculatedSizeList { set; get; }
-        private static int StaticMaxExistentIndex { get; set; }
+        private static int[] StaticPrecalculatedSizeArray { set; get; }
 
         static SlowGrowBalancer()
         {
-            StaticPrecalculatedSizeList = new List<int>();
+            var sizeList = new List<int>();
 
             int summ = 0;
             unchecked
             {
-                int maxExistentIndex = -1;
+                int i = -1;
 
                 while (true)
                 {
-                    int value = (int)(512 + 7 * maxExistentIndex * Math.Log(1 + Math.Pow(maxExistentIndex, 10)));
+                    int value = (int)(512 + 7 * i * Math.Log(1 + Math.Pow(i, 10)));
                     summ += value;
 
                     //Overflow
                     if (summ < 0)
                     {
-                        StaticMaxExistentIndex = maxExistentIndex;
+	                    StaticPrecalculatedSizeArray = sizeList.ToArray();
                         return;
                     }
 
-                    StaticPrecalculatedSizeList.Add(value);
-                    maxExistentIndex++;
+					sizeList.Add(value);
+                    i++;
                 }
             }
         }
 
-        protected override List<int> PrecalculatedSizeList
+		protected override int[] PrecalculatedSizeArray
         {
-            get { return StaticPrecalculatedSizeList; }
-        }
-
-        protected override int MaxExistentIndex
-        {
-            get { return StaticMaxExistentIndex; }
+            get { return StaticPrecalculatedSizeArray; }
         }
     }
 }
