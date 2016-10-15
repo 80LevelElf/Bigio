@@ -70,6 +70,7 @@
     <Compile Include="BigDictionary\KeyValuePair\KeyValuePair.cs" />
     <Compile Include="BigDictionary\Node\INode.cs" />
     <Compile Include="BigDictionary\Node\Node.cs" />
+    <Compile Include="BigDictionary\Node\NodeValueEnumerator.cs" />
     <Compile Include="BigDictionary\Node\NodeEnumerator.cs" />
     <Compile Include="BigQueue\BigQueue.cs" />
     <Compile Include="BigStack\BigStack.cs" />

@@ -31,6 +31,10 @@ namespace Bigio.BigDictionary.Node
 				_currentPosition++;
 				_currentCell = _node[_currentPosition];
 
+				//Enumerate only not-null cells
+				if (_currentCell == null)
+					return MoveNext();
+
 				return true;
 			}
 

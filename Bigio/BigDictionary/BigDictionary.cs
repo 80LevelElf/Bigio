@@ -16,7 +16,7 @@ namespace Bigio.BigDictionary
 		public BigDictionary()
 		{
 			_balancer = new FastReducedBalancer();
-			_rootNode = new Node<TKey, TValue>(_balancer.GetNewNodeSize(0));
+			_rootNode = new Node<TKey, TValue>(_balancer.GetNewNodeSize(0), 0, _balancer);
 			_dictionaryMap = new StandardDictionaryMap<TKey, TValue>();
 		}
 
@@ -28,12 +28,7 @@ namespace Bigio.BigDictionary
 			var result = _dictionaryMap.FindNode(_rootNode, hash);
 			var node = result.FindedNode;
 
-			node.SetValue(hash % node.Count, pair);
-
-			if (node.Count >= _balancer.GetMaxNodeSize(node.Count))
-			{
-				
-			}
+			node.SetValue(hash, pair);
 		}
 
 		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
@@ -97,5 +92,14 @@ namespace Bigio.BigDictionary
 
 		public ICollection<TKey> Keys { get; private set; }
 		public ICollection<TValue> Values { get; private set; }
+
+		private void TryToRebalanceNode(Node<TKey, TValue> node, int level)
+		{
+			if (node.Count >= node.ElementCount*_balancer.GetOversizeK(level))
+			{
+				var newCount = node.Count*_balancer.GetGrowK(level);
+
+			}
+		}
 	}
 }

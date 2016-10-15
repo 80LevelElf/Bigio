@@ -12,7 +12,7 @@ namespace Bigio.BigDictionary.Cell
 			get { return null; }
 		}
 
-		public void Add(IKeyValuePair<TKey, TValue> pair)
+		public void Add(int hash, IKeyValuePair<TKey, TValue> pair)
 		{
 			FirstCollision = new CollisionItem<TKey, TValue>(pair, FirstCollision);
 		}
