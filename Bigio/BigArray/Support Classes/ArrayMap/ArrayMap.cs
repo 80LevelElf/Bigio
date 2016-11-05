@@ -512,7 +512,7 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 					return cachedCountOfLastBlock;
 				}
 
-				var indexOfFirstChangedBlock = Math.Min(_indexOfFirstChangedBlock, _blocksInfoList.Count);
+		        var indexOfFirstChangedBlock = _indexOfFirstChangedBlock;
 				if (indexOfFirstChangedBlock == 0)
 				{
 					_cachedCountInfo.CachedIndexOfFirstChangedBlock = 0;
