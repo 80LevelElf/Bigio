@@ -512,8 +512,7 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 					return cachedCountOfLastBlock;
 				}
 
-		        var indexOfFirstChangedBlock = _indexOfFirstChangedBlock;
-				if (indexOfFirstChangedBlock == 0)
+				if (_indexOfFirstChangedBlock == 0)
 				{
 					_cachedCountInfo.CachedIndexOfFirstChangedBlock = 0;
 					_cachedCountInfo.CachedCount = 0;
@@ -521,9 +520,9 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 					return 0;
 				}
 
-				var cachedCount = GetCountByEndBlock(_blocksInfoList[indexOfFirstChangedBlock - 1]);
+				var cachedCount = GetCountByEndBlock(_blocksInfoList[_indexOfFirstChangedBlock - 1]);
 
-				_cachedCountInfo.CachedIndexOfFirstChangedBlock = indexOfFirstChangedBlock;
+				_cachedCountInfo.CachedIndexOfFirstChangedBlock = _indexOfFirstChangedBlock;
 				_cachedCountInfo.CachedCount = cachedCount;
 
 				return cachedCount;
