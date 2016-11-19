@@ -27,10 +27,11 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// </summary>
         private const int CountCacheInvalid = -2;
 
-        /// <summary>
-        /// It's a cached data about current count of cached element. We need it to get this information faster.
-        /// </summary>
-        private CachedCountInfo _cachedCountInfo = new CachedCountInfo(CountCacheInvalid, CountCacheInvalid);
+		/// <summary>
+		/// It's a cached data about current count of cached element. We need it to get this information faster.
+		/// (it's very usefull in time of MultyblockRange and ReverseMultyblockRange).
+		/// </summary>
+		private CachedCountInfo _cachedCountInfo = new CachedCountInfo(CountCacheInvalid, CountCacheInvalid);
 
         /// <summary>
         /// Parent <see cref="BlockCollection"/> to define structure of it.
@@ -131,7 +132,9 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         {
 	        lock (_locker)
 	        {
-				//If user want to select empty block
+				//If we want to select empty block
+				// It's might be a special case, because sometimes we have to select empty range of
+				// empty collection (0 blocks).
 				if (calcRange.Count == 0)
 				{
 					return (calcRange.Index == 0)
@@ -178,7 +181,7 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 				if (indexOfStartBlock < 0)
 					indexOfStartBlock = 0;
 
-				//Reverse all block in range
+				//Reverse all blocks in range
 				var reverseBlockRanges = new BlockRange[range.Count];
 				int counter = 0;
 				foreach (var blockRange in range.Ranges)
@@ -503,7 +506,6 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 
 					//BlockCollection and _blocksInfoList must be equal at this point
 					Debug.Assert(BlockCollection.Count == _blocksInfoList.Count);
-
 					var cachedCountOfLastBlock = GetCountByEndBlock(_blocksInfoList[_blocksInfoList.Count - 1]);
 
 					_cachedCountInfo.CachedIndexOfFirstChangedBlock = NoBlockChanges;
