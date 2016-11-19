@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Bigio.BigArray.Interfaces;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.Common.Classes;
@@ -168,6 +169,8 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
         /// <see cref="calcRange"/> and block.</returns>
         public MultyblockRange ReverseMultyblockRange(Range calcRange)
         {
+			//TODO: rewrite method and make truly reverse multyblock range calculation
+			//TODO: to make lazy calculations work. 
 	        lock (_locker)
 	        {
 				if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
