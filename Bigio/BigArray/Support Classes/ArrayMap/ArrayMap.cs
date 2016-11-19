@@ -288,23 +288,17 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 					var block = _blockCollection[i];
 					currentEndIndex += block.Count;
 
-					bool isLeftOverlap = (calcRange.Index <= currentStartIndex && currentStartIndex <= endIndex);
-					bool isRightOverlap = (calcRange.Index <= currentEndIndex && currentEndIndex <= endIndex);
-					bool isContain = (currentStartIndex <= calcRange.Index && endIndex <= currentEndIndex);
+					//Current block can contain left border, right border or 
+					// completely contain in specified range
+					bool isRangeStartInThisBlock = calcRange.Index >= currentStartIndex;
+					bool isRangeEndInThisBlock = endIndex >= currentEndIndex;
 
-					// if ranges overlap
-					if (isLeftOverlap || isRightOverlap || isContain)
-					{
-						bool isRangeStartInThisBlock = calcRange.Index >= currentStartIndex;
-						bool isRangeEndInThisBlock = endIndex >= currentEndIndex;
+					int startSubindex = (isRangeStartInThisBlock) ? calcRange.Index - currentStartIndex : 0;
+					int rangeCount = (isRangeEndInThisBlock) ? block.Count - startSubindex
+						: endIndex - currentStartIndex - startSubindex + 1;
 
-						int startSubindex = (isRangeStartInThisBlock) ? calcRange.Index - currentStartIndex : 0;
-						int rangeCount = (isRangeEndInThisBlock) ? block.Count - startSubindex
-							: endIndex - currentStartIndex - startSubindex + 1;
-
-						if (rangeCount >= 0)
-							yield return new BlockRange(startSubindex, rangeCount, currentStartIndex);
-					}
+					if (rangeCount >= 0)
+						yield return new BlockRange(startSubindex, rangeCount, currentStartIndex);
 
 					currentStartIndex += block.Count;
 				}

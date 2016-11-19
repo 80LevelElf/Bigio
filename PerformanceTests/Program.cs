@@ -52,7 +52,7 @@ namespace PerformanceTests
 			Console.WriteLine("Type: " + typeof(T).Name);
             var threads = new List<Task>()
             {
-				/*Task.Factory.StartNew(TestManager<T>.TestFor),
+				Task.Factory.StartNew(TestManager<T>.TestFor),
 				Task.Factory.StartNew(TestManager<T>.TestForeach),
 				Task.Factory.StartNew(TestManager<T>.TestIndexOf),
 				Task.Factory.StartNew(TestManager<T>.TestLastIndexOf),
@@ -62,11 +62,11 @@ namespace PerformanceTests
 				Task.Factory.StartNew(TestManager<T>.TestInsertInStartPosition),
 				Task.Factory.StartNew(TestManager<T>.TestInsertRangeInRandom),
 				Task.Factory.StartNew(TestManager<T>.TestAddRange),
-				Task.Factory.StartNew(TestManager<T>.TestBinarySearch),*/
+				Task.Factory.StartNew(TestManager<T>.TestBinarySearch),
 				Task.Factory.StartNew(TestManager<T>.TestFindLast),
 				Task.Factory.StartNew(TestManager<T>.TestFind),
-                //Task.Factory.StartNew(TestManager<T>.TestFindAll),
-                //Task.Factory.StartNew(TestManager<T>.TestReverse),
+                Task.Factory.StartNew(TestManager<T>.TestFindAll),
+                Task.Factory.StartNew(TestManager<T>.TestReverse),
             };
 
             Task.WaitAll(threads.ToArray());
