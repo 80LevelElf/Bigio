@@ -236,7 +236,7 @@ namespace Bigio
             var enumerator = GetEnumerator();
             ((BigArrayEnumerator)enumerator).MoveToIndex(endIndex); // Move to start position
             var counter = 0;
-            while (endIndex + counter != index + count && comparer.Compare(enumerator.Current, item) != 1)
+            while (endIndex + counter != index + count && comparer.Compare(enumerator.Current, item) <= 0)
             {
                 enumerator.MoveNext();
                 counter++;
