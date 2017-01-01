@@ -176,9 +176,9 @@ namespace Bigio.BigArray.Support_Classes.ArrayMap
 				if (calcRange.Index < 0 || calcRange.Count < 0) //Other checks are in the MultyblockRange() 
 					throw new ArgumentOutOfRangeException();
 
-				int reverseIndex = (calcRange.Index == 0 && calcRange.Count == 0)
+				int directIndex = (calcRange.Index == 0 && calcRange.Count == 0)
 					? 0 : calcRange.Index - calcRange.Count + 1;
-				var range = MultyblockRange(new Range(reverseIndex, calcRange.Count));
+				var range = MultyblockRange(new Range(directIndex, calcRange.Count));
 
 				int indexOfStartBlock = range.IndexOfStartBlock + range.Count - 1;
 				if (indexOfStartBlock < 0)
