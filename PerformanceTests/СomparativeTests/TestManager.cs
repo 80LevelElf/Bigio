@@ -124,7 +124,13 @@ namespace PerformanceTests.СomparativeTests
                 GetListEngine().GetResult(new TestArguments("Reverse", CallFlag.FillTestCollection, new[] { 1, 5, 10, 15 })));
         }
 
-        private static readonly object _writeResultLocker = new object();
+		public static void TestContains()
+		{
+			TestArguments arg = new TestArguments("Contains", CallFlag.FillTestCollection, new[] { HUNDRED, THOUSAND, MILLION / 100});
+			WriteResult("Contains", GetBigioEngine().GetResult(arg), GetWintellectEngine().GetResult(arg), GetListEngine().GetResult(arg));
+		}
+
+		private static readonly object _writeResultLocker = new object();
 
         private static void WriteResult(string methodName, List<TestResult> bigioResult, List<TestResult> wintellectResult,
             List<TestResult> listResult)

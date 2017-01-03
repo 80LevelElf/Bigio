@@ -19,6 +19,12 @@ namespace Bigio.BigArray
         /// </summary>
         public IBigList<Block<T>> BlockCollection { get; set; }
 
+		/// <summary>
+		/// If true, <see cref="BigArray{T}"/> try to use the most optimal realizations of methods for current machine,
+		/// otherwise use standard realizations.
+		/// </summary>
+		internal bool UseJustInTimeOptimization { get; set; }
+
         /// <summary>
         /// Create new instance of <see cref="BigArrayConfiguration{T}"/> with specified <paramref name="balancer"/>
         /// and <paramref name="blockCollection"/>.
@@ -27,7 +33,7 @@ namespace Bigio.BigArray
         /// <param name="blockCollection"> Collection for storage blocks of <see cref="BigArray"/>. You can
         /// defint you own collection for it to controll it. For example you can send BigArray{Block{T}}
         /// and have second level distribution.</param>
-        public BigArrayConfiguration(IBalancer balancer, IBigList<Block<T>> blockCollection)
+        public BigArrayConfiguration(IBalancer balancer, IBigList<Block<T>> blockCollection) : this()
         {
             if (balancer == null)
                 throw new ArgumentNullException("balancer", "Configuration must contains balancer!");
@@ -61,15 +67,24 @@ namespace Bigio.BigArray
             
         }
 
-        /// <summary>
-        /// Get configuration with default block collection and balancer.
-        /// </summary>
-        public static BigArrayConfiguration<T> DefaultConfiguration
+		/// <summary>
+		/// Create new instance of <see cref="BigArrayConfiguration{T}"/> with <see cref="DefaultConfiguration"/>
+		/// </summary>
+	    public BigArrayConfiguration()
+	    {
+			Balancer = new FixedBalancer();
+			BlockCollection = new InternalBlockList<Block<T>>();
+
+			//Turn off JITO until it will be fully implemented and tested
+			UseJustInTimeOptimization = false;
+	    }
+
+		/// <summary>
+		/// Get configuration with default block collection and balancer.
+		/// </summary>
+		public static BigArrayConfiguration<T> DefaultConfiguration
         {
-            get
-            {
-                return new BigArrayConfiguration<T>(new FixedBalancer(), new InternalBlockList<Block<T>>());
-            }
+            get { return new BigArrayConfiguration<T>(); }
         }
     }
 }

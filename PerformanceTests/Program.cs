@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Threading.Tasks;
 using Bigio;
+using Bigio.BigArray;
+using Bigio.BigArray.Support_Classes.BlockCollection;
 using PerformanceTests.EngineMeasuringTest;
 using PerformanceTests.СomparativeTests;
 
@@ -13,25 +16,27 @@ namespace PerformanceTests
     {
         static void StopwatchEstimation()
         {
-            int[] arr = new int[10000000];
-
-            for (int i = 0; i < 10000000; i++)
-            {
-                arr[i] = i;
-            }
-
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            //Write some test code here
-            var list = new BigArray<int>();
+			//Write some test code here
 
-            for (int i = 0; i < 10; i++)
-            {
-                list.AddRange(arr);
-            }
+			BigArray<int> array = new BigArray<int>();
 
-            Console.WriteLine(stopwatch.ElapsedMilliseconds);
+	        for (int i = 0; i < 64 * 1024; i++)
+	        {
+		        array.Add(i);
+	        }
+
+	        for (int i = 0; i < 100; i++)
+	        {
+		        for (int j = 0; j < 64 * 1024; j++)
+		        {
+			        var a = array[j];
+		        }
+	        }
+
+			Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
         static void StartArrayMapTest()
@@ -67,15 +72,18 @@ namespace PerformanceTests
 				Task.Factory.StartNew(TestManager<T>.TestFind),
                 Task.Factory.StartNew(TestManager<T>.TestFindAll),
                 Task.Factory.StartNew(TestManager<T>.TestReverse),
-            };
+				Task.Factory.StartNew(TestManager<T>.TestContains)
+			};
 
-            Task.WaitAll(threads.ToArray());
+			Task.WaitAll(threads.ToArray());
         }
 
         static void Main(string[] args)
         {
-            StartСomparativeTests<string>();
-            Console.WriteLine("Press Enter to close window...");
+			StartСomparativeTests<string>();
+	        //StopwatchEstimation();
+
+			Console.WriteLine("Press Enter to close window...");
             Console.ReadLine();
         }
     }

@@ -224,7 +224,15 @@ namespace PerformanceTests.СomparativeTests
             }
         }
 
-        private IEnumerable<MethodInfo> GetMethodsInfoOfList(string methodName)
+		protected void Contains(int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				var temp = _list.Contains(GetValue(i));
+			}
+		}
+
+		private IEnumerable<MethodInfo> GetMethodsInfoOfList(string methodName)
         {
             Type thisType = typeof(TList);
             return thisType.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(i => i.Name == methodName);

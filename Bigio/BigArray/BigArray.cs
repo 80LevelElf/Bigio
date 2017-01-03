@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bigio.BigArray;
 using Bigio.BigArray.Interfaces;
+using Bigio.BigArray.JITO;
+using Bigio.BigArray.JITO.Operations.Contains;
 using Bigio.BigArray.Support_Classes.ArrayMap;
 using Bigio.BigArray.Support_Classes.BlockCollection;
 using Bigio.Common.Classes;
@@ -49,6 +51,8 @@ namespace Bigio
         [NonSerialized]
         private int _count;
 
+	    private readonly ContainsOperation<T> _containsOperation;
+
         //API
 
         /// <summary>
@@ -68,6 +72,8 @@ namespace Bigio
             _balancer = configuration.Balancer;
             _blockCollection = new BlockCollection<T>(_balancer, configuration.BlockCollection);
             _arrayMap = new ArrayMap<T>(_balancer, _blockCollection);
+
+	        _containsOperation = JITOMethodFactory.GetContainsOperation(this, configuration.UseJustInTimeOptimization);
         }
 
         /// <summary>
@@ -91,10 +97,10 @@ namespace Bigio
             AddRange(collection);
         }
 
-        /// <summary>
-        /// Add an object to the end of last block of the <see cref="BigArray{T}"/>.
-        /// </summary>
-        public void Add(T value)
+		/// <summary>
+		/// Add an object to the end of last block of the <see cref="BigArray{T}"/>.
+		/// </summary>
+		public void Add(T value)
         {
             int indexOfBlock = _blockCollection.Count - 1;
             if (_blockCollection.Count == 0 || _blockCollection[indexOfBlock].Count >= _balancer.GetMaxBlockSize(indexOfBlock))
@@ -254,12 +260,13 @@ namespace Bigio
         }
 
         /// <summary>
-        /// Remove true if <see cref="BigArray{T}"/> contains value, otherwise return false.
+        /// Returns true if <see cref="BigArray{T}"/> contains value, otherwise return false.
         /// </summary>
         /// <param name="item">Data to be checked.</param>
         public bool Contains(T item)
         {
-            return IndexOf(item) != -1;
+            //return IndexOf(item) != -1;
+	        return _containsOperation.Contains(item);
         }
 
         /// <summary>
